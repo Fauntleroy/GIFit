@@ -1,0 +1,16 @@
+{
+    "name": "GIFYT",
+    "description": "Make a GIF from a YouTube video",
+    "version": "0.0.0",
+    "permissions": ["activeTab"],
+    "content_scripts": [{
+        "matches": ["*://www.youtube.com/*"],
+        "js": ["vendor/patch-worker.js", "vendor/gif.js", "content.js"],
+        "run_at": "document_end"
+    }],
+    "web_accessible_resources": ["vendor/gif.worker.js", "vendor/gif.js.map", "vendor/gif.worker.js.map"],
+    "browser_action": {
+        "default_title": "GIFYT"
+    },
+    "manifest_version": 2
+}
