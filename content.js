@@ -7,28 +7,26 @@ canvas.style.position = 'fixed';
 canvas.style.top = 0;
 canvas.style.left = 0;
 canvas.style['z-index'] = 2147483647;
-canvas.width = 300;
-canvas.height = 169;
+canvas.width = 320;
+canvas.height = ( canvas.width * parseInt( youtube_video.style.height, 10 ) ) / parseInt( youtube_video.style.width, 10 );
+console.log( 'cheight', canvas.height );
+console.log( 'else', canvas.width, youtube_video.height, youtube_video.width );
 var context = canvas.getContext('2d');
 
 document.body.appendChild( canvas );
 
-function draw(v, c, w, h) {
-    // if(v.paused || v.ended)  return false;
-    console.log("draw event entered");
-    c.drawImage(v, 0, 0, w, h);
-    setTimeout(draw, 20, v, c, w, h);
-};
-
-draw( youtube_video, context, canvas.width, canvas.height );
-
 var gif;
 var capture_interval;
 
-var startCapture = function(){
+var startCapture = function( options ){
+    if( options.width ){
+        canvas.width = options.width || 320;
+        canvas.height = ( canvas.width * parseInt( youtube_video.style.height, 10 ) ) / parseInt( youtube_video.style.width, 10 );
+    }
+    var frame_delay = 1000 / ( options.framerate || 10 );
     gif = new GIF({
         workers: 2,
-        quality: 5,
+        quality: options.quality || 5,
         repeat: 0,
         workerScript: chrome.runtime.getURL('vendor/gif.worker.js')
     });
@@ -36,11 +34,12 @@ var startCapture = function(){
         window.open( URL.createObjectURL( blob ) );
     });
     capture_interval = setInterval( function(){
+        context.drawImage( youtube_video, 0, 0, canvas.width, canvas.height );
         gif.addFrame( canvas, {
-            delay: 100,
+            delay: frame_delay,
             copy: true
         });
-    }, 100 );
+    }, frame_delay );
     if( youtube_video.paused ){
         youtube_video.play();
     }
@@ -49,12 +48,16 @@ var startCapture = function(){
 var endCapture = function(){
     clearInterval( capture_interval );
     gif.render();
+    if( !youtube_video.paused ){
+        youtube_video.pause();
+    }
 };
 
 chrome.runtime.onMessage.addListener( function( request, sender, cb ){
+    console.log('request',request);
     switch( request.action ){
         case 'record':
-            startCapture();
+            startCapture( request.options );
         break;
         case 'stop':
             endCapture();

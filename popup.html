@@ -2,6 +2,8 @@
 <html>
     <body>
         <form id="options">
+            <label for="options_width">Width</label>
+            <input id="options_width" name="width" type="number" min="10" max="1200" value="320" />
             <label for="options_framerate">Frame rate</label>
             <input id="options_framerate" name="framerate" type="number" min="5" max="60" value="15" />
             <label for="options_quality">Quality</label>
@@ -10,5 +12,6 @@
             <button id="stop" type="button">Stop</button>
         </form>
     </body>
+    <script src="vendor/getFormData.js"></script>
     <script src="popup.js"></script>
 </html>
