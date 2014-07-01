@@ -1,6 +1,3 @@
-console.log('it works!');
-console.log('GIF',GIF);
-
 var youtube_video = document.querySelector('video.video-stream');
 var canvas = document.createElement('canvas');
 canvas.style.position = 'fixed';
@@ -9,8 +6,6 @@ canvas.style.left = 0;
 canvas.style['z-index'] = 2147483647;
 canvas.width = 320;
 canvas.height = ( canvas.width * parseInt( youtube_video.style.height, 10 ) ) / parseInt( youtube_video.style.width, 10 );
-console.log( 'cheight', canvas.height );
-console.log( 'else', canvas.width, youtube_video.height, youtube_video.width );
 var context = canvas.getContext('2d');
 
 document.body.appendChild( canvas );
@@ -25,7 +20,7 @@ var startCapture = function( options ){
     }
     var frame_delay = 1000 / ( options.framerate || 10 );
     gif = new GIF({
-        workers: 2,
+        workers: 8,
         quality: options.quality || 5,
         repeat: 0,
         workerScript: chrome.runtime.getURL('vendor/gif.worker.js')
@@ -54,7 +49,6 @@ var endCapture = function(){
 };
 
 chrome.runtime.onMessage.addListener( function( request, sender, cb ){
-    console.log('request',request);
     switch( request.action ){
         case 'record':
             startCapture( request.options );
