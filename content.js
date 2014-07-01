@@ -41,6 +41,9 @@ var startCapture = function(){
             copy: true
         });
     }, 100 );
+    if( youtube_video.paused ){
+        youtube_video.play();
+    }
 };
 
 var endCapture = function(){
@@ -48,10 +51,13 @@ var endCapture = function(){
     gif.render();
 };
 
-youtube_video.addEventListener( 'play', function(){
-    startCapture();
-});
-
-youtube_video.addEventListener( 'pause', function(){
-    endCapture();
+chrome.runtime.onMessage.addListener( function( request, sender, cb ){
+    switch( request.action ){
+        case 'record':
+            startCapture();
+        break;
+        case 'stop':
+            endCapture();
+        break;
+    }
 });

@@ -10,7 +10,9 @@
     }],
     "web_accessible_resources": ["vendor/gif.worker.js", "vendor/gif.js.map", "vendor/gif.worker.js.map"],
     "browser_action": {
-        "default_title": "GIFYT"
+        "default_title": "GIFYT",
+        "default_icon": "icon.png",
+        "default_popup": "popup.html"
     },
     "manifest_version": 2
 }
