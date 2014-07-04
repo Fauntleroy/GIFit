@@ -1,3 +1,5 @@
+var getFormData = require('./vendor/getFormData.js');
+
 var options_form = document.querySelector('#options');
 var record_button = document.querySelector('#record');
 var stop_button = document.querySelector('#stop');

@@ -1,3 +1,5 @@
+var gifjs = require('gif.js');
+
 var youtube_video = document.querySelector('video.video-stream');
 var canvas = document.createElement('canvas');
 canvas.style.position = 'fixed';
@@ -19,11 +21,11 @@ var startCapture = function( options ){
         canvas.height = ( canvas.width * parseInt( youtube_video.style.height, 10 ) ) / parseInt( youtube_video.style.width, 10 );
     }
     var frame_delay = 1000 / ( options.framerate || 10 );
-    gif = new GIF({
+    gif = new gifjs.GIF({
         workers: 8,
         quality: options.quality || 5,
         repeat: 0,
-        workerScript: chrome.runtime.getURL('vendor/gif.worker.js')
+        workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
     });
     gif.on( 'finished', function( blob ){
         window.open( URL.createObjectURL( blob ) );

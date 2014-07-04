@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+    <body>
+        <form id="options">
+            <label for="options_width">Width</label>
+            <input id="options_width" name="width" type="number" min="10" max="1200" value="320" />
+            <label for="options_framerate">Frame rate</label>
+            <input id="options_framerate" name="framerate" type="number" min="5" max="60" value="15" />
+            <label for="options_quality">Quality</label>
+            <input id="options_quality" name="quality" type="range" min="0" max="10" value="5" />
+            <button id="record" type="button">Record</button>
+            <button id="stop" type="button">Stop</button>
+        </form>
+    </body>
+    <script src="scripts/popup.js"></script>
+</html>

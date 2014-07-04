@@ -15,3 +15,5 @@ var getFormData = function( form ){
     });
     return form_data;
 };
+
+module.exports = getFormData;
