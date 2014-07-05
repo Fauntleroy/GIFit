@@ -19,6 +19,19 @@
 	display:none;
 }
 
+#gifit-close {
+	position: absolute;
+	top: 25px;
+	right: 35px;
+	font-size: 36px;
+	text-decoration: none;
+	color: rgb( 255, 255, 255 );
+
+	&:before {
+		content: '×';
+	}
+}
+
 body.gifit-active {
 	#player-api .html5-video-container {
 		z-index: @MAXIMUM_Z_INDEX - 500;

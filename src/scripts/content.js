@@ -1,6 +1,8 @@
 require('../styles/content.less');
 var gifjs = require('gif.js');
 var dq = require('domquery');
+var gifit_button_template = require('../templates/button.hbs');
+var gifit_overlay_template = require('../templates/overlay.hbs');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
@@ -8,10 +10,11 @@ var body = dq('body');
 var youtube_video_container = dq('#player-api .html5-video-container');
 var youtube_video = dq('#player-api video.video-stream');
 var youtube_controls = dq('#player-api .html5-video-controls .html5-player-chrome');
-var gifit_button = dq('<div id="gifit-start" class="ytp-button ytp-button-gif" role="button">GIF</div>');
+var gifit_button = dq( gifit_button_template() );
 var gifit_canvas = dq('<canvas></canvas>');
 var gifit_canvas_context = gifit_canvas[0].getContext('2d');
-var gifit_overlay = dq('<div id="gifit-overlay"></div>');
+var gifit_overlay = dq( gifit_overlay_template() );
+var gifit_close = gifit_overlay.select('#gifit-close');
 
 youtube_controls.add( gifit_button );
 body.add( gifit_canvas[0] );
@@ -59,6 +62,11 @@ gifit_button.on( 'click', function( e ){
     console.log('gifit button clicked', arguments);
     youtube_video[0].pause();
     body.addClass('gifit-active');
+});
+
+gifit_close.on( 'click', function( e ){
+    e.preventDefault();
+    body.removeClass('gifit-active');
 });
 
 chrome.runtime.onMessage.addListener( function( request, sender, cb ){
