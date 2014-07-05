@@ -12,9 +12,9 @@
         "run_at": "document_end"
     }],
     "web_accessible_resources": [
-        "scripts/gif.worker.js",
-        "scripts/gif.js.map",
-        "scripts/gif.worker.js.map"
+        "scripts/vendor/gif.worker.js",
+        "scripts/vendor/gif.worker.js.map",
+        "scripts/gif.js.map"
     ],
     "browser_action": {
         "default_title": "GIFYT",
