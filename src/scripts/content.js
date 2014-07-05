@@ -1,7 +1,9 @@
 require('../styles/content.less');
+
 var gifjs = require('gif.js');
 var $ = require('jquery');
 var getFormData = require('./vendor/getFormData.js');
+
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
 

@@ -9703,9 +9703,11 @@ module.exports = require('cssify');
 
 },{"cssify":11}],13:[function(require,module,exports){
 require('../styles/content.less');
+
 var gifjs = require('gif.js');
 var $ = require('jquery');
 var getFormData = require('./vendor/getFormData.js');
+
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
 
@@ -9799,7 +9801,7 @@ var getFormData = function( form ){
 
 module.exports = getFormData;
 },{}],15:[function(require,module,exports){
-var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-overlay {\n  background: rgba(15, 15, 15, 0.95);\n  position: fixed;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 2147482647;\n  display: none;\n}\n#gifit-close {\n  position: absolute;\n  top: 25px;\n  right: 35px;\n  font-size: 36px;\n  text-decoration: none;\n  color: #ffffff;\n}\n#gifit-close:before {\n  content: '×';\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\n#gifit-range {\n  display: none;\n  position: absolute;\n  top: 300px;\n  left: 200px;\n  z-index: 2147483247;\n  width: 400px;\n  height: 20px;\n  background: rgba(0, 0, 0, 0.9);\n}\n#gifit-range .start {\n  cursor: col-resize;\n  display: block;\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 5px;\n  height: 20px;\n  background: #ffffff;\n}\n#gifit-range .range {\n  position: absolute;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  background: #28ffff;\n}\n#gifit-range .end {\n  cursor: col-resize;\n  display: block;\n  position: absolute;\n  top: 0;\n  right: 0;\n  width: 5px;\n  height: 20px;\n  background: #ffffff;\n}\nbody.gifit-active #player-api .html5-video-container {\n  z-index: 2147483147;\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\nbody.gifit-active #gifit-overlay,\nbody.gifit-active #gifit-options,\nbody.gifit-active #gifit-range {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
+var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
 },{"lessify":12}],16:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
