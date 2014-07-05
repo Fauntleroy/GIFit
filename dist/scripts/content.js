@@ -9720,10 +9720,11 @@ const MAXIMUM_Z_INDEX = 2147483647;
 // get DOM selections sorted
 var $window = $(window);
 var $body = $('body');
-var $youtube_video_container = $('#player-api .html5-video-container');
-var $youtube_video = $('#player-api video.video-stream');
+var $youtube_player_api = $('#player-api');
+var $youtube_video_container = $youtube_player_api.find('.html5-video-container');
+var $youtube_video = $youtube_player_api.find('video.video-stream');
 var youtube_video = $youtube_video.get(0);
-var $youtube_controls = $('#player-api .html5-video-controls .html5-player-chrome');
+var $youtube_controls = $youtube_player_api.find('.html5-video-controls .html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
 var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
@@ -9731,8 +9732,8 @@ var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
 
 $youtube_controls.append( $gifit_button );
+$youtube_player_api.append( $gifit_options );
 $body.append( $gifit_canvas );
-$body.append( $gifit_options );
 
 var gif;
 var capture_interval;
@@ -9839,7 +9840,7 @@ var toSeconds = function( time_string ){
 
 module.exports = toSeconds;
 },{}],16:[function(require,module,exports){
-var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\n#gifit-canvas {\n  position: fixed;\n  top: -9999px;\n  left: -9999px;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
+var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  right: -15px;\n  bottom: 50px;\n  z-index: 2147483247;\n  padding: 25px 30px;\n  font-size: 12px;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.65);\n  -webkit-filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: inline-block;\n  width: 110px;\n  font-weight: normal;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n  width: 90px;\n  margin: 30px auto 0 auto;\n  padding: 0 10px;\n  line-height: 35px;\n  background: #2d2d2d;\n  border-bottom: #141414 3px solid;\n  border-radius: 5px;\n  outline: none;\n}\n#gifit-options button:hover {\n  background: #474747;\n}\n#gifit-options input {\n  width: 85px;\n  font-size: 22px;\n  border: none;\n  color: rgba(255, 255, 255, 0.8);\n  background: none;\n  outline: none;\n}\n#gifit-options input:focus {\n  color: #ffffff;\n}\n#gifit-options input:hover {\n  color: #ffffff;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\n#gifit-canvas {\n  position: fixed;\n  top: -9999px;\n  left: -9999px;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
 },{"lessify":12}],17:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
@@ -9861,7 +9862,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<label for=\"gifit-option-range\">Range</label>\r\n		<input id=\"gifit-option-range\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n		<span class=\"input-interstitial\">to</span>\r\n		<input name=\"end\" type=\"text\" value=\"0:00\" />\r\n		<label for=\"gifit-option-width\">Width</label>\r\n		<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		<label for=\"gifit-option-colors\">Colors</label>\r\n		<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n		<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		<label for=\"gifit-option-quality\">Quality</label>\r\n		<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		<button id=\"gifit-submit\" type=\"submit\">GIFit</button>\r\n	</form>\r\n</div>";
+  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<fieldset>\r\n			<label for=\"gifit-option-start\">Start</label>\r\n			<input id=\"gifit-option-start\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-end\">End</label>\r\n			<input id=\"gifit-option-end\" name=\"end\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-width\">Width</label>\r\n			<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-colors\">Colors</label>\r\n			<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n			<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-quality\">Quality</label>\r\n			<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		</fieldset>\r\n		<button id=\"gifit-submit\" type=\"submit\">GIFit</button>\r\n	</form>\r\n</div>";
   });
 
 },{"hbsfy/runtime":9}]},{},[13])

@@ -16,10 +16,11 @@ const MAXIMUM_Z_INDEX = 2147483647;
 // get DOM selections sorted
 var $window = $(window);
 var $body = $('body');
-var $youtube_video_container = $('#player-api .html5-video-container');
-var $youtube_video = $('#player-api video.video-stream');
+var $youtube_player_api = $('#player-api');
+var $youtube_video_container = $youtube_player_api.find('.html5-video-container');
+var $youtube_video = $youtube_player_api.find('video.video-stream');
 var youtube_video = $youtube_video.get(0);
-var $youtube_controls = $('#player-api .html5-video-controls .html5-player-chrome');
+var $youtube_controls = $youtube_player_api.find('.html5-video-controls .html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
 var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
@@ -27,8 +28,8 @@ var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
 
 $youtube_controls.append( $gifit_button );
+$youtube_player_api.append( $gifit_options );
 $body.append( $gifit_canvas );
-$body.append( $gifit_options );
 
 var gif;
 var capture_interval;
