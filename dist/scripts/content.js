@@ -2245,6 +2245,7 @@ var gifjs = require('gif.js');
 var dq = require('domquery');
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_overlay_template = require('../templates/overlay.hbs');
+var gifit_options_template = require('../templates/options.hbs');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
@@ -2257,10 +2258,12 @@ var gifit_canvas = dq('<canvas></canvas>');
 var gifit_canvas_context = gifit_canvas[0].getContext('2d');
 var gifit_overlay = dq( gifit_overlay_template() );
 var gifit_close = gifit_overlay.select('#gifit-close');
+var gifit_options = dq( gifit_options_template() );
 
 youtube_controls.add( gifit_button );
-body.add( gifit_canvas[0] );
-body.add( gifit_overlay[0] );
+body.add( gifit_canvas );
+body.add( gifit_overlay );
+body.add( gifit_options );
 
 var gif;
 var capture_interval;
@@ -2322,8 +2325,8 @@ chrome.runtime.onMessage.addListener( function( request, sender, cb ){
     }
 });
 
-},{"../styles/content.less":50,"../templates/button.hbs":51,"../templates/overlay.hbs":52,"domquery":1,"gif.js":38}],50:[function(require,module,exports){
-var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-overlay {\n  background: rgba(15, 15, 15, 0.95);\n  position: fixed;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 2147482647;\n  display: none;\n}\n#gifit-close {\n  position: absolute;\n  top: 25px;\n  right: 35px;\n  font-size: 36px;\n  text-decoration: none;\n  color: #ffffff;\n}\n#gifit-close:before {\n  content: '×';\n}\nbody.gifit-active #player-api .html5-video-container {\n  z-index: 2147483147;\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\nbody.gifit-active #gifit-overlay {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
+},{"../styles/content.less":50,"../templates/button.hbs":51,"../templates/options.hbs":52,"../templates/overlay.hbs":53,"domquery":1,"gif.js":38}],50:[function(require,module,exports){
+var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-overlay {\n  background: rgba(15, 15, 15, 0.95);\n  position: fixed;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 2147482647;\n  display: none;\n}\n#gifit-close {\n  position: absolute;\n  top: 25px;\n  right: 35px;\n  font-size: 36px;\n  text-decoration: none;\n  color: #ffffff;\n}\n#gifit-close:before {\n  content: '×';\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\nbody.gifit-active #player-api .html5-video-container {\n  z-index: 2147483147;\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\nbody.gifit-active #gifit-overlay {\n  display: block;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
 },{"lessify":48}],51:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
@@ -2337,6 +2340,18 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   });
 
 },{"hbsfy/runtime":46}],52:[function(require,module,exports){
+// hbsfy compiled Handlebars template
+var Handlebars = require('hbsfy/runtime');
+module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<label for=\"gifit-option-width\">Width</label>\r\n		<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		<label for=\"gifit-option-colors\">Colors</label>\r\n		<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n		<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		<label for=\"gifit-option-quality\">Quality</label>\r\n		<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"1\" max=\"10\" value=\"5\" />\r\n		<button id=\"gifit-submit\" type=\"submit\">GIFit</button>\r\n	</form>\r\n</div>";
+  });
+
+},{"hbsfy/runtime":46}],53:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {

@@ -32,6 +32,34 @@
 	}
 }
 
+#gifit-options {
+	display: none;
+	position: absolute;
+	top: 100px;
+	right: 200px;
+	z-index: @MAXIMUM_Z_INDEX - 400;
+	color: rgb( 150, 150, 150 );
+	background: rgba( 0, 0, 0, 0.9 );
+	-webkit-filter: drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) );
+
+	label {
+		display: block;
+		font-weight: bold;
+		text-transform: uppercase;
+	}
+
+	button {
+		cursor: pointer;
+		display: block;
+	}
+}
+
+#gifit-submit {
+	font-weight: bold;
+	color: rgb( 40, 255, 255 );
+	background: rgb( 45, 45, 45 );
+}
+
 body.gifit-active {
 	#player-api .html5-video-container {
 		z-index: @MAXIMUM_Z_INDEX - 500;
@@ -39,6 +67,10 @@ body.gifit-active {
 	}
 
 	#gifit-overlay {
+		display: block;
+	}
+
+	#gifit-options {
 		display: block;
 	}
 }

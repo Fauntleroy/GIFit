@@ -3,6 +3,7 @@ var gifjs = require('gif.js');
 var dq = require('domquery');
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_overlay_template = require('../templates/overlay.hbs');
+var gifit_options_template = require('../templates/options.hbs');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
@@ -15,10 +16,12 @@ var gifit_canvas = dq('<canvas></canvas>');
 var gifit_canvas_context = gifit_canvas[0].getContext('2d');
 var gifit_overlay = dq( gifit_overlay_template() );
 var gifit_close = gifit_overlay.select('#gifit-close');
+var gifit_options = dq( gifit_options_template() );
 
 youtube_controls.add( gifit_button );
-body.add( gifit_canvas[0] );
-body.add( gifit_overlay[0] );
+body.add( gifit_canvas );
+body.add( gifit_overlay );
+body.add( gifit_options );
 
 var gif;
 var capture_interval;
