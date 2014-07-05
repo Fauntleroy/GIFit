@@ -28,21 +28,6 @@ gulp.task( 'compile content.js', function(){
 	return bundle();
 });
 
-gulp.task( 'compile popup.js', function(){
-	var w = watchify('./src/scripts/popup.js');
-	w.transform('hbsfy');
-	var bundle = function(){
-		return w.bundle()
-			.pipe( vinyl_source('popup.js') )
-			.pipe( gulp.dest('./dist/scripts') );
-	};
-	w.on( 'update', bundle );
-	w.on( 'error', function(){
-		console.log('error', arguments);
-	})
-	return bundle();
-});
-
 gulp.task( 'copy static files', function(){
 	gulp.src([
 		'./src/manifest.json',
@@ -69,7 +54,6 @@ gulp.task( 'watch static files', function(){
 gulp.task( 'default', [
 	'compile css',
 	'compile content.js',
-	'compile popup.js',
 	'copy static files',
 	'watch css',
 	'watch static files'

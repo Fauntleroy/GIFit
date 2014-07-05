@@ -18,8 +18,7 @@
     ],
     "browser_action": {
         "default_title": "GIFYT",
-        "default_icon": "images/icon.png",
-        "default_popup": "popup.html"
+        "default_icon": "images/icon.png"
     },
     "manifest_version": 2
 }
