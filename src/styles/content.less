@@ -1,5 +1,11 @@
+@import 'roboto.less';
+@import 'arizonia.less';
+
 @MAXIMUM_Z_INDEX: 2147483647;
 
+@color_gif: rgb( 40, 255, 255 );
+@color_it: rgb( 255, 40, 40 );
+@color_youtube_toolbar: rgb( 117, 117, 117 );
 @color_panel_text: rgb( 150, 150, 150 );
 @color_panel_background: rgba( 0, 0, 0, 0.65 );
 @color_panel_shadow: rgba( 0, 0, 0, 0.9 );
@@ -12,6 +18,20 @@
 	float: right;
 	height: @video_controls_height;
 	line-height: @video_controls_height;
+	color: @color_youtube_toolbar;
+
+	&:hover {
+		color: rgb( 255, 255, 255 );
+	}
+
+	.gif {
+		font-family: 'robotobold', sans-serif;
+	}
+
+	.it {
+		font-family: 'arizoniaregular', sans-serif;
+		font-size: 125%;
+	}
 }
 
 #gifit-options {
@@ -21,6 +41,7 @@
 	bottom: 50px;
 	z-index: @MAXIMUM_Z_INDEX - 400;
 	padding: 25px 30px;
+	font-family: 'robotoregular', sans-serif;
 	font-size: 12px;
 	color: @color_panel_text;
 	background: @color_panel_background;
@@ -33,25 +54,9 @@
 		text-transform: uppercase;
 	}
 
-	button {
-		cursor: pointer;
-		display: block;
-		width: 90px;
-		margin: 30px auto 0 auto;
-		padding: 0 10px;
-		line-height: 35px;
-		background: @color_button_background;
-		border-bottom: darken( @color_button_background, 10% ) 3px solid;
-		border-radius: 5px;
-		outline: none;
-
-		&:hover {
-			background: lighten( @color_button_background, 10% );
-		}
-	}
-
 	input {
 		width: 85px;
+		font-family: 'robotobold', sans-serif;
 		font-size: 22px;
 		border: none;
 		color: fadeout( @color_input_text, 20% );
@@ -69,9 +74,32 @@
 }
 
 #gifit-submit {
-	font-weight: bold;
-	color: rgb( 40, 255, 255 );
-	background: rgb( 45, 45, 45 );
+	cursor: pointer;
+	display: block;
+	width: 90px;
+	margin: 30px auto 0 auto;
+	padding: 0 10px;
+	font-size: 24px;
+	line-height: 35px;
+	background: @color_button_background;
+	border-bottom: darken( @color_button_background, 10% ) 3px solid;
+	border-radius: 5px;
+	outline: none;
+
+	&:hover {
+		background: lighten( @color_button_background, 10% );
+	}
+
+	.gif {
+		font-family: 'robotobold', sans-serif;
+		color: @color_gif;
+	}
+
+	.it {
+		font-family: 'arizoniaregular', sans-serif;
+		font-size: 125%;
+		color: @color_it;
+	}
 }
 
 #gifit-canvas {
@@ -81,6 +109,9 @@
 }
 
 body.gifit-active {
+	#gifit-start {
+		color: rgb( 255, 255, 255 );
+	}
 	#gifit-options {
 		display: block;
 	}
