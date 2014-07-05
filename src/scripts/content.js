@@ -1,9 +1,13 @@
+// automatically inject CSS
 require('../styles/content.less');
 
+// third party modules
 var gifjs = require('gif.js');
 var $ = require('jquery');
 var getFormData = require('./vendor/getFormData.js');
+var toSeconds = require('./vendor/toSeconds.js');
 
+// templates
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
 
@@ -28,43 +32,54 @@ $body.append( $gifit_options );
 
 var gif;
 var capture_interval;
-var start_time;
-var end_time;
 
-var startCapture = function( options ){
-    if( options.width ){
-        $gifit_canvas
-            .width( options.width || 320 )
-            .height( $gifit_canvas.width() * parseInt( $youtube_video.height(), 10 ) ) / parseInt( $youtube_video.width(), 10 );
-    }
-    var frame_delay = 1000 / ( options.framerate || 10 );
+var generateGIF = function( options ){
+    // generate GIF options
+    var defaults = {
+        width: 320,
+        colors: 128,
+        framerate: 10,
+        quality: 5
+    };
+    options = $.extend( defaults, options );
+    options.frame_interval = 1000 / options.framerate;
+    options.start = toSeconds( options.start );
+    options.end = toSeconds( options.end );
+    // create GIF encoder
     gif = new gifjs.GIF({
         workers: 8,
-        quality: options.quality || 5,
+        quality: options.quality,
         repeat: 0,
         workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
     });
     gif.on( 'finished', function( blob ){
         window.open( URL.createObjectURL( blob ) );
     });
-    capture_interval = setInterval( function(){
-        gifit_canvas_context.drawImage( $youtube_video.get(0), 0, 0, $gifit_canvas.width(), $gifit_canvas.height() );
-        gif.addFrame( $gifit_canvas.get(0), {
-            delay: frame_delay,
-            copy: true
-        });
-    }, frame_delay );
-    if( youtube_video.paused ){
-        youtube_video.play();
-    }
-};
-
-var endCapture = function(){
-    clearInterval( capture_interval );
-    gif.render();
+    // make sure the video is paused before we jump frames
     if( !youtube_video.paused ){
         youtube_video.pause();
     }
+    // prepare canvas for receiving frames
+    $gifit_canvas
+        .width( options.width )
+        .height( ( $gifit_canvas.width() * $youtube_video.height() ) / $youtube_video.width() );
+    // play the part of the video we want to convert
+    youtube_video.currentTime = options.start;
+    youtube_video.play();
+    var addFrameInterval = setInterval( function(){
+        if( youtube_video.currentTime >= options.end ){
+            // render the GIF
+            gif.render();
+            youtube_video.pause();
+            clearInterval( addFrameInterval );
+            return;
+        }
+        gifit_canvas_context.drawImage( $youtube_video.get(0), 0, 0, $gifit_canvas.width(), $gifit_canvas.height() );
+        gif.addFrame( $gifit_canvas.get(0), {
+            delay: options.frame_interval,
+            copy: true
+        });
+    }, options.frame_interval );
 };
 
 $gifit_button.on( 'click', function( e ){
@@ -75,4 +90,5 @@ $gifit_options_form.on( 'submit', function( e ){
     e.preventDefault();
     var options = getFormData( $gifit_options_form.get(0) );
     console.log('opts',options);
+    generateGIF( options );
 });

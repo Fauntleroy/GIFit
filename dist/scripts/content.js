@@ -9702,12 +9702,16 @@ module.exports.byUrl = function(url) {
 module.exports = require('cssify');
 
 },{"cssify":11}],13:[function(require,module,exports){
+// automatically inject CSS
 require('../styles/content.less');
 
+// third party modules
 var gifjs = require('gif.js');
 var $ = require('jquery');
 var getFormData = require('./vendor/getFormData.js');
+var toSeconds = require('./vendor/toSeconds.js');
 
+// templates
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
 
@@ -9732,43 +9736,54 @@ $body.append( $gifit_options );
 
 var gif;
 var capture_interval;
-var start_time;
-var end_time;
 
-var startCapture = function( options ){
-    if( options.width ){
-        $gifit_canvas
-            .width( options.width || 320 )
-            .height( $gifit_canvas.width() * parseInt( $youtube_video.height(), 10 ) ) / parseInt( $youtube_video.width(), 10 );
-    }
-    var frame_delay = 1000 / ( options.framerate || 10 );
+var generateGIF = function( options ){
+    // generate GIF options
+    var defaults = {
+        width: 320,
+        colors: 128,
+        framerate: 10,
+        quality: 5
+    };
+    options = $.extend( defaults, options );
+    options.frame_interval = 1000 / options.framerate;
+    options.start = toSeconds( options.start );
+    options.end = toSeconds( options.end );
+    // create GIF encoder
     gif = new gifjs.GIF({
         workers: 8,
-        quality: options.quality || 5,
+        quality: options.quality,
         repeat: 0,
         workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
     });
     gif.on( 'finished', function( blob ){
         window.open( URL.createObjectURL( blob ) );
     });
-    capture_interval = setInterval( function(){
-        gifit_canvas_context.drawImage( $youtube_video.get(0), 0, 0, $gifit_canvas.width(), $gifit_canvas.height() );
-        gif.addFrame( $gifit_canvas.get(0), {
-            delay: frame_delay,
-            copy: true
-        });
-    }, frame_delay );
-    if( youtube_video.paused ){
-        youtube_video.play();
-    }
-};
-
-var endCapture = function(){
-    clearInterval( capture_interval );
-    gif.render();
+    // make sure the video is paused before we jump frames
     if( !youtube_video.paused ){
         youtube_video.pause();
     }
+    // prepare canvas for receiving frames
+    $gifit_canvas
+        .width( options.width )
+        .height( ( $gifit_canvas.width() * $youtube_video.height() ) / $youtube_video.width() );
+    // play the part of the video we want to convert
+    youtube_video.currentTime = options.start;
+    youtube_video.play();
+    var addFrameInterval = setInterval( function(){
+        if( youtube_video.currentTime >= options.end ){
+            // render the GIF
+            gif.render();
+            youtube_video.pause();
+            clearInterval( addFrameInterval );
+            return;
+        }
+        gifit_canvas_context.drawImage( $youtube_video.get(0), 0, 0, $gifit_canvas.width(), $gifit_canvas.height() );
+        gif.addFrame( $gifit_canvas.get(0), {
+            delay: options.frame_interval,
+            copy: true
+        });
+    }, options.frame_interval );
 };
 
 $gifit_button.on( 'click', function( e ){
@@ -9779,8 +9794,9 @@ $gifit_options_form.on( 'submit', function( e ){
     e.preventDefault();
     var options = getFormData( $gifit_options_form.get(0) );
     console.log('opts',options);
+    generateGIF( options );
 });
-},{"../styles/content.less":15,"../templates/button.hbs":16,"../templates/options.hbs":17,"./vendor/getFormData.js":14,"gif.js":1,"jquery":10}],14:[function(require,module,exports){
+},{"../styles/content.less":16,"../templates/button.hbs":17,"../templates/options.hbs":18,"./vendor/getFormData.js":14,"./vendor/toSeconds.js":15,"gif.js":1,"jquery":10}],14:[function(require,module,exports){
 var getFormData = function( form ){
     var form_data = {};
     Array.prototype.forEach.call( form.elements, function( el, i ){
@@ -9801,8 +9817,30 @@ var getFormData = function( form ){
 
 module.exports = getFormData;
 },{}],15:[function(require,module,exports){
+var toSeconds = function( time_string ){
+	var seconds = 0;
+	var time_array = time_string.split(':').reverse();
+	for( var i = 0; i < time_array.length; i++ ){
+		var time_segment = parseFloat( time_array[i] );
+		switch( i ){
+			case 0:
+				seconds += time_segment;
+			break;
+			case 1:
+				seconds += time_segment * 60;
+			break;
+			case 2:
+				seconds += time_segment * 60 * 60;
+			break;
+		}
+	}
+	return seconds;
+};
+
+module.exports = toSeconds;
+},{}],16:[function(require,module,exports){
 var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
-},{"lessify":12}],16:[function(require,module,exports){
+},{"lessify":12}],17:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9814,7 +9852,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return "<div id=\"gifit-start\" class=\"ytp-button ytp-button-gif\" role=\"button\">GIFit</div>";
   });
 
-},{"hbsfy/runtime":9}],17:[function(require,module,exports){
+},{"hbsfy/runtime":9}],18:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
