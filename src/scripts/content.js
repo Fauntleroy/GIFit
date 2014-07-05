@@ -21,7 +21,7 @@ var $youtube_video = $('#player-api video.video-stream');
 var youtube_video = $youtube_video.get(0);
 var $youtube_controls = $('#player-api .html5-video-controls .html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
-var $gifit_canvas = $('<canvas></canvas>');
+var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');

@@ -9725,7 +9725,7 @@ var $youtube_video = $('#player-api video.video-stream');
 var youtube_video = $youtube_video.get(0);
 var $youtube_controls = $('#player-api .html5-video-controls .html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
-var $gifit_canvas = $('<canvas></canvas>');
+var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
@@ -9839,7 +9839,7 @@ var toSeconds = function( time_string ){
 
 module.exports = toSeconds;
 },{}],16:[function(require,module,exports){
-var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
+var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  top: 100px;\n  right: 200px;\n  z-index: 2147483247;\n  color: #969696;\n  background: rgba(0, 0, 0, 0.9);\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\n#gifit-options label {\n  display: block;\n  font-weight: bold;\n  text-transform: uppercase;\n}\n#gifit-options button {\n  cursor: pointer;\n  display: block;\n}\n#gifit-submit {\n  font-weight: bold;\n  color: #28ffff;\n  background: #2d2d2d;\n}\n#gifit-canvas {\n  position: fixed;\n  top: -9999px;\n  left: -9999px;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
 },{"lessify":12}],17:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
