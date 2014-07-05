@@ -9702,12 +9702,3218 @@ module.exports.byUrl = function(url) {
 module.exports = require('cssify');
 
 },{"cssify":11}],13:[function(require,module,exports){
+/***************
+    Details
+***************/
+
+/*!
+* Velocity.js: Accelerated JavaScript animation.
+* @version 0.4.1
+* @docs http://velocityjs.org
+* @license Copyright 2014 Julian Shapiro. MIT License: http://en.wikipedia.org/wiki/MIT_License
+*/
+
+/****************
+     Summary
+****************/
+
+/*
+Velocity's structure:
+- CSS Stack: Works independently from the rest of Velocity.
+- Velocity.animate(): Core method that iterates over the targeted elements and queues the incoming call onto each element individually. Consists of:
+  - Pre-Queueing: Prepare the element for animation by instantiating its data cache and processing the call's options.
+  - Queueing: The logic that runs once the call has reached its point of execution in the element's $.queue() stack.
+              Most logic is placed here to avoid risking it becoming stale (if the element's properties have changed).
+  - Pushing: Consolidation of the tween data followed by its push onto the global in-progress calls container.
+- tick(): The single requestAnimationFrame loop responsible for tweening all in-progress calls.
+- completeCall(): Handles the cleanup process for each Velocity call.
+*/
+
+/* NOTICE: Despite the ensuing code indicating that Velocity works *without* jQuery and *with* Zepto, this support has not yet landed. */
+
+/******************
+    Velocity.js
+******************/
+
+;(function (global, window, document, undefined) {
+
+    /*****************
+        Constants
+    *****************/
+
+    var NAME = "velocity",
+        DEFAULT_DURATION = 400,
+        DEFAULT_EASING = "swing";
+
+    /*********************
+       Helper Functions
+    *********************/
+
+    /* IE detection. Gist: https://gist.github.com/julianshapiro/9098609 */
+    var IE = (function() {
+        if (document.documentMode) {
+            return document.documentMode;
+        } else {
+            for (var i = 7; i > 4; i--) {
+                var div = document.createElement("div");
+
+                div.innerHTML = "<!--[if IE " + i + "]><span></span><![endif]-->";
+
+                if (div.getElementsByTagName("span").length) {
+                    div = null;
+
+                    return i;
+                }
+            }
+        }
+
+        return undefined;
+    })();
+
+    /* RAF polyfill. Gist: https://gist.github.com/julianshapiro/9497513 */
+    var requestAnimationFrame = window.requestAnimationFrame || (function() {
+        var timeLast = 0;
+
+        return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(callback) {
+            var timeCurrent = (new Date()).getTime(),
+                timeDelta;
+
+            /* Dynamically set delay on a per-tick basis to match 60fps. */
+            /* Technique by Erik Moller. MIT license: https://gist.github.com/paulirish/1579671 */
+            timeDelta = Math.max(0, 16 - (timeCurrent - timeLast));
+            timeLast = timeCurrent + timeDelta;
+
+            return setTimeout(function() { callback(timeCurrent + timeDelta); }, timeDelta);
+        };
+    })();
+
+    /* Array compacting. Copyright Lo-Dash. MIT License: https://github.com/lodash/lodash/blob/master/LICENSE.txt */
+    function compactSparseArray (array) {
+        var index = -1,
+            length = array ? array.length : 0,
+            result = [];
+
+        while (++index < length) {
+            var value = array[index];
+
+            if (value) {
+                result.push(value);
+            }
+        }
+
+        return result;
+    }
+
+    var Type = {
+        isString: function (variable) {
+            return (typeof variable === "string");
+        },
+
+        isArray: Array.isArray || function (variable) {
+            return Object.prototype.toString.call(variable) === "[object Array]";
+        },
+
+        isFunction: function (variable) {
+            return Object.prototype.toString.call(variable) === "[object Function]";
+        },
+
+        /* Copyright Martin Bohm. MIT License: https://gist.github.com/Tomalak/818a78a226a0738eaade */
+        isNodeList: function (variable) {
+            return typeof variable === "object" &&
+                /^\[object (HTMLCollection|NodeList|Object)\]$/.test(Object.prototype.toString.call(variable)) &&
+                variable.length !== undefined &&
+                (variable.length === 0 || (typeof variable[0] === "object" && variable[0].nodeType > 0));
+        },
+
+        /* Determine if variable is a wrapped jQuery or Zepto element. */
+        isWrapped: function (variable) {
+            return variable && (variable.jquery || (window.Zepto && window.Zepto.zepto.isZ(variable)));
+        },
+
+        isSVG: function (variable) {
+            return window.SVGElement && (variable instanceof SVGElement);
+        }
+    };
+
+    /*****************
+       Dependencies
+    *****************/
+
+    /* Local to our Velocity scope, assign $ to our jQuery shim if jQuery itself isn't loaded.
+       (The shim is a port of the jQuery utility functions that Velocity uses.) */
+    /* Note: We can't default to Zepto since the shimless version of Velocity does not work with Zepto,
+       which is missing several utility functions that Velocity requires. */
+    var $ = window.jQuery || (global.Velocity && global.Velocity.Utilities);
+
+    if (!$) {
+        throw new Error("Velocity: Either jQuery or Velocity's jQuery shim must first be loaded.")
+    /* We allow the global Velocity variable to pre-exist so long as we were responsible for its creation
+      (via the jQuery shim, which uniquely assigns a Utilities property to the Velocity object). */
+    } else if (global.Velocity !== undefined && !global.Velocity.Utilities) {
+        throw new Error("Velocity: Namespace is occupied.");
+    /* Nothing prevents Velocity from working on IE6+7, but it is not worth the time to test on them.
+       Revert to jQuery's $.animate(), and lose Velocity's extra features. */
+    } else if (IE <= 7) {
+        if (!window.jQuery) {
+            throw new Error("Velocity: For IE<=7, Velocity falls back to jQuery, which must first be loaded.");
+        } else {
+            window.jQuery.fn.velocity = window.jQuery.fn.animate;
+
+            /* Now that $.fn.velocity is aliased, abort this Velocity declaration. */
+            return;
+        }
+    /* IE8 doesn't work with the jQuery shim; it requires jQuery proper. */
+    } else if (IE === 8 && !window.jQuery) {
+        throw new Error("Velocity: For IE8, Velocity requires jQuery to be loaded. (Velocity's jQuery shim does not work with IE8.)");
+    }
+
+    /* Shorthand alias for jQuery's $.data() utility. */
+    function Data (element) {
+        /* Hardcode a reference to the plugin name. */
+        var response = $.data(element, NAME);
+
+        /* jQuery <=1.4.2 returns null instead of undefined when no match is found. We normalize this behavior. */
+        return response === null ? undefined : response;
+    };
+
+    /*************
+        State
+    *************/
+
+    /* Velocity registers itself onto a global container (window.jQuery || window.Zepto || window) so that that
+       certain features are accessible beyond just a per-element scope. This master object contains an .animate() method,
+       which is later assigned to $.fn (if jQuery or Zepto are present). Accordingly, Velocity can both act on wrapped
+       DOM elements and stand alone for targeting raw DOM elements. */
+    /* Note: The global object also doubles as a publicly-accessible data store for the purposes of unit testing. */
+    /* Note: Alias the lowercase and uppercase variants of "velocity" to minimize user confusion due to the lowercase nature of the $.fn extension. */
+    var Velocity = global.Velocity = global.velocity = {
+        /* Container for page-wide Velocity state data. */
+        State: {
+            /* Detect mobile devices to determine if mobileHA should be turned on. */
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+            /* The mobileHA option's behavior changes on older Android devices (Gingerbread, versions 2.3.3-2.3.7). */
+            isAndroid: /Android/i.test(navigator.userAgent),
+            isGingerbread: /Android 2\.3\.[3-7]/i.test(navigator.userAgent),
+            isChrome: window.chrome,
+            /* Create a cached element for re-use when checking for CSS property prefixes. */
+            prefixElement: document.createElement("div"),
+            /* Cache every prefix match to avoid repeating lookups. */
+            prefixMatches: {},
+            /* Cache the anchor used for animating window scrolling. */
+            scrollAnchor: null,
+            /* Cache the property names associated with the scroll anchor. */
+            scrollPropertyLeft: null,
+            scrollPropertyTop: null,
+            /* Keep track of whether our RAF tick is running. */
+            isTicking: false,
+            /* Container for every in-progress call to Velocity. */
+            calls: []
+        },
+        /* Velocity's custom CSS stack. Made global for unit testing. */
+        CSS: { /* Defined below. */ },
+        /* Defined by Velocity's optional jQuery shim. */
+        Utilities: window.jQuery ? {} : $,
+        /* Container for the user's custom animation sequences that are referenced by name in place of a properties map object. */
+        Sequences: {
+            /* Manually registered by the user. Learn more: VelocityJS.org/#sequences */
+        },
+        Easings: {
+            /* Defined below. */
+        },
+        /* Page-wide option defaults, which can be overriden by the user. */
+        defaults: {
+            queue: "",
+            duration: DEFAULT_DURATION,
+            easing: DEFAULT_EASING,
+            begin: null,
+            complete: null,
+            progress: null,
+            display: null,
+            loop: false,
+            delay: false,
+            mobileHA: true,
+            /* Set to false to prevent property values from being cached between consecutive Velocity-initiated chain calls. */
+            _cacheValues: true
+        },
+        /* Velocity's core animation method, subsequently aliased to $.fn. */
+        animate: function () { /* Defined below. */ },
+        /* Set to true to force a duration of 1ms for all animations so that UI testing can be performed without waiting on animations to complete. */
+        mock: false,
+        /* Set to 1 or 2 (most verbose) to output debug info to console. */
+        debug: false
+    };
+
+    /* Retrieve the appropriate scroll anchor and property name for the browser: https://developer.mozilla.org/en-US/docs/Web/API/Window.scrollY */
+    if (window.pageYOffset !== undefined) {
+        Velocity.State.scrollAnchor = window;
+        Velocity.State.scrollPropertyLeft = "pageXOffset";
+        Velocity.State.scrollPropertyTop = "pageYOffset";
+    } else {
+        Velocity.State.scrollAnchor = document.documentElement || document.body.parentNode || document.body;
+        Velocity.State.scrollPropertyLeft = "scrollLeft";
+        Velocity.State.scrollPropertyTop = "scrollTop";
+    }
+
+    /**************
+        Easing
+    **************/
+
+    /* Step easing generator. */
+    function generateStep (steps) {
+        return function (p) {
+            return Math.round(p * steps) * (1 / steps);
+        };
+    }
+
+    /* Bezier curve function generator. Copyright Gaetan Renaudeau. MIT License: http://en.wikipedia.org/wiki/MIT_License */
+    var generateBezier = (function () {
+        function A (aA1, aA2) {
+            return 1.0 - 3.0 * aA2 + 3.0 * aA1;
+        }
+
+        function B (aA1, aA2) {
+            return 3.0 * aA2 - 6.0 * aA1;
+        }
+        function C (aA1) {
+            return 3.0 * aA1;
+        }
+
+        function calcBezier (aT, aA1, aA2) {
+            return ((A(aA1, aA2)*aT + B(aA1, aA2))*aT + C(aA1))*aT;
+        }
+
+        function getSlope (aT, aA1, aA2) {
+            return 3.0 * A(aA1, aA2)*aT*aT + 2.0 * B(aA1, aA2) * aT + C(aA1);
+        }
+
+        return function (mX1, mY1, mX2, mY2) {
+            /* Must contain four arguments. */
+            if (arguments.length !== 4) {
+                return false;
+            }
+
+            /* Arguments must be numbers. */
+            for (var i = 0; i < 4; ++i) {
+                if (typeof arguments[i] !== "number" || isNaN(arguments[i]) || !isFinite(arguments[i])) {
+                    return false;
+                }
+            }
+
+            /* X values must be in the [0, 1] range. */
+            mX1 = Math.min(mX1, 1);
+            mX2 = Math.min(mX2, 1);
+            mX1 = Math.max(mX1, 0);
+            mX2 = Math.max(mX2, 0);
+
+            function getTForX (aX) {
+                var aGuessT = aX;
+
+                for (var i = 0; i < 8; ++i) {
+                    var currentSlope = getSlope(aGuessT, mX1, mX2);
+
+                    if (currentSlope === 0.0) {
+                        return aGuessT;
+                    }
+
+                    var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+
+                    aGuessT -= currentX / currentSlope;
+                }
+
+                return aGuessT;
+            }
+
+            return function (aX) {
+                if (mX1 === mY1 && mX2 === mY2) {
+                    return aX;
+                } else {
+                    return calcBezier(getTForX(aX), mY1, mY2);
+                }
+            };
+        };
+    }());
+
+    /* Runge-Kutta spring physics function generator. Adapted from Framer.js, copyright Koen Bok. MIT License: http://en.wikipedia.org/wiki/MIT_License */
+    /* Given a tension, friction, and duration, a simulation at 60FPS will first run without a defined duration in order to calculate the full path. A second pass
+       then adjusts the time dela -- using the relation between actual time and duration -- to calculate the path for the duration-constrained animation. */
+    var generateSpringRK4 = (function () {
+
+        function springAccelerationForState (state) {
+            return (-state.tension * state.x) - (state.friction * state.v);
+        }
+
+        function springEvaluateStateWithDerivative (initialState, dt, derivative) {
+            var state = {
+                x: initialState.x + derivative.dx * dt,
+                v: initialState.v + derivative.dv * dt,
+                tension: initialState.tension,
+                friction: initialState.friction
+            };
+
+            return { dx: state.v, dv: springAccelerationForState(state) };
+        }
+
+        function springIntegrateState (state, dt) {
+            var a = {
+                    dx: state.v,
+                    dv: springAccelerationForState(state)
+                },
+                b = springEvaluateStateWithDerivative(state, dt * 0.5, a),
+                c = springEvaluateStateWithDerivative(state, dt * 0.5, b),
+                d = springEvaluateStateWithDerivative(state, dt, c),
+                dxdt = 1.0 / 6.0 * (a.dx + 2.0 * (b.dx + c.dx) + d.dx),
+                dvdt = 1.0 / 6.0 * (a.dv + 2.0 * (b.dv + c.dv) + d.dv);
+
+            state.x = state.x + dxdt * dt;
+            state.v = state.v + dvdt * dt;
+
+            return state;
+        }
+
+        return function springRK4Factory (tension, friction, duration) {
+
+            var initState = {
+                    x: -1,
+                    v: 0,
+                    tension: null,
+                    friction: null
+                },
+                path = [0],
+                time_lapsed = 0,
+                tolerance = 1 / 10000,
+                DT = 16 / 1000,
+                have_duration, dt, last_state;
+
+            tension = parseFloat(tension) || 600;
+            friction = parseFloat(friction) || 20;
+            duration = duration || null;
+
+            initState.tension = tension;
+            initState.friction = friction;
+
+            have_duration = duration !== null;
+
+            /* Calculate the actual time it takes for this animation to complete with the provided conditions. */
+            if (have_duration) {
+                /* Run the simulation without a duration. */
+                time_lapsed = springRK4Factory(tension, friction);
+                /* Compute the adjusted time delta. */
+                dt = time_lapsed / duration * DT;
+            } else {
+                dt = DT;
+            }
+
+            while (true) {
+                /* Next/step function .*/
+                last_state = springIntegrateState(last_state || initState, dt);
+                /* Store the position. */
+                path.push(1 + last_state.x);
+                time_lapsed += 16;
+                /* If the change threshold is reached, break. */
+                if (!(Math.abs(last_state.x) > tolerance && Math.abs(last_state.v) > tolerance)) {
+                    break;
+                }
+            }
+
+            /* If duration is not defined, return the actual time required for completing this animation. Otherwise, return a closure that holds the
+               computed path and returns a snapshot of the position according to a given percentComplete. */
+            return !have_duration ? time_lapsed : function(percentComplete) { return path[ (percentComplete * (path.length - 1)) | 0 ]; };
+        };
+    }());
+
+    /* Velocity embeds the named easings from jQuery, jQuery UI, and CSS3 in order to save users from having to include additional libraries on their page. */
+    (function () {
+        /* jQuery's default named easing types. */
+        Velocity.Easings["linear"] = function(p) {
+            return p;
+        };
+
+        Velocity.Easings["swing"] = function(p) {
+            return 0.5 - Math.cos(p * Math.PI) / 2;
+        };
+
+        /* Bonus "spring" easing, which is a less exaggerated version of easeInOutElastic. */
+        Velocity.Easings["spring"] = function(p) {
+            return 1 - (Math.cos(p * 4.5 * Math.PI) * Math.exp(-p * 6));
+        };
+
+        /* CSS3's named easing types. */
+        Velocity.Easings["ease"] = generateBezier(0.25, 0.1, 0.25, 1.0);
+        Velocity.Easings["ease-in"] = generateBezier(0.42, 0.0, 1.00, 1.0);
+        Velocity.Easings["ease-out"] = generateBezier(0.00, 0.0, 0.58, 1.0);
+        Velocity.Easings["ease-in-out"] = generateBezier(0.42, 0.0, 0.58, 1.0);
+
+        /* jQuery UI's Robert Penner easing equations. Copyright The jQuery Foundation. MIT License: https://jquery.org/license */
+        var baseEasings = {};
+
+        $.each(["Quad", "Cubic", "Quart", "Quint", "Expo"], function(i, name) {
+            baseEasings[name] = function(p) {
+                return Math.pow(p, i + 2);
+            };
+        });
+
+        $.extend(baseEasings, {
+            Sine: function (p) {
+                return 1 - Math.cos(p * Math.PI / 2);
+            },
+
+            Circ: function (p) {
+                return 1 - Math.sqrt(1 - p * p);
+            },
+
+            Elastic: function(p) {
+                return p === 0 || p === 1 ? p :
+                    -Math.pow(2, 8 * (p - 1)) * Math.sin(((p - 1) * 80 - 7.5) * Math.PI / 15);
+            },
+
+            Back: function(p) {
+                return p * p * (3 * p - 2);
+            },
+
+            Bounce: function (p) {
+                var pow2,
+                    bounce = 4;
+
+                while (p < ((pow2 = Math.pow(2, --bounce)) - 1) / 11) {}
+                return 1 / Math.pow(4, 3 - bounce) - 7.5625 * Math.pow((pow2 * 3 - 2) / 22 - p, 2);
+            }
+        });
+
+        /* jQuery's easing generator for the object above. */
+        $.each(baseEasings, function(name, easeIn) {
+            Velocity.Easings["easeIn" + name] = easeIn;
+            Velocity.Easings["easeOut" + name] = function(p) {
+                return 1 - easeIn(1 - p);
+            };
+            Velocity.Easings["easeInOut" + name] = function(p) {
+                return p < 0.5 ?
+                    easeIn(p * 2) / 2 :
+                    1 - easeIn(p * -2 + 2) / 2;
+            };
+        });
+    })();
+
+    /* Determine the appropriate easing type given an easing input. */
+    function getEasing(value, duration) {
+        var easing = value;
+
+        /* The easing option can either be a string that references a pre-registered easing,
+           or it can be a two-/four-item array of integers to be converted into a bezier/spring function. */
+        if (Type.isString(value)) {
+            /* Ensure that the easing has been assigned to jQuery's Velocity.Easings object. */
+            if (!Velocity.Easings[value]) {
+                easing = false;
+            }
+        } else if (Type.isArray(value) && value.length === 1) {
+            easing = generateStep.apply(null, value);
+        } else if (Type.isArray(value) && value.length === 2) {
+            /* springRK4 must be passed the animation's duration. */
+            /* Note: If the springRK4 array contains non-numbers, generateSpringRK4() returns an easing
+               function generated with default tension and friction values. */
+            easing = generateSpringRK4.apply(null, value.concat([ duration ]));
+        } else if (Type.isArray(value) && value.length === 4) {
+            /* Note: If the bezier array contains non-numbers, generateBezier() returns false. */
+            easing = generateBezier.apply(null, value);
+        } else {
+            easing = false;
+        }
+
+        /* Revert to the Velocity-wide default easing type, or fall back to "swing" (which is also jQuery's default)
+           if the Velocity-wide default has been incorrectly modified. */
+        if (easing === false) {
+            if (Velocity.Easings[Velocity.defaults.easing]) {
+                easing = Velocity.defaults.easing;
+            } else {
+                easing = DEFAULT_EASING;
+            }
+        }
+
+        return easing;
+    }
+
+    /*****************
+        CSS Stack
+    *****************/
+
+    /* The CSS object is a highly condensed and performant CSS stack that fully replaces jQuery's.
+       It handles the validation, getting, and setting of both standard CSS properties and CSS property hooks. */
+    /* Note: A "CSS" shorthand is aliased so that our code is easier to read. */
+    var CSS = Velocity.CSS = {
+
+        /*************
+            RegEx
+        *************/
+
+        RegEx: {
+            /* Unwrap a property value's surrounding text, e.g. "rgba(4, 3, 2, 1)" ==> "4, 3, 2, 1" and "rect(4px 3px 2px 1px)" ==> "4px 3px 2px 1px". */
+            valueUnwrap: /^[A-z]+\((.*)\)$/i,
+            wrappedValueAlreadyExtracted: /[0-9.]+ [0-9.]+ [0-9.]+( [0-9.]+)?/,
+            /* Split a multi-value property into an array of subvalues, e.g. "rgba(4, 3, 2, 1) 4px 3px 2px 1px" ==> [ "rgba(4, 3, 2, 1)", "4px", "3px", "2px", "1px" ]. */
+            valueSplit: /([A-z]+\(.+\))|(([A-z0-9#-.]+?)(?=\s|$))/ig
+        },
+
+        /************
+            Hooks
+        ************/
+
+        /* Hooks allow a subproperty (e.g. "boxShadowBlur") of a compound-value CSS property
+           (e.g. "boxShadow: X Y Blur Spread Color") to be animated as if it were a discrete property. */
+        /* Note: Beyond enabling fine-grained property animation, hooking is necessary since Velocity only
+           tweens properties with single numeric values; unlike CSS transitions, Velocity does not interpolate compound-values. */
+        Hooks: {
+            /********************
+                Registration
+            ********************/
+
+            /* Templates are a concise way of indicating which subproperties must be individually registered for each compound-value CSS property. */
+            /* Each template consists of the compound-value's base name, its constituent subproperty names, and those subproperties' default values. */
+            templates: {
+                /* Note: Colors are defaulted to white -- as opposed to black -- since colors that are
+                   currently set to "transparent" default to their respective template below when color-animated,
+                   and white is typically a closer match to transparent than black is. */
+                "color": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "backgroundColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "borderColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "borderTopColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "borderRightColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "borderBottomColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "borderLeftColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "outlineColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "fill": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "stroke": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "stopColor": [ "Red Green Blue Alpha", "255 255 255 1" ],
+                "textShadow": [ "Color X Y Blur", "black 0px 0px 0px" ],
+                /* Todo: Add support for inset boxShadows. (webkit places it last whereas IE places it first.) */
+                "boxShadow": [ "Color X Y Blur Spread", "black 0px 0px 0px 0px" ],
+                "clip": [ "Top Right Bottom Left", "0px 0px 0px 0px" ],
+                "backgroundPosition": [ "X Y", "0% 0%" ],
+                "transformOrigin": [ "X Y Z", "50% 50% 0px" ],
+                "perspectiveOrigin": [ "X Y", "50% 50%" ]
+            },
+
+            /* A "registered" hook is one that has been converted from its template form into a live,
+               tweenable property. It contains data to associate it with its root property. */
+            registered: {
+                /* Note: A registered hook looks like this ==> textShadowBlur: [ "textShadow", 3 ],
+                   which consists of the subproperty's name, the associated root property's name,
+                   and the subproperty's position in the root's value. */
+            },
+            /* Convert the templates into individual hooks then append them to the registered object above. */
+            register: function () {
+                var rootProperty,
+                    hookTemplate,
+                    hookNames;
+
+                /* In IE, color values inside compound-value properties are positioned at the end the value instead of at the beginning.
+                   Thus, we re-arrange the templates accordingly. */
+                if (IE) {
+                    for (rootProperty in CSS.Hooks.templates) {
+                        hookTemplate = CSS.Hooks.templates[rootProperty];
+                        hookNames = hookTemplate[0].split(" ");
+
+                        var defaultValues = hookTemplate[1].match(CSS.RegEx.valueSplit);
+
+                        if (hookNames[0] === "Color") {
+                            /* Reposition both the hook's name and its default value to the end of their respective strings. */
+                            hookNames.push(hookNames.shift());
+                            defaultValues.push(defaultValues.shift());
+
+                            /* Replace the existing template for the hook's root property. */
+                            CSS.Hooks.templates[rootProperty] = [ hookNames.join(" "), defaultValues.join(" ") ];
+                        }
+                    }
+                 }
+
+                /* Hook registration. */
+                for (rootProperty in CSS.Hooks.templates) {
+                    hookTemplate = CSS.Hooks.templates[rootProperty];
+                    hookNames = hookTemplate[0].split(" ");
+
+                    for (var i in hookNames) {
+                        var fullHookName = rootProperty + hookNames[i],
+                            hookPosition = i;
+
+                        /* For each hook, register its full name (e.g. textShadowBlur) with its root property (e.g. textShadow)
+                           and the hook's position in its template's default value string. */
+                        CSS.Hooks.registered[fullHookName] = [ rootProperty, hookPosition ];
+                    }
+                }
+            },
+
+            /*****************************
+               Injection and Extraction
+            *****************************/
+
+            /* Look up the root property associated with the hook (e.g. return "textShadow" for "textShadowBlur"). */
+            /* Since a hook cannot be set directly (the browser won't recognize it), style updating for hooks is routed through the hook's root property. */
+            getRoot: function (property) {
+                var hookData = CSS.Hooks.registered[property];
+
+                if (hookData) {
+                    return hookData[0];
+                } else {
+                    /* If there was no hook match, return the property name untouched. */
+                    return property;
+                }
+            },
+            /* Convert any rootPropertyValue, null or otherwise, into a space-delimited list of hook values so that
+               the targeted hook can be injected or extracted at its standard position. */
+            cleanRootPropertyValue: function(rootProperty, rootPropertyValue) {
+                /* If the rootPropertyValue is wrapped with "rgb()", "clip()", etc., remove the wrapping to normalize the value before manipulation. */
+                if (CSS.RegEx.valueUnwrap.test(rootPropertyValue)) {
+                    rootPropertyValue = rootPropertyValue.match(CSS.Hooks.RegEx.valueUnwrap)[1];
+                }
+
+                /* If rootPropertyValue is a CSS null-value (from which there's inherently no hook value to extract),
+                   default to the root's default value as defined in CSS.Hooks.templates. */
+                /* Note: CSS null-values include "none", "auto", and "transparent". They must be converted into their
+                   zero-values (e.g. textShadow: "none" ==> textShadow: "0px 0px 0px black") for hook manipulation to proceed. */
+                if (CSS.Values.isCSSNullValue(rootPropertyValue)) {
+                    rootPropertyValue = CSS.Hooks.templates[rootProperty][1];
+                }
+
+                return rootPropertyValue;
+            },
+            /* Extracted the hook's value from its root property's value. This is used to get the starting value of an animating hook. */
+            extractValue: function (fullHookName, rootPropertyValue) {
+                var hookData = CSS.Hooks.registered[fullHookName];
+
+                if (hookData) {
+                    var hookRoot = hookData[0],
+                        hookPosition = hookData[1];
+
+                    rootPropertyValue = CSS.Hooks.cleanRootPropertyValue(hookRoot, rootPropertyValue);
+
+                    /* Split rootPropertyValue into its constituent hook values then grab the desired hook at its standard position. */
+                    return rootPropertyValue.toString().match(CSS.RegEx.valueSplit)[hookPosition];
+                } else {
+                    /* If the provided fullHookName isn't a registered hook, return the rootPropertyValue that was passed in. */
+                    return rootPropertyValue;
+                }
+            },
+            /* Inject the hook's value into its root property's value. This is used to piece back together the root property
+               once Velocity has updated one of its individually hooked values through tweening. */
+            injectValue: function (fullHookName, hookValue, rootPropertyValue) {
+                var hookData = CSS.Hooks.registered[fullHookName];
+
+                if (hookData) {
+                    var hookRoot = hookData[0],
+                        hookPosition = hookData[1],
+                        rootPropertyValueParts,
+                        rootPropertyValueUpdated;
+
+                    rootPropertyValue = CSS.Hooks.cleanRootPropertyValue(hookRoot, rootPropertyValue);
+
+                    /* Split rootPropertyValue into its individual hook values, replace the targeted value with hookValue,
+                       then reconstruct the rootPropertyValue string. */
+                    rootPropertyValueParts = rootPropertyValue.toString().match(CSS.RegEx.valueSplit);
+                    rootPropertyValueParts[hookPosition] = hookValue;
+                    rootPropertyValueUpdated = rootPropertyValueParts.join(" ");
+
+                    return rootPropertyValueUpdated;
+                } else {
+                    /* If the provided fullHookName isn't a registered hook, return the rootPropertyValue that was passed in. */
+                    return rootPropertyValue;
+                }
+            }
+        },
+
+        /*******************
+           Normalizations
+        *******************/
+
+        /* Normalizations standardize CSS property manipulation by pollyfilling browser-specific implementations (e.g. opacity)
+           and reformatting special properties (e.g. clip, rgba) to look like standard ones. */
+        Normalizations: {
+            /* Normalizations are passed a normalization target (either the property's name, its extracted value, or its injected value),
+               the targeted element (which may need to be queried), and the targeted property value. */
+            registered: {
+                clip: function(type, element, propertyValue) {
+                    switch (type) {
+                        case "name":
+                            return "clip";
+                        /* Clip needs to be unwrapped and stripped of its commas during extraction. */
+                        case "extract":
+                            var extracted;
+
+                            /* If Velocity also extracted this value, skip extraction. */
+                            if (CSS.RegEx.wrappedValueAlreadyExtracted.test(propertyValue)) {
+                                extracted = propertyValue;
+                            } else {
+                                /* Remove the "rect()" wrapper. */
+                                extracted = propertyValue.toString().match(CSS.RegEx.valueUnwrap);
+
+                                /* Strip off commas. */
+                                extracted = extracted ? extracted[1].replace(/,(\s+)?/g, " ") : propertyValue;
+                            }
+
+                            return extracted;
+                        /* Clip needs to be re-wrapped during injection. */
+                        case "inject":
+                            return "rect(" + propertyValue + ")";
+                    }
+                },
+
+                /* <=IE8 do not support the standard opacity property. They use filter:alpha(opacity=INT) instead. */
+                opacity: function (type, element, propertyValue) {
+                    if (IE <= 8) {
+                        switch (type) {
+                            case "name":
+                                return "filter";
+                            case "extract":
+                                /* <=IE8 return a "filter" value of "alpha(opacity=\d{1,3})".
+                                   Extract the value and convert it to a decimal value to match the standard CSS opacity property's formatting. */
+                                var extracted = propertyValue.toString().match(/alpha\(opacity=(.*)\)/i);
+
+                                if (extracted) {
+                                    /* Convert to decimal value. */
+                                    propertyValue = extracted[1] / 100;
+                                } else {
+                                    /* When extracting opacity, default to 1 since a null value means opacity hasn't been set. */
+                                    propertyValue = 1;
+                                }
+
+                                return propertyValue;
+                            case "inject":
+                                /* Opacified elements are required to have their zoom property set to a non-zero value. */
+                                element.style.zoom = 1;
+
+                                /* Setting the filter property on elements with certain font property combinations can result in a
+                                   highly unappealing ultra-bolding effect. There's no way to remedy this throughout a tween, but dropping the
+                                   value altogether (when opacity hits 1) at leasts ensures that the glitch is gone post-tweening. */
+                                if (parseFloat(propertyValue) >= 1) {
+                                    return "";
+                                } else {
+                                  /* As per the filter property's spec, convert the decimal value to a whole number and wrap the value. */
+                                  return "alpha(opacity=" + parseInt(parseFloat(propertyValue) * 100, 10) + ")";
+                                }
+                        }
+                    /* With all other browsers, normalization is not required; return the same values that were passed in. */
+                    } else {
+                        switch (type) {
+                            case "name":
+                                return "opacity";
+                            case "extract":
+                                return propertyValue;
+                            case "inject":
+                                return propertyValue;
+                        }
+                    }
+                }
+            },
+
+            /*****************************
+                Batched Registrations
+            *****************************/
+
+            /* Note: Batched normalizations extend the CSS.Normalizations.registered object. */
+            register: function () {
+
+                /*****************
+                    Transforms
+                *****************/
+
+                /* Transforms are the subproperties contained by the CSS "transform" property. Transforms must undergo normalization
+                   so that they can be referenced in a properties map by their individual names. */
+                /* Note: When transforms are "set", they are actually assigned to a per-element transformCache. When all transform
+                   setting is complete complete, CSS.flushTransformCache() must be manually called to flush the values to the DOM.
+                   Transform setting is batched in this way to improve performance: the transform style only needs to be updated
+                   once when multiple transform subproperties are being animated simultaneously. */
+                var transformProperties = [ "translateX", "translateY", "scale", "scaleX", "scaleY", "skewX", "skewY", "rotateZ" ];
+
+                /* IE9 and Android Gingerbread have support for 2D -- but not 3D -- transforms. Since animating unsupported
+                   transform properties results in the browser ignoring the *entire* transform string, we prevent these 3D values
+                   from being normalized for these browsers so that tweening skips these properties altogether
+                   (since it will ignore them as being unsupported by the browser.) */
+                if (!(IE <= 9) && !Velocity.State.isGingerbread) {
+                    /* Append 3D transform properties onto transformProperties. */
+                    /* Note: Since the standalone CSS "perspective" property and the CSS transform "perspective" subproperty
+                    share the same name, the latter is given a unique token within Velocity: "transformPerspective". */
+                    transformProperties = transformProperties.concat([ "transformPerspective", "translateZ", "scaleZ", "rotateX", "rotateY" ]);
+                }
+
+                for (var i = 0, transformPropertiesLength = transformProperties.length; i < transformPropertiesLength; i++) {
+                    /* Wrap the dynamically generated normalization function in a new scope so that transformName's value is
+                    paired with its respective function. (Otherwise, all functions would take the final for loop's transformName.) */
+                    (function() {
+                        var transformName = transformProperties[i];
+
+                        CSS.Normalizations.registered[transformName] = function (type, element, propertyValue) {
+                            switch (type) {
+                                /* The normalized property name is the parent "transform" property -- the property that is actually set in CSS. */
+                                case "name":
+                                    return "transform";
+                                /* Transform values are cached onto a per-element transformCache object. */
+                                case "extract":
+                                    /* If this transform has yet to be assigned a value, return its null value. */
+                                    if (Data(element).transformCache[transformName] === undefined) {
+                                        /* Scale transformProperties default to 1 whereas all other transform properties default to 0. */
+                                        return /^scale/i.test(transformName) ? 1 : 0;
+                                    /* When transform values are set, they are wrapped in parentheses as per the CSS spec.
+                                       Thus, when extracting their values (for tween calculations), we strip off the parentheses. */
+                                    } else {
+                                        return Data(element).transformCache[transformName].replace(/[()]/g, "");
+                                    }
+                                case "inject":
+                                    var invalid = false;
+
+                                    /* If an individual transform property contains an unsupported unit type, the browser ignores the *entire* transform property.
+                                       Thus, protect users from themselves by skipping setting for transform values supplied with invalid unit types. */
+                                    /* Switch on the base transform type; ignore the axis by removing the last letter from the transform's name. */
+                                    switch (transformName.substr(0, transformName.length - 1)) {
+                                        /* Whitelist unit types for each transform. */
+                                        case "translate":
+                                            invalid = !/(%|px|em|rem|\d)$/i.test(propertyValue);
+                                            break;
+                                        /* Since an axis-free "scale" property is supported as well, a little hack is used here to detect it by chopping off its last letter. */
+                                        case "scal":
+                                        case "scale":
+                                            /* Chrome on Android has a bug in which scaled elements blur if their initial scale
+                                               value is below 1 (which can happen with forcefeeding). Thus, we detect a yet-unset scale property
+                                               and ensure that its first value is always 1. More info: http://stackoverflow.com/questions/10417890/css3-animations-with-transform-causes-blurred-elements-on-webkit/10417962#10417962 */
+                                            if (Velocity.State.isAndroid && Data(element).transformCache[transformName] === undefined) {
+                                                propertyValue = 1;
+                                            }
+
+                                            invalid = !/(\d)$/i.test(propertyValue);
+                                            break;
+                                        case "skew":
+                                            invalid = !/(deg|\d)$/i.test(propertyValue);
+                                            break;
+                                        case "rotate":
+                                            invalid = !/(deg|\d)$/i.test(propertyValue);
+                                            break;
+                                    }
+
+                                    if (!invalid) {
+                                        /* As per the CSS spec, wrap the value in parentheses. */
+                                        Data(element).transformCache[transformName] = "(" + propertyValue + ")";
+                                    }
+
+                                    /* Although the value is set on the transformCache object, return the newly-updated value for the calling code to process as normal. */
+                                    return Data(element).transformCache[transformName];
+                            }
+                        };
+                    })();
+                }
+
+                /*************
+                    Colors
+                *************/
+
+                /* Since Velocity only animates a single numeric value per property, color animation is achieved by hooking the individual RGBA components of CSS color properties.
+                   Accordingly, color values must be normalized (e.g. "#ff0000", "red", and "rgb(255, 0, 0)" ==> "255 0 0 1") so that their components can be injected/extracted by CSS.Hooks logic. */
+                var colorProperties = [ "fill", "stroke", "stopColor", "color", "backgroundColor", "borderColor",
+                                        "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "outlineColor" ];
+
+                for (var i = 0, colorPropertiesLength = colorProperties.length; i < colorPropertiesLength; i++) {
+                    /* Hex to RGB conversion. Copyright Tim Down: http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
+                    function hexToRgb (hex) {
+                        var shortformRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i,
+                            longformRegex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i,
+                            rgbParts;
+
+                        hex = hex.replace(shortformRegex, function (m, r, g, b) {
+                            return r + r + g + g + b + b;
+                        });
+
+                        rgbParts = longformRegex.exec(hex);
+
+                        return rgbParts ? "rgb(" + (parseInt(rgbParts[1], 16) + " " + parseInt(rgbParts[2], 16) + " " + parseInt(rgbParts[3], 16)) + ")" : "rgb(0 0 0)";
+                    }
+
+                    /* Wrap the dynamically generated normalization function in a new scope so that colorName's value is paired with its respective function.
+                       (Otherwise, all functions would take the final for loop's colorName.) */
+                    (function () {
+                        var colorName = colorProperties[i];
+
+                        /* Note: In IE<=8, which support rgb but not rgba, colorProperties are reverted to rgb by stripping off the alpha component. */
+                        CSS.Normalizations.registered[colorName] = function(type, element, propertyValue) {
+                            switch (type) {
+                                case "name":
+                                    return colorName;
+                                /* Convert all color values into the rgb format. (Old IE can return hex values and color names instead of rgb/rgba.) */
+                                case "extract":
+                                    var extracted;
+
+                                    /* If the color is already in its hookable form (e.g. "255 255 255 1") due to having been previously extracted, skip extraction. */
+                                    if (CSS.RegEx.wrappedValueAlreadyExtracted.test(propertyValue)) {
+                                        extracted = propertyValue;
+                                    } else {
+                                        var converted,
+                                            colorNames = {
+                                                aqua: "rgb(0, 255, 255);",
+                                                black: "rgb(0, 0, 0)",
+                                                blue: "rgb(0, 0, 255)",
+                                                fuchsia: "rgb(255, 0, 255)",
+                                                gray: "rgb(128, 128, 128)",
+                                                green: "rgb(0, 128, 0)",
+                                                lime: "rgb(0, 255, 0)",
+                                                maroon: "rgb(128, 0, 0)",
+                                                navy: "rgb(0, 0, 128)",
+                                                olive: "rgb(128, 128, 0)",
+                                                purple: "rgb(128, 0, 128)",
+                                                red: "rgb(255, 0, 0)",
+                                                silver: "rgb(192, 192, 192)",
+                                                teal: "rgb(0, 128, 128)",
+                                                white: "rgb(255, 255, 255)",
+                                                yellow: "rgb(255, 255, 0)"
+                                            };
+
+                                        /* Convert color names to rgb. */
+                                        if (/^[A-z]+$/i.test(propertyValue)) {
+                                            if (colorNames[propertyValue] !== undefined) {
+                                                converted = colorNames[propertyValue]
+                                            } else {
+                                                /* If an unmatched color name is provided, default to black. */
+                                                converted = colorNames.black;
+                                            }
+                                        /* Convert hex values to rgb. */
+                                        } else if (/^#([A-f\d]{3}){1,2}$/i.test(propertyValue)) {
+                                            converted = hexToRgb(propertyValue);
+                                        /* If the provided color doesn't match any of the accepted color formats, default to black. */
+                                        } else if (!(/^rgba?\(/i.test(propertyValue))) {
+                                            converted = colorNames.black;
+                                        }
+
+                                        /* Remove the surrounding "rgb/rgba()" string then replace commas with spaces and strip
+                                           repeated spaces (in case the value included spaces to begin with). */
+                                        extracted = (converted || propertyValue).toString().match(CSS.RegEx.valueUnwrap)[1].replace(/,(\s+)?/g, " ");
+                                    }
+
+                                    /* So long as this isn't <=IE8, add a fourth (alpha) component if it's missing and default it to 1 (visible). */
+                                    if (!(IE <= 8) && extracted.split(" ").length === 3) {
+                                        extracted += " 1";
+                                    }
+
+                                    return extracted;
+                                case "inject":
+                                    /* If this is IE<=8 and an alpha component exists, strip it off. */
+                                    if (IE <= 8) {
+                                        if (propertyValue.split(" ").length === 4) {
+                                            propertyValue = propertyValue.split(/\s+/).slice(0, 3).join(" ");
+                                        }
+                                    /* Otherwise, add a fourth (alpha) component if it's missing and default it to 1 (visible). */
+                                    } else if (propertyValue.split(" ").length === 3) {
+                                        propertyValue += " 1";
+                                    }
+
+                                    /* Re-insert the browser-appropriate wrapper("rgb/rgba()"), insert commas, and strip off decimal units
+                                       on all values but the fourth (R, G, and B only accept whole numbers). */
+                                    return (IE <= 8 ? "rgb" : "rgba") + "(" + propertyValue.replace(/\s+/g, ",").replace(/\.(\d)+(?=,)/g, "") + ")";
+                            }
+                        };
+                    })();
+                }
+            }
+        },
+
+        /************************
+           CSS Property Names
+        ************************/
+
+        Names: {
+            /* Camelcase a property name into its JavaScript notation (e.g. "background-color" ==> "backgroundColor").
+               Camelcasing is used to normalize property names between and across calls. */
+            camelCase: function (property) {
+                return property.replace(/-(\w)/g, function (match, subMatch) {
+                    return subMatch.toUpperCase();
+                });
+            },
+
+            /* For SVG elements, some CSS properties (namely, dimemsional ones) are GET/SET on the element's HTML attributes (instead of via styles). */
+            SVGAttribute: function (property) {
+                var SVGAttributes = "width|height|x|y|cx|cy|r|rx|ry|x1|x2|y1|y1";
+
+                /* Certain browsers require SVG transforms to be applied as an attribute. (Otherwise, application via CSS is preferable due to 3D support.) */
+                if (IE || (Velocity.State.isAndroid && !Velocity.State.isChrome)) {
+                    SVGAttributes += "|transform";
+                }
+
+                return new RegExp("^(" + SVGAttributes + ")$", "i").test(property);
+            },
+
+            /* Determine whether a property should be set with a vendor prefix. */
+            /* If a prefixed version of the property exists, return it. Otherwise, return the original property name.
+               If the property is not at all supported by the browser, return a false flag. */
+            prefixCheck: function (property) {
+                /* If this property has already been checked, return the cached value. */
+                if (Velocity.State.prefixMatches[property]) {
+                    return [ Velocity.State.prefixMatches[property], true ];
+                } else {
+                    var vendors = [ "", "Webkit", "Moz", "ms", "O" ];
+
+                    for (var i = 0, vendorsLength = vendors.length; i < vendorsLength; i++) {
+                        var propertyPrefixed;
+
+                        if (i === 0) {
+                            propertyPrefixed = property;
+                        } else {
+                            /* Capitalize the first letter of the property to conform to JavaScript vendor prefix notation (e.g. webkitFilter). */
+                            propertyPrefixed = vendors[i] + property.replace(/^\w/, function(match) { return match.toUpperCase(); });
+                        }
+
+                        /* Check if the browser supports this property as prefixed. */
+                        if (Type.isString(Velocity.State.prefixElement.style[propertyPrefixed])) {
+                            /* Cache the match. */
+                            Velocity.State.prefixMatches[property] = propertyPrefixed;
+
+                            return [ propertyPrefixed, true ];
+                        }
+                    }
+
+                    /* If the browser doesn't support this property in any form, include a false flag so that the caller can decide how to proceed. */
+                    return [ property, false ];
+                }
+            }
+        },
+
+        /************************
+           CSS Property Values
+        ************************/
+
+        Values: {
+            isCSSNullValue: function (value) {
+                /* The browser defaults CSS values that have not been set to either 0 or one of several possible null-value strings.
+                   Thus, we check for both falsiness and these special strings. */
+                /* Null-value checking is performed to default the special strings to 0 (for the sake of tweening) or their hook
+                   templates as defined as CSS.Hooks (for the sake of hook injection/extraction). */
+                /* Note: Chrome returns "rgba(0, 0, 0, 0)" for an undefined color whereas IE returns "transparent". */
+                return (value == 0 || /^(none|auto|transparent|(rgba\(0, ?0, ?0, ?0\)))$/i.test(value));
+            },
+            /* Retrieve a property's default unit type. Used for assigning a unit type when one is not supplied by the user. */
+            getUnitType: function (property) {
+                if (/^(rotate|skew)/i.test(property)) {
+                    return "deg";
+                } else if (/(^(scale|scaleX|scaleY|scaleZ|alpha|flexGrow|flexHeight|zIndex|fontWeight)$)|((opacity|red|green|blue|alpha)$)/i.test(property)) {
+                    /* The above properties are unitless. */
+                    return "";
+                } else {
+                    /* Default to px for all other properties. */
+                    return "px";
+                }
+            },
+            /* HTML elements default to an associated display type when they're not set to display:none. */
+            /* Note: This function is used for correctly setting the non-"none" display value in certain Velocity sequences, such as fadeIn/Out. */
+            getDisplayType: function (element) {
+                var tagName = element.tagName.toString().toLowerCase();
+
+                if (/^(b|big|i|small|tt|abbr|acronym|cite|code|dfn|em|kbd|strong|samp|var|a|bdo|br|img|map|object|q|script|span|sub|sup|button|input|label|select|textarea)$/i.test(tagName)) {
+                    return "inline";
+                } else if (/^(li)$/i.test(tagName)) {
+                    return "list-item";
+                } else if (/^(tr)$/i.test(tagName)) {
+                    return "table-row";
+                /* Default to "block" when no match is found. */
+                } else {
+                    return "block";
+                }
+            }
+        },
+
+        /****************************
+           Style Getting & Setting
+        ****************************/
+
+        /* The singular getPropertyValue, which routes the logic for all normalizations, hooks, and standard CSS properties. */
+        getPropertyValue: function (element, property, rootPropertyValue, forceStyleLookup) {
+            /* Get an element's computed property value. */
+            /* Note: Retrieving the value of a CSS property cannot simply be performed by checking an element's
+               style attribute (which only reflects user-defined values). Instead, the browser must be queried for a property's
+               *computed* value. You can read more about getComputedStyle here: https://developer.mozilla.org/en/docs/Web/API/window.getComputedStyle */
+            function computePropertyValue (element, property) {
+                /* When box-sizing isn't set to border-box, height and width style values are incorrectly computed when an
+                   element's scrollbars are visible (which expands the element's dimensions). Thus, we defer to the more accurate
+                   offsetHeight/Width property, which includes the total dimensions for interior, border, padding, and scrollbar.
+                   We subtract border and padding to get the sum of interior + scrollbar. */
+
+                var computedValue = 0;
+
+                /* IE<=8 doesn't support window.getComputedStyle, thus we defer to jQuery, which has an extensive array
+                   of hacks to accurately retrieve IE8 property values. Re-implementing that logic here is not worth bloating the
+                   codebase for a dying browser. The performance repercussions of using jQuery here are minimal since
+                   Velocity is optimized to rarely (and sometimes never) query the DOM. Further, the $.css() codepath isn't that slow. */
+                if (IE <= 8) {
+                    computedValue = $.css(element, property); /* GET */
+                /* All other browsers support getComputedStyle. The returned live object reference is cached onto its
+                   associated element so that it does not need to be refetched upon every GET. */
+                } else {
+                    if (!forceStyleLookup) {
+                        if (property === "height" && CSS.getPropertyValue(element, "boxSizing").toString().toLowerCase() !== "border-box") {
+                            return element.offsetHeight - (parseFloat(CSS.getPropertyValue(element, "borderTopWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "borderBottomWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingTop")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingBottom")) || 0);
+                        } else if (property === "width" && CSS.getPropertyValue(element, "boxSizing").toString().toLowerCase() !== "border-box") {
+                            return element.offsetWidth - (parseFloat(CSS.getPropertyValue(element, "borderLeftWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "borderRightWidth")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingLeft")) || 0) - (parseFloat(CSS.getPropertyValue(element, "paddingRight")) || 0);
+                        }
+                    }
+
+                    var computedStyle;
+
+                    /* For elements that Velocity hasn't been called on directly (e.g. when Velocity queries the DOM on behalf
+                       of a parent of an element its animating), perform a direct getComputedStyle lookup since the object isn't cached. */
+                    if (Data(element) === undefined) {
+                        computedStyle = window.getComputedStyle(element, null); /* GET */
+                    /* If the computedStyle object has yet to be cached, do so now. */
+                    } else if (!Data(element).computedStyle) {
+                        computedStyle = Data(element).computedStyle = window.getComputedStyle(element, null); /* GET */
+                    /* If computedStyle is cached, use it. */
+                    } else {
+                        computedStyle = Data(element).computedStyle;
+                    }
+
+                    /* IE doesn't return a value for borderColor -- it only returns individual values for each border side's color.
+                       As a polyfill, default to querying for just the top border's color. */
+                    if (IE && property === "borderColor") {
+                        property = "borderTopColor";
+                    }
+
+                    /* IE9 has a bug in which the "filter" property must be accessed from computedStyle using the getPropertyValue method
+                       instead of a direct property lookup. The getPropertyValue method is slower than a direct lookup, which is why we avoid it by default. */
+                    if (IE === 9 && property === "filter") {
+                        computedValue = computedStyle.getPropertyValue(property); /* GET */
+                    } else {
+                        computedValue = computedStyle[property];
+                    }
+
+                    /* Fall back to the property's style value (if defined) when computedValue returns nothing,
+                       which can happen when the element hasn't been painted. */
+                    if (computedValue === "" || computedValue === null) {
+                        computedValue = element.style[property];
+                    }
+                }
+
+                /* For top, right, bottom, and left (TRBL) values that are set to "auto" on elements of "fixed" or "absolute" position,
+                   defer to jQuery for converting "auto" to a numeric value. (For elements with a "static" or "relative" position, "auto" has the same
+                   effect as being set to 0, so no conversion is necessary.) */
+                /* An example of why numeric conversion is necessary: When an element with "position:absolute" has an untouched "left"
+                   property, which reverts to "auto", left's value is 0 relative to its parent element, but is often non-zero relative
+                   to its *containing* (not parent) element, which is the nearest "position:relative" ancestor or the viewport (and always the viewport in the case of "position:fixed"). */
+                if (computedValue === "auto" && /^(top|right|bottom|left)$/i.test(property)) {
+                    var position = computePropertyValue(element, "position"); /* GET */
+
+                    /* For absolute positioning, jQuery's $.position() only returns values for top and left;
+                       right and bottom will have their "auto" value reverted to 0. */
+                    /* Note: A jQuery object must be created here since jQuery doesn't have a low-level alias for $.position().
+                       Not a big deal since we're currently in a GET batch anyway. */
+                    if (position === "fixed" || (position === "absolute" && /top|left/i.test(property))) {
+                        /* Note: jQuery strips the pixel unit from its returned values; we re-add it here to conform with computePropertyValue's behavior. */
+                        computedValue = $(element).position()[property] + "px"; /* GET */
+                    }
+                }
+
+                return computedValue;
+            }
+
+            var propertyValue;
+
+            /* If this is a hooked property (e.g. "clipLeft" instead of the root property of "clip"),
+               extract the hook's value from a normalized rootPropertyValue using CSS.Hooks.extractValue(). */
+            if (CSS.Hooks.registered[property]) {
+                var hook = property,
+                    hookRoot = CSS.Hooks.getRoot(hook);
+
+                /* If a cached rootPropertyValue wasn't passed in (which Velocity always attempts to do in order to avoid requerying the DOM),
+                   query the DOM for the root property's value. */
+                if (rootPropertyValue === undefined) {
+                    /* Since the browser is now being directly queried, use the official post-prefixing property name for this lookup. */
+                    rootPropertyValue = CSS.getPropertyValue(element, CSS.Names.prefixCheck(hookRoot)[0]); /* GET */
+                }
+
+                /* If this root has a normalization registered, peform the associated normalization extraction. */
+                if (CSS.Normalizations.registered[hookRoot]) {
+                    rootPropertyValue = CSS.Normalizations.registered[hookRoot]("extract", element, rootPropertyValue);
+                }
+
+                /* Extract the hook's value. */
+                propertyValue = CSS.Hooks.extractValue(hook, rootPropertyValue);
+
+            /* If this is a normalized property (e.g. "opacity" becomes "filter" in <=IE8) or "translateX" becomes "transform"),
+               normalize the property's name and value, and handle the special case of transforms. */
+            /* Note: Normalizing a property is mutually exclusive from hooking a property since hook-extracted values are strictly
+               numerical and therefore do not require normalization extraction. */
+            } else if (CSS.Normalizations.registered[property]) {
+                var normalizedPropertyName,
+                    normalizedPropertyValue;
+
+                normalizedPropertyName = CSS.Normalizations.registered[property]("name", element);
+
+                /* Transform values are calculated via normalization extraction (see below), which checks against the element's transformCache.
+                   At no point do transform GETs ever actually query the DOM; initial stylesheet values are never processed.
+                   This is because parsing 3D transform matrices is not always accurate and would bloat our codebase;
+                   thus, normalization extraction defaults initial transform values to their zero-values (e.g. 1 for scaleX and 0 for translateX). */
+                if (normalizedPropertyName !== "transform") {
+                    normalizedPropertyValue = computePropertyValue(element, CSS.Names.prefixCheck(normalizedPropertyName)[0]); /* GET */
+
+                    /* If the value is a CSS null-value and this property has a hook template, use that zero-value template so that hooks can be extracted from it. */
+                    if (CSS.Values.isCSSNullValue(normalizedPropertyValue) && CSS.Hooks.templates[property]) {
+                        normalizedPropertyValue = CSS.Hooks.templates[property][1];
+                    }
+                }
+
+                propertyValue = CSS.Normalizations.registered[property]("extract", element, normalizedPropertyValue);
+            }
+
+            /* If a (numeric) value wasn't produced via hook extraction or normalization, query the DOM. */
+            if (!/^[\d-]/.test(propertyValue)) {
+                /* For SVG elements, dimensional properties (which SVGAttribute() detects) are tweened via
+                   their HTML attribute values instead of their CSS style values. */
+                if (Data(element) && Data(element).isSVG && CSS.Names.SVGAttribute(property)) {
+                    /* Since the height/width attribute values must be set manually, they don't reflect computed values.
+                       Thus, we use use getBBox() to ensure we always get values for elements with undefined height/width attributes. */
+                    if (/^(height|width)$/i.test(property)) {
+                        propertyValue = element.getBBox()[property];
+                    /* Otherwise, access the attribute value directly. */
+                    } else {
+                        propertyValue = element.getAttribute(property);
+                    }
+                } else {
+                    propertyValue = computePropertyValue(element, CSS.Names.prefixCheck(property)[0]); /* GET */
+                }
+            }
+
+            /* Since property lookups are for animation purposes (which entails computing the numeric delta between start and end values),
+               convert CSS null-values to an integer of value 0. */
+            if (CSS.Values.isCSSNullValue(propertyValue)) {
+                propertyValue = 0;
+            }
+
+            if (Velocity.debug >= 2) console.log("Get " + property + ": " + propertyValue);
+
+            return propertyValue;
+        },
+
+        /* The singular setPropertyValue, which routes the logic for all normalizations, hooks, and standard CSS properties. */
+        setPropertyValue: function(element, property, propertyValue, rootPropertyValue, scrollData) {
+            var propertyName = property;
+
+            /* In order to be subjected to call options and element queueing, scroll animation is routed through Velocity as if it were a standard CSS property. */
+            if (property === "scroll") {
+                /* If a container option is present, scroll the container instead of the browser window. */
+                if (scrollData.container) {
+                    scrollData.container["scroll" + scrollData.direction] = propertyValue;
+                /* Otherwise, Velocity defaults to scrolling the browser window. */
+                } else {
+                    if (scrollData.direction === "Left") {
+                        window.scrollTo(propertyValue, scrollData.alternateValue);
+                    } else {
+                        window.scrollTo(scrollData.alternateValue, propertyValue);
+                    }
+                }
+            } else {
+                /* Transforms (translateX, rotateZ, etc.) are applied to a per-element transformCache object, which is manually flushed via flushTransformCache().
+                   Thus, for now, we merely cache transforms being SET. */
+                if (CSS.Normalizations.registered[property] && CSS.Normalizations.registered[property]("name", element) === "transform") {
+                    /* Perform a normalization injection. */
+                    /* Note: The normalization logic handles the transformCache updating. */
+                    CSS.Normalizations.registered[property]("inject", element, propertyValue);
+
+                    propertyName = "transform";
+                    propertyValue = Data(element).transformCache[property];
+                } else {
+                    /* Inject hooks. */
+                    if (CSS.Hooks.registered[property]) {
+                        var hookName = property,
+                            hookRoot = CSS.Hooks.getRoot(property);
+
+                        /* If a cached rootPropertyValue was not provided, query the DOM for the hookRoot's current value. */
+                        rootPropertyValue = rootPropertyValue || CSS.getPropertyValue(element, hookRoot); /* GET */
+
+                        propertyValue = CSS.Hooks.injectValue(hookName, propertyValue, rootPropertyValue);
+                        property = hookRoot;
+                    }
+
+                    /* Normalize names and values. */
+                    if (CSS.Normalizations.registered[property]) {
+                        propertyValue = CSS.Normalizations.registered[property]("inject", element, propertyValue);
+                        property = CSS.Normalizations.registered[property]("name", element);
+                    }
+
+                    /* Assign the appropriate vendor prefix before performing an official style update. */
+                    propertyName = CSS.Names.prefixCheck(property)[0];
+
+                    /* A try/catch is used for IE<=8, which throws an error when "invalid" CSS values are set, e.g. a negative width.
+                       Try/catch is avoided for other browsers since it incurs a performance overhead. */
+                    if (IE <= 8) {
+                        try {
+                            element.style[propertyName] = propertyValue;
+                        } catch (error) { if (Velocity.debug) console.log("Browser does not support [" + propertyValue + "] for [" + propertyName + "]"); }
+                    /* SVG elements have their dimensional properties (width, height, x, y, cx, etc.) applied directly as attributes instead of as styles. */
+                    /* Note: IE8 does not support SVG elements, so it's okay that we skip it for SVG animation. */
+                    } else if (Data(element) && Data(element).isSVG && CSS.Names.SVGAttribute(property)) {
+                        /* Note: For SVG attributes, vendor-prefixed property names are never used. */
+                        /* Note: Not all CSS properties can be animated via attributes, but the browser won't throw an error for unsupported properties. */
+                        element.setAttribute(property, propertyValue);
+                    } else {
+                        element.style[propertyName] = propertyValue;
+                    }
+
+                    if (Velocity.debug >= 2) console.log("Set " + property + " (" + propertyName + "): " + propertyValue);
+                }
+            }
+
+            /* Return the normalized property name and value in case the caller wants to know how these values were modified before being applied to the DOM. */
+            return [ propertyName, propertyValue ];
+        },
+
+        /* To increase performance by batching transform updates into a single SET, transforms are not directly applied to an element until flushTransformCache() is called. */
+        /* Note: Velocity applies transform properties in the same order that they are chronogically introduced to the element's CSS styles. */
+        flushTransformCache: function(element) {
+            var transformString = "";
+
+            /* Certain browsers require that SVG transforms be applied as an attribute. However, the SVG transform attribute takes a modified version of CSS's transform string
+               (units are dropped and, except for skewX/Y, subproperties are merged into their master property -- e.g. scaleX and scaleY are merged into scale(X Y). */
+            if ((IE || (Velocity.State.isAndroid && !Velocity.State.isChrome)) && Data(element).isSVG) {
+                /* Since transform values are stored in their parentheses-wrapped form, we use a helper function to strip out their numeric values.
+                   Further, SVG transform properties only take unitless (representing pixels) values, so it's okay that parseFloat() strips the unit suffixed to the float value. */
+                function getTransformFloat (transformProperty) {
+                    return parseFloat(CSS.getPropertyValue(element, transformProperty));
+                }
+
+                /* Create an object to organize all the transforms that we'll apply to the SVG element. To keep the logic simple,
+                   we process *all* transform properties -- even those that may not be explicitly applied (since they default to their zero-values anyway). */
+                var SVGTransforms = {
+                    translate: [ getTransformFloat("translateX"), getTransformFloat("translateY") ],
+                    skewX: [ getTransformFloat("skewX") ], skewY: [ getTransformFloat("skewY") ],
+                    /* If the scale property is set (non-1), use that value for the scaleX and scaleY values
+                       (this behavior mimics the result of animating all these properties at once on HTML elements). */
+                    scale: getTransformFloat("scale") !== 1 ? [ getTransformFloat("scale"), getTransformFloat("scale") ] : [ getTransformFloat("scaleX"), getTransformFloat("scaleY") ],
+                    /* Note: SVG's rotate transform takes three values: rotation degrees followed by the X and Y values
+                       defining the rotation's origin point. We ignore the origin values (default them to 0). */
+                    rotate: [ getTransformFloat("rotateZ"), 0, 0 ]
+                };
+
+                /* Iterate through the transform properties in the user-defined property map order.
+                   (This mimics the behavior of non-SVG transform animation.) */
+                $.each(Data(element).transformCache, function(transformName) {
+                    /* Except for with skewX/Y, revert the axis-specific transform subproperties to their axis-free master
+                       properties so that they match up with SVG's accepted transform properties. */
+                    if (/^translate/i.test(transformName)) {
+                        transformName = "translate";
+                    } else if (/^scale/i.test(transformName)) {
+                        transformName = "scale";
+                    } else if (/^rotate/i.test(transformName)) {
+                        transformName = "rotate";
+                    }
+
+                    /* Check that we haven't yet deleted the property from the SVGTransforms container. */
+                    if (SVGTransforms[transformName]) {
+                        /* Append the transform property in the SVG-supported transform format. As per the spec, surround the space-delimited values in parentheses. */
+                        transformString += transformName + "(" + SVGTransforms[transformName].join(" ") + ")" + " ";
+
+                        /* After processing an SVG transform property, delete it from the SVGTransforms container so we don't
+                           re-insert the same master property if we encounter another one of its axis-specific properties. */
+                        delete SVGTransforms[transformName];
+                    }
+                });
+            } else {
+                var transformValue,
+                    perspective;
+
+                /* Transform properties are stored as members of the transformCache object. Concatenate all the members into a string. */
+                $.each(Data(element).transformCache, function(transformName) {
+                    transformValue = Data(element).transformCache[transformName];
+
+                    /* Transform's perspective subproperty must be set first in order to take effect. Store it temporarily. */
+                    if (transformName === "transformPerspective") {
+                        perspective = transformValue;
+                        return true;
+                    }
+
+                    /* IE9 only supports one rotation type, rotateZ, which it refers to as "rotate". */
+                    if (IE === 9 && transformName === "rotateZ") {
+                        transformName = "rotate";
+                    }
+
+                    transformString += transformName + transformValue + " ";
+                });
+
+                /* If present, set the perspective subproperty first. */
+                if (perspective) {
+                    transformString = "perspective" + perspective + " " + transformString;
+                }
+            }
+
+            CSS.setPropertyValue(element, "transform", transformString);
+        }
+    };
+
+    /* Register hooks and normalizations. */
+    CSS.Hooks.register();
+    CSS.Normalizations.register();
+
+    /**********************
+       Velocity.animate
+    **********************/
+
+    Velocity.animate = function() {
+
+        /*******************
+            Return Chain
+        *******************/
+
+        /* Returns the appropriate element set type (depending on whether jQuery/Zepto-wrapped elements were passed in)
+           back to the call chain. Used for exiting out of Velocity.animate(). */
+        function getChain () {
+            return elementsWrapped || elements;
+        }
+
+        /*************************
+           Arguments Assignment
+        *************************/
+
+        /* To allow for expressive CoffeeScript code, Velocity supports an alternative syntax in which "properties" and "options"
+           objects are defined on a container object that's passed in as Velocity's sole argument. */
+        /* Note: Some browsers automatically populate arguments with a "properties" object. We detect it by checking for its default "names" property. */
+        var syntacticSugar = (arguments[0] && (($.isPlainObject(arguments[0].properties) && !arguments[0].properties.names) || Type.isString(arguments[0].properties))),
+            /* When Velocity is called via the utility function ($.Velocity.animate()/Velocity.animate()), elements are explicitly
+               passed in as the first parameter. Thus, argument positioning varies. We normalize them here. */
+            elementsWrapped,
+            argumentIndex;
+
+        var elements,
+            propertiesMap,
+            options;
+
+        /* Detect jQuery/Zepto elements being animated via the $.fn method. */
+        if (Type.isWrapped(this)) {
+            argumentIndex = 0;
+            elements = this;
+            elementsWrapped = this;
+        /* Otherwise, raw elements are being animated via the utility function. */
+        } else {
+            argumentIndex = 1;
+            elements = syntacticSugar ? arguments[0].elements : arguments[0];
+        }
+
+        elements = Type.isWrapped(elements) ? [].slice.call(elements) : elements;
+
+        if (!elements) {
+            return;
+        }
+
+        if (syntacticSugar) {
+            propertiesMap = arguments[0].properties;
+            options = arguments[0].options;
+        } else {
+            propertiesMap = arguments[argumentIndex];
+            options = arguments[argumentIndex + 1];
+        }
+
+        /* The length of the element set (in the form of a nodeList or an array of elements) is defaulted to 1 in case a
+           single raw DOM element is passed in (which doesn't contain a length property). */
+        var elementsLength = (Type.isArray(elements) || Type.isNodeList(elements)) ? elements.length : 1,
+            elementsIndex = 0;
+
+        /***************************
+            Argument Overloading
+        ***************************/
+
+        /* Support is included for jQuery's argument overloading: $.animate(propertyMap [, duration] [, easing] [, complete]).
+           Overloading is detected by checking for the absence of an object being passed into options. */
+        /* Note: The stop action does not accept animation options, and is therefore excluded from this check. */
+        if (propertiesMap !== "stop" && !$.isPlainObject(options)) {
+            /* The utility function shifts all arguments one position to the right, so we adjust for that offset. */
+            var startingArgumentPosition = argumentIndex + 1;
+
+            options = {};
+
+            /* Iterate through all options arguments */
+            for (var i = startingArgumentPosition; i < arguments.length; i++) {
+                /* Treat a number as a duration. Parse it out. */
+                /* Note: The following RegEx will return true if passed an array with a number as its first item.
+                   Thus, arrays are skipped from this check. */
+                if (!Type.isArray(arguments[i]) && /^\d/.test(arguments[i])) {
+                    options.duration = parseFloat(arguments[i]);
+                /* Treat strings and arrays as easings. */
+                } else if (Type.isString(arguments[i]) || Type.isArray(arguments[i])) {
+                    options.easing = arguments[i];
+                /* Treat a function as a complete callback. */
+                } else if (Type.isFunction(arguments[i])) {
+                    options.complete = arguments[i];
+                }
+            }
+        }
+
+        /*********************
+           Action Detection
+        *********************/
+
+        /* Velocity's behavior is categorized into "actions": Elements can either be specially scrolled into view,
+           or they can be started, stopped, or reversed. If a literal or referenced properties map is passed in as Velocity's
+           first argument, the associated action is "start". Alternatively, "scroll", "reverse", or "stop" can be passed in instead of a properties map. */
+        var action;
+
+        switch (propertiesMap) {
+            case "scroll":
+                action = "scroll";
+                break;
+
+            case "reverse":
+                action = "reverse";
+                break;
+
+            case "stop":
+                /*******************
+                    Action: Stop
+                *******************/
+
+                var callsToStop = [];
+
+                /* When the stop action is triggered, the elements' currently active call is immediately stopped.
+                   The active call might have been applied to multiple elements, in which case all of the call's
+                   elements will be subjected to stopping. When an element is stopped, the next item in its animation queue is immediately triggered. */
+                /* An additional argument may be passed in to clear an element's remaining queued calls.
+                   Either true (which defaults to the "fx" queue) or a custom queue string can be passed in. */
+                /* Stopping is achieved by traversing active calls for those which contain the targeted element. */
+                /* Note: The stop command runs prior to Queueing since its behavior is intended to take effect *immediately*,
+                   regardless of the element's current queue state. */
+                $.each(Velocity.State.calls, function(i, activeCall) {
+                    /* Inactive calls are set to false by the logic inside completeCall(). Skip them. */
+                    if (activeCall !== false) {
+                        /* If we're operating on a single element, wrap it in an array so that $.each() can iterate over it. */
+                        $.each(activeCall[1].nodeType ? [ activeCall[1] ] : activeCall[1], function(k, activeElement) {
+                            $.each(elements.nodeType ? [ elements ] : elements, function(l, element) {
+                                /* Check that this call was applied to the target element. */
+                                if (element === activeElement) {
+                                    if (Data(element)) {
+                                        /* Since "reverse" uses cached start values (the previous call's endValues),
+                                           these values must be changed to reflect the final value that the elements were actually tweened to. */
+                                        $.each(Data(element).tweensContainer, function(m, activeTween) {
+                                            activeTween.endValue = activeTween.currentValue;
+                                        });
+                                    }
+
+                                    /* Remaining queue clearing. */
+                                    if (options === true || Type.isString(options)) {
+                                        /* Clearing the $.queue() array is achieved by manually setting it to []. */
+                                        $.queue(element, Type.isString(options) ? options : "", []);
+                                    }
+
+                                    callsToStop.push(i);
+                                }
+                            });
+                        });
+                    }
+                });
+
+                /* Prematurely call completeCall() on each matched active call, passing an additional flag to indicate
+                   that the complete callback and display:none setting should be skipped. */
+                $.each(callsToStop, function(i, j) {
+                    completeCall(j, true);
+                });
+
+                /* Since we're stopping, do not proceed with Queueing. */
+                return getChain();
+
+            default:
+                /* Treat a non-empty plain object as a literal properties map. */
+                if ($.isPlainObject(propertiesMap) && !$.isEmptyObject(propertiesMap)) {
+                    action = "start";
+
+                /****************
+                    Sequences
+                ****************/
+
+                /* Check if a string matches a registered sequence (see Sequences above). */
+                } else if (Type.isString(propertiesMap) && Velocity.Sequences[propertiesMap]) {
+                    var elementsOriginal = elements,
+                        durationOriginal = options.duration;
+
+                    /* If the backwards option was passed in, reverse the element set so that elements animate from the last to the first. */
+                    if (options.backwards === true) {
+                        elements = (elements.jquery ? [].slice.call(elements) : elements).reverse();
+                    }
+
+                    /* Individually trigger the sequence for each element in the set to prevent users from having to handle iteration logic in their sequence. */
+                    $.each(elements, function(elementIndex, element) {
+                        /* If the stagger option was passed in, successively delay each element by the stagger value (in ms). */
+                        if (parseFloat(options.stagger)) {
+                            options.delay = parseFloat(options.stagger) * elementIndex;
+                        }
+
+                        /* If the drag option was passed in, successively increase/decrease (depending on the presense of options.backwards)
+                           the duration of each element's animation, using floors to prevent producing very short durations. */
+                        if (options.drag) {
+                            /* Default the duration of UI pack effects (callouts and transitions) to 1000ms instead of the usual default duration of 400ms. */
+                            options.duration = parseFloat(durationOriginal) || (/^(callout|transition)/.test(propertiesMap) ? 1000 : DEFAULT_DURATION);
+
+                            /* For each element, take the greater duration of: A) animation completion percentage relative to the original duration,
+                               B) 75% of the original duration, or C) a 200ms fallback (in case duration is already set to a low value).
+                               The end result is a baseline of 75% of the sequence's duration that increases/decreases as the end of the element set is approached. */
+                            options.duration = Math.max(options.duration * (options.backwards ? 1 - elementIndex/elementsLength : (elementIndex + 1) / elementsLength), options.duration * 0.75, 200);
+                        }
+
+                        /* Pass in the call's options object so that the sequence can optionally extend it. It defaults to an empty object instead of null to
+                           reduce the options checking logic required inside the sequence. */
+                        /* Note: The element is passed in as both the call's context and its first argument -- allowing for more expressive sequence declarations. */
+                        Velocity.Sequences[propertiesMap].call(element, element, options || {}, elementIndex, elementsLength);
+                    });
+
+                    /* Since the animation logic resides within the sequence's own code, abort the remainder of this call.
+                       (The performance overhead up to this point is virtually non-existant.) */
+                    /* Note: The jQuery call chain is kept intact by returning the complete element set. */
+                    return elementsWrapped || elementsOriginal;
+                } else {
+                    console.log("First argument was not a property map, a known action, or a registered sequence. Aborting.")
+
+                    return getChain();
+                }
+        }
+
+        /**************************
+            Call-Wide Variables
+        **************************/
+
+        /* A container for CSS unit conversion ratios (e.g. %, rem, and em ==> px) that is used to cache ratios across all properties
+           being animated in a single Velocity call. Calculating unit ratios necessitates DOM querying and updating, and is therefore
+           avoided (via caching) wherever possible; further, ratios are only calculated when they're needed. */
+        /* Note: This container is call-wide instead of page-wide to avoid the risk of using stale conversion metrics across
+           Velocity animations that are not immediately consecutively chained. */
+        var unitConversionRatios = {
+                /* Performance optimization insight: When the parent element, CSS position value, and fontSize do not differ amongst elements,
+                   the elements' unit ratios are identical. */
+                lastParent: null,
+                lastPosition: null,
+                lastFontSize: null,
+                /* Percent is the only unit types whose ratio is dependant upon axis. */
+                lastPercentToPxWidth: null,
+                lastPercentToPxHeight: null,
+                lastEmToPx: null,
+                /* The rem==>px ratio is relative to the document's fontSize -- not any property belonging to the element.
+                   Thus, it is automatically call-wide cached whenever the rem unit is being animated. */
+                remToPxRatio: null
+            };
+
+        /* A container for all the ensuing tween data and metadata associated with this call.
+           This container gets pushed to the page-wide Velocity.State.calls array that is processed during animation ticking. */
+        var call = [];
+
+        /************************
+           Element Processing
+        ************************/
+
+        /* Element processing consists of three parts -- data processing that cannot go stale and data processing that *can* go stale (i.e. third-party style modifications):
+           1) Pre-Queueing: Element-wide variables, including the element's data storage, are instantiated. Call options are prepared. If triggered, the Stop action is executed.
+           2) Queueing: The logic that runs once this call has reached its point of execution in the element's $.queue() stack. Most logic is placed here to avoid risking it becoming stale.
+           3) Pushing: Consolidation of the tween data followed by its push onto the global in-progress calls container.
+        */
+
+        function processElement () {
+
+            /*************************
+               Part I: Pre-Queueing
+            *************************/
+
+            /***************************
+               Element-Wide Variables
+            ***************************/
+
+            var element = this,
+                /* The runtime opts object is the extension of the current call's options and Velocity's page-wide option defaults. */
+                opts = $.extend({}, Velocity.defaults, options),
+                /* A container for the processed data associated with each property in the propertyMap.
+                   (Each property in the map produces its own "tween".) */
+                tweensContainer = {};
+
+            /******************
+                Data Cache
+            ******************/
+
+            /* A primary design goal of Velocity is to cache data wherever possible in order to avoid DOM requerying.
+               Accordingly, each element has a data cache instantiated on it. */
+            if (Data(element) === undefined) {
+                $.data(element, NAME, {
+                    /* Store whether this is an SVG element, since its properties are retrieved and updated differently than standard HTML elements. */
+                    isSVG: Type.isSVG(element),
+                    /* Keep track of whether the element is currently being animated by Velocity.
+                       This is used to ensure that property values are not transferred between non-consecutive (stale) calls. */
+                    isAnimating: false,
+                    /* A reference to the element's live computedStyle object. Learn more here: https://developer.mozilla.org/en/docs/Web/API/window.getComputedStyle */
+                    computedStyle: null,
+                    /* Tween data is cached for each animation on the element so that data can be passed across calls --
+                       in particular, end values are used as subsequent start values in consecutive Velocity calls. */
+                    tweensContainer: null,
+                    /* The full root property values of each CSS hook being animated on this element are cached so that:
+                       1) Concurrently-animating hooks sharing the same root can have their root values' merged into one while tweening.
+                       2) Post-hook-injection root values can be transferred over to consecutively chained Velocity calls as starting root values.
+                    */
+                    rootPropertyValueCache: {},
+                    /* A cache for transform updates, which must be manually flushed via CSS.flushTransformCache(). */
+                    transformCache: {}
+                });
+            }
+
+            /******************
+               Option: Delay
+            ******************/
+
+            /* Since queue:false doesn't respect the item's existing queue, we avoid injecting its delay here (it's set later on). */
+            /* Note: Velocity rolls its own delay function since jQuery doesn't have a utility alias for $.fn.delay()
+               (and thus requires jQuery element creation, which we avoid since its overhead includes DOM querying). */
+            if (/^\d/.test(opts.delay) && opts.queue !== false) {
+                $.queue(element, opts.queue, function(next) {
+                    /* This is a flag used to indicate to the upcoming completeCall() function that this queue entry was initiated by Velocity. See completeCall() for further details. */
+                    Velocity.velocityQueueEntryFlag = true;
+
+                    /* The ensuing queue item (which is assigned to the "next" argument that $.queue() automatically passes in) will be triggered after a setTimeout delay. */
+                    setTimeout(next, parseFloat(opts.delay));
+                });
+            }
+
+            /*********************
+               Option: Duration
+            *********************/
+
+            /* In mock mode, all animations are forced to 1ms so that they occur immediately upon the next rAF tick. */
+            if (Velocity.mock === true) {
+                opts.duration = 1;
+            } else {
+                /* Support for jQuery's named durations. */
+                switch (opts.duration.toString().toLowerCase()) {
+                    case "fast":
+                        opts.duration = 200;
+                        break;
+
+                    case "normal":
+                        opts.duration = DEFAULT_DURATION;
+                        break;
+
+                    case "slow":
+                        opts.duration = 600;
+                        break;
+
+                    default:
+                        /* Remove the potential "ms" suffix and default to 1 if the user is attempting to set a duration of 0 (in order to produce an immediate style change). */
+                        opts.duration = parseFloat(opts.duration) || 1;
+                }
+            }
+
+            /*******************
+               Option: Easing
+            *******************/
+
+            opts.easing = getEasing(opts.easing, opts.duration);
+
+            /**********************
+               Option: Callbacks
+            **********************/
+
+            /* Callbacks must functions. Otherwise, default to null. */
+            if (opts.begin && !Type.isFunction(opts.begin)) {
+                opts.begin = null;
+            }
+
+            if (opts.progress && !Type.isFunction(opts.progress)) {
+                opts.progress = null;
+            }
+
+            if (opts.complete && !Type.isFunction(opts.complete)) {
+                opts.complete = null;
+            }
+
+            /********************
+               Option: Display
+            ********************/
+
+            /* Refer to Velocity's documentation (VelocityJS.org/#display) for a description of the display option's behavior. */
+            if (opts.display) {
+                opts.display = opts.display.toString().toLowerCase();
+            }
+
+            /**********************
+               Option: mobileHA
+            **********************/
+
+            /* When set to true, and if this is a mobile device, mobileHA automatically enables hardware acceleration (via a null transform hack)
+               on animating elements. HA is removed from the element at the completion of its animation. */
+            /* Note: Android Gingerbread doesn't support HA. If a null transform hack (mobileHA) is in fact set, it will prevent other tranform subproperties from taking effect. */
+            /* Note: You can read more about the use of mobileHA in Velocity's documentation: VelocityJS.org/#mobileHA. */
+            opts.mobileHA = (opts.mobileHA && Velocity.State.isMobile && !Velocity.State.isGingerbread);
+
+            /***********************
+               Part II: Queueing
+            ***********************/
+
+            /* When a set of elements is targeted by a Velocity call, the set is broken up and each element has the current Velocity call individually queued onto it.
+               In this way, each element's existing queue is respected; some elements may already be animating and accordingly should not have this current Velocity call triggered immediately. */
+            /* In each queue, tween data is processed for each animating property then pushed onto the call-wide calls array. When the last element in the set has had its tweens processed,
+               the call array is pushed to Velocity.State.calls for live processing by the requestAnimationFrame tick. */
+            function buildQueue (next) {
+
+                /*******************
+                   Option: Begin
+                *******************/
+
+                /* The begin callback is fired once per call -- not once per elemenet -- and is passed the full raw DOM element set as both its context and its first argument. */
+                if (opts.begin && elementsIndex === 0) {
+                    opts.begin.call(elements, elements);
+                }
+
+                /*****************************************
+                   Tween Data Construction (for Scroll)
+                *****************************************/
+
+                /* Note: In order to be subjected to chaining and animation options, scroll's tweening is routed through Velocity as if it were a standard CSS property animation. */
+                if (action === "scroll") {
+                    /* The scroll action uniquely takes an optional "offset" option -- specified in pixels -- that offsets the targeted scroll position. */
+                    var scrollDirection = (/^x$/i.test(opts.axis) ? "Left" : "Top"),
+                        scrollOffset = parseFloat(opts.offset) || 0,
+                        scrollPositionCurrent,
+                        scrollPositionCurrentAlternate,
+                        scrollPositionEnd;
+
+                    /* Scroll also uniquely takes an optional "container" option, which indicates the parent element that should be scrolled --
+                       as opposed to the browser window itself. This is useful for scrolling toward an element that's inside an overflowing parent element. */
+                    if (opts.container) {
+                        /* Ensure that either a jQuery object or a raw DOM element was passed in. */
+                        if (opts.container.jquery || opts.container.nodeType) {
+                            /* Extract the raw DOM element from the jQuery wrapper. */
+                            opts.container = opts.container[0] || opts.container;
+                            /* Note: Unlike other properties in Velocity, the browser's scroll position is never cached since it so frequently changes
+                               (due to the user's natural interaction with the page). */
+                            scrollPositionCurrent = opts.container["scroll" + scrollDirection]; /* GET */
+
+                            /* $.position() values are relative to the container's currently viewable area (without taking into account the container's true dimensions
+                               -- say, for example, if the container was not overflowing). Thus, the scroll end value is the sum of the child element's position *and*
+                               the scroll container's current scroll position. */
+                            /* Note: jQuery does not offer a utility alias for $.position(), so we have to incur jQuery object conversion here.
+                               This syncs up with an ensuing batch of GETs, so it fortunately does not trigger layout thrashing. */
+                            scrollPositionEnd = (scrollPositionCurrent + $(element).position()[scrollDirection.toLowerCase()]) + scrollOffset; /* GET */
+                        /* If a value other than a jQuery object or a raw DOM element was passed in, default to null so that this option is ignored. */
+                        } else {
+                            opts.container = null;
+                        }
+                    } else {
+                        /* If the window itself is being scrolled -- not a containing element -- perform a live scroll position lookup using
+                           the appropriate cached property names (which differ based on browser type). */
+                        scrollPositionCurrent = Velocity.State.scrollAnchor[Velocity.State["scrollProperty" + scrollDirection]]; /* GET */
+                        /* When scrolling the browser window, cache the alternate axis's current value since window.scrollTo() doesn't let us change only one value at a time. */
+                        scrollPositionCurrentAlternate = Velocity.State.scrollAnchor[Velocity.State["scrollProperty" + (scrollDirection === "Left" ? "Top" : "Left")]]; /* GET */
+
+                        /* Unlike $.position(), $.offset() values are relative to the browser window's true dimensions -- not merely its currently viewable area --
+                           and therefore end values do not need to be compounded onto current values. */
+                        scrollPositionEnd = $(element).offset()[scrollDirection.toLowerCase()] + scrollOffset; /* GET */
+                    }
+
+                    /* Since there's only one format that scroll's associated tweensContainer can take, we create it manually. */
+                    tweensContainer = {
+                        scroll: {
+                            rootPropertyValue: false,
+                            startValue: scrollPositionCurrent,
+                            currentValue: scrollPositionCurrent,
+                            endValue: scrollPositionEnd,
+                            unitType: "",
+                            easing: opts.easing,
+                            scrollData: {
+                                container: opts.container,
+                                direction: scrollDirection,
+                                alternateValue: scrollPositionCurrentAlternate
+                            }
+                        },
+                        element: element
+                    };
+
+                /******************************************
+                   Tween Data Construction (for Reverse)
+                ******************************************/
+
+                /* Reverse acts like a "start" action in that a property map is animated toward. The only difference is
+                   that the property map used for reverse is the inverse of the map used in the previous call. Thus, we manipulate
+                   the previous call to construct our new map: use the previous map's end values as our new map's start values. Copy over all other data. */
+                /* Note: Reverse can be directly called via the "reverse" parameter, or it can be indirectly triggered via the loop option. (Loops are composed of multiple reverses.) */
+                /* Note: Reverse calls do not need to be consecutively chained onto a currently-animating element in order to operate on cached values;
+                   there is no harm to reverse being called on a potentially stale data cache since reverse's behavior is simply defined
+                   as reverting to the element's values as they were prior to the previous *Velocity* call. */
+                } else if (action === "reverse") {
+                    /* Abort if there is no prior animation data to reverse to. */
+                    if (!Data(element).tweensContainer) {
+                        /* Dequeue the element so that this queue entry releases itself immediately, allowing subsequent queue entries to run. */
+                        $.dequeue(element, opts.queue);
+
+                        return;
+                    } else {
+                        /*********************
+                           Options Parsing
+                        *********************/
+
+                        /* If the element was hidden via the display option in the previous call,
+                           revert display to block prior to reversal so that the element is visible again. */
+                        if (Data(element).opts.display === "none") {
+                            Data(element).opts.display = "block";
+                        }
+
+                        /* If the loop option was set in the previous call, disable it so that "reverse" calls aren't recursively generated.
+                           Further, remove the previous call's callback options; typically, users do not want these to be refired. */
+                        Data(element).opts.loop = false;
+                        Data(element).opts.begin = null;
+                        Data(element).opts.complete = null;
+
+                        /* Since we're extending an opts object that has already been exteded with the defaults options object,
+                           we remove non-explicitly-defined properties that are auto-assigned values. */
+                        if (!options.easing) {
+                            delete opts.easing;
+                        }
+
+                        if (!options.duration) {
+                            delete opts.duration;
+                        }
+
+                        /* The opts object used for reversal is an extension of the options object optionally passed into this
+                           reverse call plus the options used in the previous Velocity call. */
+                        opts = $.extend({}, Data(element).opts, opts);
+
+                        /*************************************
+                           Tweens Container Reconstruction
+                        *************************************/
+
+                        /* Create a deepy copy (indicated via the true flag) of the previous call's tweensContainer. */
+                        var lastTweensContainer = $.extend(true, {}, Data(element).tweensContainer);
+
+                        /* Manipulate the previous tweensContainer by replacing its end values and currentValues with its start values. */
+                        for (var lastTween in lastTweensContainer) {
+                            /* In addition to tween data, tweensContainers contain an element property that we ignore here. */
+                            if (lastTween !== "element") {
+                                var lastStartValue = lastTweensContainer[lastTween].startValue;
+
+                                lastTweensContainer[lastTween].startValue = lastTweensContainer[lastTween].currentValue = lastTweensContainer[lastTween].endValue;
+                                lastTweensContainer[lastTween].endValue = lastStartValue;
+
+                                /* Easing is the only option that embeds into the individual tween data (since it can be defined on a per-property basis).
+                                   Accordingly, every property's easing value must be updated when an options object is passed in with a reverse call.
+                                   The side effect of this extensibility is that all per-property easing values are forcefully reset to the new value. */
+                                if (options) {
+                                    lastTweensContainer[lastTween].easing = opts.easing;
+                                }
+                            }
+                        }
+
+                        tweensContainer = lastTweensContainer;
+                    }
+
+                /*****************************************
+                   Tween Data Construction (for Start)
+                *****************************************/
+
+                } else if (action === "start") {
+
+                    /*************************
+                        Value Transferring
+                    *************************/
+
+                    /* If this queue entry follows a previous Velocity-initiated queue entry *and* if this entry was created
+                       while the element was in the process of being animated by Velocity, then this current call is safe to use
+                       the end values from the prior call as its start values. Velocity attempts to perform this value transfer
+                       process whenever possible in order to avoid requerying the DOM. */
+                    /* If values aren't transferred from a prior call and start values were not forcefed by the user (more on this below),
+                       then the DOM is queried for the element's current values as a last resort. */
+                    /* Note: Conversely, animation reversal (and looping) *always* perform inter-call value transfers; they never requery the DOM. */
+                    var lastTweensContainer;
+
+                    /* The per-element isAnimating flag is used to indicate whether it's safe (i.e. the data isn't stale)
+                       to transfer over end values to use as start values. If it's set to true and there is a previous
+                       Velocity call to pull values from, do so. */
+                    if (Data(element).tweensContainer && Data(element).isAnimating === true) {
+                        lastTweensContainer = Data(element).tweensContainer;
+                    }
+
+                    /***************************
+                       Tween Data Calculation
+                    ***************************/
+
+                    /* This function parses property data and defaults endValue, easing, and startValue as appropriate. */
+                    /* Property map values can either take the form of 1) a single value representing the end value,
+                       or 2) an array in the form of [ endValue, [, easing] [, startValue] ].
+                       The optional third parameter is a forcefed startValue to be used instead of querying the DOM for
+                       the element's current value. Read Velocity's docmentation to learn more about forcefeeding: VelocityJS.org/#forcefeeding */
+                    function parsePropertyValue (valueData) {
+                        var endValue = undefined,
+                            easing = undefined,
+                            startValue = undefined;
+
+                        /* Handle the array format, which can be structured as one of three potential overloads:
+                           A) [ endValue, easing, startValue ], B) [ endValue, easing ], or C) [ endValue, startValue ] */
+                        if (Type.isArray(valueData)) {
+                            /* endValue is always the first item in the array. Don't bother validating endValue's value now
+                               since the ensuing property cycling logic inherently does that. */
+                            endValue = valueData[0];
+
+                            /* Two-item array format: If the second item is a number or a function, treat it as a
+                               start value since easings can only be strings or arrays. */
+                            if ((!Type.isArray(valueData[1]) && /^[\d-]/.test(valueData[1])) || Type.isFunction(valueData[1])) {
+                                startValue = valueData[1];
+                            /* Two or three-item array: If the second item is a string, treat it as an easing. */
+                            } else if (Type.isString(valueData[1]) || Type.isArray(valueData[1])) {
+                                easing = getEasing(valueData[1], opts.duration);
+
+                                /* Don't bother validating startValue's value now since the ensuing property cycling logic inherently does that. */
+                                if (valueData[2]) {
+                                    startValue = valueData[2];
+                                }
+                            }
+                        /* Handle the single-value format. */
+                        } else {
+                            endValue = valueData;
+                        }
+
+                        /* Default to the call's easing if a per-property easing type was not defined. */
+                        easing = easing || opts.easing;
+
+                        /* If functions were passed in as values, pass the function the current element as its context,
+                           plus the element's index and the element set's size as arguments. Then, assign the returned value. */
+                        if (Type.isFunction(endValue)) {
+                            endValue = endValue.call(element, elementsIndex, elementsLength);
+                        }
+
+                        if (Type.isFunction(startValue)) {
+                            startValue = startValue.call(element, elementsIndex, elementsLength);
+                        }
+
+                        /* Allow startValue to be left as undefined to indicate to the ensuing code that its value was not forcefed. */
+                        return [ endValue || 0, easing, startValue ];
+                    }
+
+                    /* Create a tween out of each property, and append its associated data to tweensContainer. */
+                    for (var property in propertiesMap) {
+                        /* Normalize property names via camel casing so that properties can be consistently manipulated. */
+                        /**************************
+                           Start Value Sourcing
+                        **************************/
+
+                        /* Parse out endValue, easing, and startValue from the property's data. */
+                        var valueData = parsePropertyValue(propertiesMap[property]),
+                            endValue = valueData[0],
+                            easing = valueData[1],
+                            startValue = valueData[2];
+
+                        /* Now that the original property name's format has been used for the parsePropertyValue() lookup above,
+                           we force the property to its camelCase styling to normalize it for manipulation. */
+                        property = CSS.Names.camelCase(property);
+
+                        /* In case this property is a hook, there are circumstances where we will intend to work on the hook's root property and not the hooked subproperty. */
+                        var rootProperty = CSS.Hooks.getRoot(property),
+                            rootPropertyValue = false;
+
+                        /* Properties that are not supported by the browser (and do not have an associated normalization) will
+                           inherently produce no style changes when set, so they are skipped in order to decrease animation tick overhead.
+                           Property support is determined via prefixCheck(), which returns a false flag when no supported is detected. */
+                        /* Note: Since SVG elements have some of their properties directly applied as HTML attributes,
+                           there is no way to check for their explicit browser support, and so we skip skip this check for them. */
+                        if (!Data(element).isSVG && CSS.Names.prefixCheck(rootProperty)[1] === false && CSS.Normalizations.registered[rootProperty] === undefined) {
+                            if (Velocity.debug) console.log("Skipping [" + rootProperty + "] due to a lack of browser support.");
+
+                            continue;
+                        }
+
+                        /* If the display option is being set to a non-"none" (e.g. "block") and opacity (filter on IE<=8) is being
+                           animated to an endValue of non-zero, the user's intention is to fade in from invisible, thus we forcefeed opacity
+                           a startValue of 0 if its startValue hasn't already been sourced by value transferring or prior forcefeeding. */
+                        if ((opts.display && opts.display !== "none") && /opacity|filter/.test(property) && !startValue && endValue !== 0) {
+                            startValue = 0;
+                        }
+
+                        /* If values have been transferred from the previous Velocity call, extract the endValue and rootPropertyValue
+                           for all of the current call's properties that were *also* animated in the previous call. */
+                        /* Note: Value transferring can optionally be disabled by the user via the _cacheValues option. */
+                        if (opts._cacheValues && lastTweensContainer && lastTweensContainer[property]) {
+                            if (startValue === undefined) {
+                                startValue = lastTweensContainer[property].endValue + lastTweensContainer[property].unitType;
+                            }
+
+                            /* The previous call's rootPropertyValue is extracted from the element's data cache since that's the
+                               instance of rootPropertyValue that gets freshly updated by the tweening process, whereas the rootPropertyValue
+                               attached to the incoming lastTweensContainer is equal to the root property's value prior to any tweening. */
+                            rootPropertyValue = Data(element).rootPropertyValueCache[rootProperty];
+                        /* If values were not transferred from a previous Velocity call, query the DOM as needed. */
+                        } else {
+                            /* Handle hooked properties. */
+                            if (CSS.Hooks.registered[property]) {
+                               if (startValue === undefined) {
+                                    rootPropertyValue = CSS.getPropertyValue(element, rootProperty); /* GET */
+                                    /* Note: The following getPropertyValue() call does not actually trigger a DOM query;
+                                       getPropertyValue() will extract the hook from rootPropertyValue. */
+                                    startValue = CSS.getPropertyValue(element, property, rootPropertyValue);
+                                /* If startValue is already defined via forcefeeding, do not query the DOM for the root property's value;
+                                   just grab rootProperty's zero-value template from CSS.Hooks. This overwrites the element's actual
+                                   root property value (if one is set), but this is acceptable since the primary reason users forcefeed is
+                                   to avoid DOM queries, and thus we likewise avoid querying the DOM for the root property's value. */
+                                } else {
+                                    /* Grab this hook's zero-value template, e.g. "0px 0px 0px black". */
+                                    rootPropertyValue = CSS.Hooks.templates[rootProperty][1];
+                                }
+                            /* Handle non-hooked properties that haven't already been defined via forcefeeding. */
+                            } else if (startValue === undefined) {
+                                startValue = CSS.getPropertyValue(element, property); /* GET */
+                            }
+                        }
+
+                        /**************************
+                           Value Data Extraction
+                        **************************/
+
+                        var separatedValue,
+                            endValueUnitType,
+                            startValueUnitType,
+                            operator;
+
+                        /* Separates a property value into its numeric value and its unit type. */
+                        function separateValue (property, value) {
+                            var unitType,
+                                numericValue;
+
+                            numericValue = (value || 0)
+                                .toString()
+                                .toLowerCase()
+                                /* Match the unit type at the end of the value. */
+                                .replace(/[%A-z]+$/, function(match) {
+                                    /* Grab the unit type. */
+                                    unitType = match;
+
+                                    /* Strip the unit type off of value. */
+                                    return "";
+                                });
+
+                            /* If no unit type was supplied, assign one that is appropriate for this property (e.g. "deg" for rotateZ or "px" for width). */
+                            if (!unitType) {
+                                unitType = CSS.Values.getUnitType(property);
+                            }
+
+                            return [ numericValue, unitType ];
+                        }
+
+                        /* Separate startValue. */
+                        separatedValue = separateValue(property, startValue);
+                        startValue = separatedValue[0];
+                        startValueUnitType = separatedValue[1];
+
+                        /* Separate endValue, and extract a value operator (e.g. "+=", "-=") if one exists. */
+                        separatedValue = separateValue(property, endValue);
+                        endValue = separatedValue[0].replace(/^([+-\/*])=/, function(match, subMatch) {
+                            operator = subMatch;
+
+                            /* Strip the operator off of the value. */
+                            return "";
+                        });
+                        endValueUnitType = separatedValue[1];
+
+                        /* Parse float values from endValue and startValue. Default to 0 if NaN is returned. */
+                        startValue = parseFloat(startValue) || 0;
+                        endValue = parseFloat(endValue) || 0;
+
+                        /*****************************
+                           Value & Unit Conversion
+                        *****************************/
+
+                        var elementUnitRatios;
+
+                        /* Custom support for properties that don't actually accept the % unit type, but where pollyfilling is trivial and relatively foolproof. */
+                        if (endValueUnitType === "%") {
+                            /* A %-value fontSize/lineHeight is relative to the parent's fontSize (as opposed to the parent's dimensions),
+                               which is identical to the em unit's behavior, so we piggyback off of that. */
+                            if (/^(fontSize|lineHeight)$/.test(property)) {
+                                /* Convert % into an em decimal value. */
+                                endValue = endValue / 100;
+                                endValueUnitType = "em";
+                            /* For scaleX and scaleY, convert the value into its decimal format and strip off the unit type. */
+                            } else if (/^scale/.test(property)) {
+                                endValue = endValue / 100;
+                                endValueUnitType = "";
+                            /* For RGB components, take the defined percentage of 255 and strip off the unit type. */
+                            } else if (/(Red|Green|Blue)$/i.test(property)) {
+                                endValue = (endValue / 100) * 255;
+                                endValueUnitType = "";
+                            }
+                        }
+
+                        /* When queried, the browser returns (most) CSS property values in pixels. Therefore, if an endValue with a unit type of
+                           %, em, or rem is animated toward, startValue must be converted from pixels into the same unit type as endValue in order
+                           for value manipulation logic (increment/decrement) to proceed. Further, if the startValue was forcefed or transferred
+                           from a previous call, startValue may also not be in pixels. Unit conversion logic therefore consists of two steps:
+                           1) Calculating the ratio of %,/em/rem relative to pixels then 2) Converting startValue into the same unit of measurement as endValue based on these ratios. */
+                        /* Unit conversion ratios are calculated by momentarily setting a value with the target unit type on the element,
+                           comparing the returned pixel value, then reverting to the original value. */
+                        /* Note: Even if only one of these unit types is being animated, all unit ratios are calculated at once since the overhead
+                           of batching the SETs and GETs together upfront outweights the potential overhead
+                                 of layout thrashing caused by re-querying for uncalculated ratios for subsequently-processed properties. */
+                        /* Note: Instead of adjusting the CSS properties on the target element, an alternative way of performing value conversion
+                           is to inject a cloned element into the element's parent and manipulate *its* values instead.
+                           This is a cleaner method that avoids the ensuing rounds of layout thrashing, but it's ultimately less performant.
+                           due to the overhead involved with DOM tree modification (element insertion/deletion). */
+                        /* Todo: Shift this logic into the calls' first tick instance so that it's synced with RAF. */
+                        /* Todo: Store the original values and skip re-setting if we're animating height or width in the properties map. */
+                        function calculateUnitRatios () {
+                            /* The properties below are used to determine whether the element differs sufficiently from this same call's
+                               prior element (in the overall element set) to also differ in its unit conversion ratios. If the properties
+                               match up with those of the prior element, the prior element's conversion ratios are used. Like most optimizations
+                               in Velocity, this is done to minimize DOM querying. */
+                            var sameRatioIndicators = {
+                                    parent: element.parentNode, /* GET */
+                                    position: CSS.getPropertyValue(element, "position"), /* GET */
+                                    fontSize: CSS.getPropertyValue(element, "fontSize") /* GET */
+                                },
+                                /* Determine if the same % ratio can be used. % is relative to the element's position value and the parent's width and height dimensions. */
+                                sameBasePercent = ((sameRatioIndicators.position === unitConversionRatios.lastPosition) && (sameRatioIndicators.parent === unitConversionRatios.lastParent)),
+                                /* Determine if the same em ratio can be used. em is relative to the element's fontSize, which itself is relative to the parent's fontSize. */
+                                sameBaseEm = ((sameRatioIndicators.fontSize === unitConversionRatios.lastFontSize) && (sameRatioIndicators.parent === unitConversionRatios.lastParent));
+
+                            /* Store these ratio indicators call-wide for the next element to compare against. */
+                            unitConversionRatios.lastParent = sameRatioIndicators.parent;
+                            unitConversionRatios.lastPosition = sameRatioIndicators.position;
+                            unitConversionRatios.lastFontSize = sameRatioIndicators.fontSize;
+
+                            /* Whereas % and em ratios are determined on a per-element basis, the rem unit type only needs to be checked
+                               once per call since it is exclusively dependant upon document.body's fontSize. If this is the first time
+                               that calculateUnitRatios() is being run during this call, remToPxRatio will still be set to its default value of null, so we calculate it now. */
+                            if (unitConversionRatios.remToPxRatio === null) {
+                                /* Default to most browsers' default fontSize of 16px in the case of 0. */
+                                unitConversionRatios.remToPxRatio = parseFloat(CSS.getPropertyValue(document.body, "fontSize")) || 16; /* GET */
+                            }
+
+                            var originalValues = {
+                                    /* To accurately and consistently calculate conversion ratios, the element's overflow and box-sizing are temporarily removed.
+                                       Both properties modify an element's visible dimensions. */
+                                    /* Note: Overflow must be manipulated on a per-axis basis since the plain overflow property overwrites its subproperties' values. */
+                                    overflowX: null,
+                                    overflowY: null,
+                                    boxSizing: null,
+                                    /* width and height act as our proxy properties for measuring the horizontal and vertical % ratios.
+                                       Since they can be artificially constrained by their min-/max- equivalents, those properties are converted as well. */
+                                    width: null,
+                                    minWidth: null,
+                                    maxWidth: null,
+                                    height: null,
+                                    minHeight: null,
+                                    maxHeight: null,
+                                    /* paddingLeft arbitrarily acts as our proxy for the em ratio. */
+                                    paddingLeft: null
+                                },
+                                elementUnitRatios = {},
+                                /* Note: IE<=8 round to the nearest pixel when returning CSS values, thus we perform conversions using a measurement
+                                   of 10 (instead of 1) to give our ratios a precision of at least 1 decimal value. */
+                                measurement = 10;
+
+                            /* For organizational purposes, current ratios calculations are consolidated onto the elementUnitRatios object. */
+                            elementUnitRatios.remToPxRatio = unitConversionRatios.remToPxRatio;
+
+                            /* After temporary unit conversion logic runs, width and height properties that were originally set to "auto" must be set back
+                               to "auto" instead of to the actual corresponding pixel value. Leaving the values at their hard-coded pixel value equivalents
+                               would inherently prevent the elements from vertically adjusting as the height of its inner content changes. */
+                            /* IE tells us whether or not the property is set to "auto". Other browsers provide no way of determing "auto" values on height/width,
+                               and thus we have to trigger additional layout thrashing (see below) to solve this. */
+                            if (IE && !Data(element).isSVG) {
+                                var isIEWidthAuto = /^auto$/i.test(element.currentStyle.width),
+                                    isIEHeightAuto = /^auto$/i.test(element.currentStyle.height);
+                            }
+
+                            /* Note: To minimize layout thrashing, the ensuing unit conversion logic is split into batches to synchronize GETs and SETs. */
+                            if (!sameBasePercent || !sameBaseEm) {
+                                /* SVG elements have no concept of document flow, and don't support the full range of CSS properties,
+                                   so we skip the unnecessary stripping of unapplied properties to avoid dirtying their HTML. */
+                                if (!Data(element).isSVG) {
+                                    originalValues.overflowX = CSS.getPropertyValue(element, "overflowX"); /* GET */
+                                    originalValues.overflowY = CSS.getPropertyValue(element, "overflowY"); /* GET */
+                                    originalValues.boxSizing = CSS.getPropertyValue(element, "boxSizing"); /* GET */
+
+                                    /* Since % values are relative to their respective axes, ratios are calculated for both width and height.
+                                       In contrast, only a single ratio is required for rem and em. */
+                                    /* When calculating % values, we set a flag to indiciate that we want the computed value instead of offsetWidth/Height,
+                                       which incorporate additional dimensions (such as padding and border-width) into their values. */
+                                    originalValues.minWidth = CSS.getPropertyValue(element, "minWidth"); /* GET */
+                                    /* Note: max-width/height must default to "none" when 0 is returned, otherwise the element cannot have its width/height set. */
+                                    originalValues.maxWidth = CSS.getPropertyValue(element, "maxWidth") || "none"; /* GET */
+
+                                    originalValues.minHeight = CSS.getPropertyValue(element, "minHeight"); /* GET */
+                                    originalValues.maxHeight = CSS.getPropertyValue(element, "maxHeight") || "none"; /* GET */
+
+                                    originalValues.paddingLeft = CSS.getPropertyValue(element, "paddingLeft"); /* GET */
+                                }
+
+                                originalValues.width = CSS.getPropertyValue(element, "width", null, true); /* GET */
+                                originalValues.height = CSS.getPropertyValue(element, "height", null, true); /* GET */
+                            }
+
+                            if (sameBasePercent) {
+                                elementUnitRatios.percentToPxRatioWidth = unitConversionRatios.lastPercentToPxWidth;
+                                elementUnitRatios.percentToPxRatioHeight = unitConversionRatios.lastPercentToPxHeight;
+                            } else {
+                                if (!Data(element).isSVG) {
+                                    CSS.setPropertyValue(element, "overflowX",  "hidden"); /* SET */
+                                    CSS.setPropertyValue(element, "overflowY",  "hidden"); /* SET */
+                                    CSS.setPropertyValue(element, "boxSizing",  "content-box"); /* SET */
+
+                                    CSS.setPropertyValue(element, "minWidth", measurement + "%"); /* SET */
+                                    CSS.setPropertyValue(element, "maxWidth", measurement + "%"); /* SET */
+
+                                    CSS.setPropertyValue(element, "minHeight",  measurement + "%"); /* SET */
+                                    CSS.setPropertyValue(element, "maxHeight",  measurement + "%"); /* SET */
+                                }
+
+                                CSS.setPropertyValue(element, "width", measurement + "%"); /* SET */
+                                CSS.setPropertyValue(element, "height",  measurement + "%"); /* SET */
+                            }
+
+
+                            if (sameBaseEm) {
+                                elementUnitRatios.emToPxRatio = unitConversionRatios.lastEmToPx;
+                            } else if (!Data(element).isSVG) {
+                                CSS.setPropertyValue(element, "paddingLeft", measurement + "em"); /* SET */
+                            }
+
+                            /* The following pixel-value GETs cannot be batched with the prior GETs since they depend upon the values
+                               temporarily set immediately above; layout thrashing cannot be avoided here. */
+                            if (!sameBasePercent) {
+                                /* Divide the returned value by the measurement value to get the ratio between 1% and 1px.
+                                   Default to 1 since conversion logic using 0 can produce Infinite. */
+                                elementUnitRatios.percentToPxRatioWidth = unitConversionRatios.lastPercentToPxWidth = (parseFloat(CSS.getPropertyValue(element, "width", null, true)) || 1) / measurement; /* GET */
+                                elementUnitRatios.percentToPxRatioHeight = unitConversionRatios.lastPercentToPxHeight = (parseFloat(CSS.getPropertyValue(element, "height", null, true)) || 1) / measurement; /* GET */
+                            }
+
+                           if (!sameBaseEm) {
+                                elementUnitRatios.emToPxRatio = unitConversionRatios.lastEmToPx = (parseFloat(CSS.getPropertyValue(element, "paddingLeft")) || 1) / measurement; /* GET */
+                           }
+
+                            /* Revert each used test property to its original value. */
+                            for (var originalValueProperty in originalValues) {
+                                if (originalValues[originalValueProperty] !== null) {
+                                    CSS.setPropertyValue(element, originalValueProperty, originalValues[originalValueProperty]); /* SETs */
+                                }
+                            }
+
+                            /* SVG dimensions do not accept an "auto" value, so we skip this reset process for them. */
+                            if (!Data(element).isSVG) {
+                                /* In IE, revert to "auto" for width and height if it was originally set. */
+                                if (IE) {
+                                    if (isIEWidthAuto) {
+                                        CSS.setPropertyValue(element, "width", "auto"); /* SET */
+                                    }
+
+                                    if (isIEHeightAuto) {
+                                        CSS.setPropertyValue(element, "height", "auto"); /* SET */
+                                    }
+                                /* For other browsers, additional layout thrashing must unfortunately be triggered to determine whether a dimension property was originally "auto". */
+                                } else {
+                                    /* Set height to "auto" then compare the returned value against the element's current height value.
+                                       If they're identical, leave height set to "auto". If they're different, then "auto" wasn't originally
+                                       set on the element prior to our conversions, and we revert it to its actual value. */
+                                    /* Note: The following GETs and SETs cannot be batched together due to the cross-effect setting one axis to "auto" has on the other. */
+                                    CSS.setPropertyValue(element, "height", "auto"); /* SET */
+                                    if (originalValues.height !== CSS.getPropertyValue(element, "height", null, true)) { /* GET */
+                                        CSS.setPropertyValue(element, "height", originalValues.height); /* SET */
+                                    }
+
+                                    CSS.setPropertyValue(element, "width", "auto"); /* SET */
+                                    if (originalValues.width !== CSS.getPropertyValue(element, "width", null, true)) { /* GET */
+                                        CSS.setPropertyValue(element, "width", originalValues.width); /* SET */
+                                    }
+                                }
+                            }
+
+                            if (Velocity.debug >= 1) console.log("Unit ratios: " + JSON.stringify(elementUnitRatios), element);
+
+                            return elementUnitRatios;
+                        }
+
+                        /* The * and / operators, which are not passed in with an associated unit, inherently use startValue's unit. Skip value and unit conversion. */
+                        if (/[\/*]/.test(operator)) {
+                            endValueUnitType = startValueUnitType;
+                        /* If startValue and endValue differ in unit type, convert startValue into the same unit type as endValue so that if endValueUnitType
+                           is a relative unit (%, em, rem), the values set during tweening will continue to be accurately relative even if the metrics they depend
+                           on are dynamically changing during the course of the animation. Conversely, if we always normalized into px and used px for setting values, the px ratio
+                           would become stale if the original unit being animated toward was relative and the underlying metrics change during the animation. */
+                        /* Since 0 is 0 in any unit type, no conversion is necessary when startValue is 0 -- we just start at 0 with endValueUnitType. */
+                        } else if ((startValueUnitType !== endValueUnitType) && startValue !== 0) {
+                            /* Unit conversion is also skipped when endValue is 0, but *startValueUnitType* must be used for tween values to remain accurate. */
+                            /* Note: Skipping unit conversion here means that if endValueUnitType was originally a relative unit, the animation won't relatively
+                               match the underlying metrics if they change, but this is acceptable since we're animating toward invisibility instead of toward visibility,
+                               which remains past the point of the animation's completion. */
+                            if (endValue === 0) {
+                                endValueUnitType = startValueUnitType;
+                            } else {
+                                /* By this point, we cannot avoid unit conversion (it's undesirable since it causes layout thrashing).
+                                   If we haven't already, we trigger calculateUnitRatios(), which runs once per element per call. */
+                                elementUnitRatios = elementUnitRatios || calculateUnitRatios();
+
+                                /* The following RegEx matches CSS properties that have their % values measured relative to the x-axis. */
+                                /* Note: W3C spec mandates that all of margin and padding's properties (even top and bottom) are %-relative to the *width* of the parent element. */
+                                var axis = (/margin|padding|left|right|width|text|word|letter/i.test(property) || /X$/.test(property)) ? "x" : "y";
+
+                                /* In order to avoid generating n^2 bespoke conversion functions, unit conversion is a two-step process:
+                                   1) Convert startValue into pixels. 2) Convert this new pixel value into endValue's unit type. */
+                                switch (startValueUnitType) {
+                                    case "%":
+                                        /* Note: translateX and translateY are the only properties that are %-relative to an element's own dimensions -- not its parent's dimensions.
+                                           Velocity does not include a special conversion process to account for this behavior. Therefore, animating translateX/Y from a % value
+                                           to a non-% value will produce an incorrect start value. Fortunately, this sort of cross-unit conversion is rarely done by users in practice. */
+                                        startValue *= (axis === "x" ? elementUnitRatios.percentToPxRatioWidth : elementUnitRatios.percentToPxRatioHeight);
+                                        break;
+
+                                    case "em":
+                                        startValue *= elementUnitRatios.emToPxRatio;
+                                        break;
+
+                                    case "rem":
+                                        startValue *= elementUnitRatios.remToPxRatio;
+                                        break;
+
+                                    case "px":
+                                        /* px acts as our midpoint in the unit conversion process; do nothing. */
+                                        break;
+                                }
+
+                                /* Invert the px ratios to convert into to the target unit. */
+                                switch (endValueUnitType) {
+                                    case "%":
+                                        startValue *= 1 / (axis === "x" ? elementUnitRatios.percentToPxRatioWidth : elementUnitRatios.percentToPxRatioHeight);
+                                        break;
+
+                                    case "em":
+                                        startValue *= 1 / elementUnitRatios.emToPxRatio;
+                                        break;
+
+                                    case "rem":
+                                        startValue *= 1 / elementUnitRatios.remToPxRatio;
+                                        break;
+
+                                    case "px":
+                                        /* startValue is already in px, do nothing; we're done. */
+                                        break;
+                                }
+                            }
+                        }
+
+                        /***********************
+                            Value Operators
+                        ***********************/
+
+                        /* Operator logic must be performed last since it requires unit-normalized start and end values. */
+                        /* Note: Relative *percent values* do not behave how most people think; while one would expect "+=50%"
+                           to increase the property 1.5x its current value, it in fact increases the percent units in absolute terms:
+
+                           50 points is added on top of the current % value. */
+                        switch (operator) {
+                            case "+":
+                                endValue = startValue + endValue;
+                                break;
+
+                            case "-":
+                                endValue = startValue - endValue;
+                                break;
+
+                            case "*":
+                                endValue = startValue * endValue;
+                                break;
+
+                            case "/":
+                                endValue = startValue / endValue;
+                                break;
+                        }
+
+                        /**************************
+                           tweensContainer Push
+                        **************************/
+
+                        /* Construct the per-property tween object, and push it to the element's tweensContainer. */
+                        tweensContainer[property] = {
+                            rootPropertyValue: rootPropertyValue,
+                            startValue: startValue,
+                            currentValue: startValue,
+                            endValue: endValue,
+                            unitType: endValueUnitType,
+                            easing: easing
+                        };
+
+                        if (Velocity.debug) console.log("tweensContainer (" + property + "): " + JSON.stringify(tweensContainer[property]), element);
+                    }
+
+                    /* Along with its property data, store a reference to the element itself onto tweensContainer. */
+                    tweensContainer.element = element;
+                }
+
+                /***************
+                    Pushing
+                ***************/
+
+                /* Note: tweensContainer can be empty if all of the properties in this call's property map were skipped due to not
+                   being supported by the browser. The element property is used for checking that the tweensContainer has been appended to. */
+                if (tweensContainer.element) {
+
+                    /*****************
+                        Call Push
+                    *****************/
+
+                    /* The call array houses the tweensContainers for each element being animated in the current call. */
+                    call.push(tweensContainer);
+
+                    /* Store the tweensContainer on the element, plus the current call's opts so that Velocity can reference this data the next time this element is animated. */
+                    Data(element).tweensContainer = tweensContainer;
+                    Data(element).opts = opts;
+                    /* Switch on the element's animating flag. */
+                    Data(element).isAnimating = true;
+
+                    /******************
+                        Calls Push
+                    ******************/
+
+                    /* Once the final element in this call's element set has been processed, push the call array onto
+                       Velocity.State.calls for the animation tick to immediately begin processing. */
+                    if (elementsIndex === elementsLength - 1) {
+                        /* To speed up iterating over this array, it is compacted (falsey items -- calls that have completed -- are removed)
+                           when its length has ballooned to a point that can impact tick performance. This only becomes necessary when animation
+                           has been continuous with many elements over a long period of time; whenever all active calls are completed, completeCall() clears Velocity.State.calls. */
+                        if (Velocity.State.calls.length > 10000) {
+                            Velocity.State.calls = compactSparseArray(Velocity.State.calls);
+                        }
+
+                        /* Add the current call plus its associated metadata (the element set and the call's options) onto the global call container.
+                           Anything on this call container is subjected to tick() processing. */
+                        Velocity.State.calls.push([ call, elements, opts ]);
+
+                        /* If the animation tick isn't running, start it. (Velocity shuts it off when there are no active calls to process.) */
+                        if (Velocity.State.isTicking === false) {
+                            Velocity.State.isTicking = true;
+
+                            /* Start the tick loop. */
+                            tick();
+                        }
+                    } else {
+                        elementsIndex++;
+                    }
+                }
+            }
+
+            /* When the queue option is set to false, the call skips the element's queue and fires immediately. */
+            if (opts.queue === false) {
+                /* Since this buildQueue call doesn't respect the element's existing queue (which is where a delay option would have been appended),
+                   we manually inject the delay property here with an explicit setTimeout. */
+                if (opts.delay) {
+                    setTimeout(buildQueue, opts.delay);
+                } else {
+                    buildQueue();
+                }
+            /* Otherwise, the call undergoes element queueing as normal. */
+            /* Note: To interoperate with jQuery, Velocity uses jQuery's own $.queue() stack for queuing logic. */
+            } else {
+                $.queue(element, opts.queue, function(next) {
+                    /* This flag indicates to the upcoming completeCall() function that this queue entry was initiated by Velocity.
+                       See completeCall() for further details. */
+                    Velocity.velocityQueueEntryFlag = true;
+
+                    buildQueue(next);
+                });
+            }
+
+            /*********************
+                Auto-Dequeuing
+            *********************/
+
+            /* As per jQuery's $.queue() behavior, to fire the first non-custom-queue entry on an element, the element
+               must be dequeued if its queue stack consists *solely* of the current call. (This can be determined by checking
+               for the "inprogress" item that jQuery prepends to active queue stack arrays.) Regardless, whenever the element's
+               queue is further appended with additional items -- including $.delay()'s or even $.animate() calls, the queue's
+               first entry is automatically fired. This behavior contrasts that of custom queues, which never auto-fire. */
+            /* Note: When an element set is being subjected to a non-parallel Velocity call, the animation will not begin until
+               each one of the elements in the set has reached the end of its individually pre-existing queue chain. */
+            /* Note: Unfortunately, most people don't fully grasp jQuery's powerful, yet quirky, $.queue() function.
+               Lean more here: http://stackoverflow.com/questions/1058158/can-somebody-explain-jquery-queue-to-me */
+            if ((opts.queue === "" || opts.queue === "fx") && $.queue(element)[0] !== "inprogress") {
+                $.dequeue(element);
+            }
+        }
+
+        /**************************
+           Element Set Iteration
+        **************************/
+
+        /* If the "nodeType" property exists on the elements variable, we're animating a single element.
+           Place it in an array so that $.each() can iterate over it. */
+        $.each(elements.nodeType ? [ elements ] : elements, function(i, element) {
+            /* Ensure each element in a set has a nodeType (is a real element) to avoid throwing errors. */
+            if (element.nodeType) {
+                processElement.call(element);
+            }
+        });
+
+        /******************
+           Option: Loop
+        ******************/
+
+        /* The loop option accepts an integer indicating how many times the element should loop between the values in the
+           current call's properties map and the element's property values prior to this call. */
+        /* Note: The loop option's logic is performed here -- after element processing -- because the current call needs
+           to undergo its queue insertion prior to the loop option generating its series of constituent "reverse" calls,
+           which chain after the current call. Two reverse calls (two "alternations") constitute one loop. */
+        var opts = $.extend({}, Velocity.defaults, options),
+            reverseCallsCount;
+
+        opts.loop = parseInt(opts.loop);
+        reverseCallsCount = (opts.loop * 2) - 1;
+
+        if (opts.loop) {
+            /* Double the loop count to convert it into its appropriate number of "reverse" calls.
+               Subtract 1 from the resulting value since the current call is included in the total alternation count. */
+            for (var x = 0; x < reverseCallsCount; x++) {
+                /* Since the logic for the reverse action occurs inside Queueing and therefore this call's options object
+                   isn't parsed until then as well, the current call's delay option must be explicitly passed into the reverse
+                   call so that the delay logic that occurs inside *Pre-Queueing* can process it. */
+                var reverseOptions = {
+                    delay: opts.delay
+                };
+
+                /* If a complete callback was passed into this call, transfer it to the loop sequence's final "reverse" call
+                   so that it's triggered when the entire sequence is complete (and not when the very first animation is complete). */
+                if (opts.complete && (x === reverseCallsCount - 1)) {
+                    reverseOptions.complete = opts.complete;
+                }
+
+                Velocity.animate(elements, "reverse", reverseOptions);
+            }
+        }
+
+        /***************
+            Chaining
+        ***************/
+
+        /* Return the elements back to the call chain, with wrapped elements taking precedence in case Velocity was called via the $.fn. extension. */
+        return getChain();
+    };
+
+    /*****************************
+       Tick (Calls Processing)
+    *****************************/
+
+    /* Note: All calls to Velocity are pushed to the Velocity.State.calls array, which is fully iterated through upon each tick. */
+    function tick (timestamp) {
+        /* An empty timestamp argument indicates that this is the first tick occurence since ticking was turned on.
+           We leverage this metadata to fully ignore the first tick pass since RAF's initial pass is fired whenever
+           the browser's next tick sync time occurs, which results in the first elements subjected to Velocity
+           calls being animated out of sync with any elements animated immediately thereafter. In short, we ignore
+           the first RAF tick pass so that elements being immediately consecutively animated -- instead of simultaneously animated
+           by the same Velocity call -- are properly batched into the same initial RAF tick and consequently remain in sync thereafter. */
+        if (timestamp) {
+            /* We ignore RAF's high resolution timestamp since it can be significantly offset when the browser is
+               under high stress; we opt for choppiness over allowing the browser to drop huge chunks of frames. */
+            var timeCurrent = (new Date).getTime();
+
+            /********************
+               Call Iteration
+            ********************/
+
+            /* Iterate through each active call. */
+            for (var i = 0, callsLength = Velocity.State.calls.length; i < callsLength; i++) {
+                /* When a velocity call is completed, its Velocity.State.calls entry is set to false. Continue on to the next call. */
+                if (!Velocity.State.calls[i]) {
+                    continue;
+                }
+
+                /************************
+                   Call-Wide Variables
+                ************************/
+
+                var callContainer = Velocity.State.calls[i],
+                    call = callContainer[0],
+                    opts = callContainer[2],
+                    timeStart = callContainer[3];
+
+                /* If timeStart is undefined, then this is the first time that this call has been processed by tick().
+                   We assign timeStart now so that its value is as close to the real animation start time as possible.
+                   (Conversely, had timeStart been defined when this call was added to Velocity.State.calls, the delay
+                   between that time and now would cause the first few frames of the tween to be skipped since
+                   percentComplete is calculated relative to timeStart.) */
+                /* Further, subtract 16ms (the approximate resolution of RAF) from the current time value so that the
+                   first tick iteration isn't wasted by animating at 0% tween completion, which would produce the
+                   same style value as the element's current value. */
+                if (!timeStart) {
+                    timeStart = Velocity.State.calls[i][3] = timeCurrent - 16;
+                }
+
+                /* The tween's completion percentage is relative to the tween's start time, not the tween's start value
+                   (which would result in unpredictable tween durations since JavaScript's timers are not particularly accurate).
+                   Accordingly, we ensure that percentComplete does not exceed 1. */
+                var percentComplete = Math.min((timeCurrent - timeStart) / opts.duration, 1);
+
+                /**********************
+                   Element Iteration
+                **********************/
+
+                /* For every call, iterate through each of the elements in its set. */
+                for (var j = 0, callLength = call.length; j < callLength; j++) {
+                    var tweensContainer = call[j],
+                        element = tweensContainer.element;
+
+                    /* Check to see if this element has been deleted midway through the animation by checking for the
+                       continued existence of its data cache. If it's gone, skip animating this element. */
+                    if (!Data(element)) {
+                        continue;
+                    }
+
+                    var transformPropertyExists = false;
+
+                    /*********************
+                       Display Toggling
+                    *********************/
+
+                    /* If the display option is set to non-"none", set it upfront so that the element can become visible before tweening begins.
+                       (Otherwise, display's "none" value is set in completeCall() once the animation has completed.) */
+                    if (opts.display && opts.display !== "none") {
+                        CSS.setPropertyValue(element, "display", opts.display);
+                    }
+
+                    /************************
+                       Property Iteration
+                    ************************/
+
+                    /* For every element, iterate through each property. */
+                    for (var property in tweensContainer) {
+                        /* Note: In addition to property tween data, tweensContainer contains a reference to its associated element. */
+                        if (property !== "element") {
+                            var tween = tweensContainer[property],
+                                currentValue,
+                                /* Easing can either be a pre-genereated function or a string that references a pre-registered easing
+                                   on the Velocity.Easings object. In either case, return the appropriate easing *function*. */
+                                easing = Type.isString(tween.easing) ? Velocity.Easings[tween.easing] : tween.easing;
+
+                            /******************************
+                               Current Value Calculation
+                            ******************************/
+
+                            /* If this is the last tick pass (if we've reached 100% completion for this tween),
+                               ensure that currentValue is explicitly set to its target endValue so that it's not subjected to any rounding. */
+                            if (percentComplete === 1) {
+                                currentValue = tween.endValue;
+                            /* Otherwise, calculate currentValue based on the current delta from startValue. */
+                            } else {
+                                currentValue = tween.startValue + ((tween.endValue - tween.startValue) * easing(percentComplete));
+                            }
+
+                            tween.currentValue = currentValue;
+
+                            /******************
+                               Hooks: Part I
+                            ******************/
+
+                            /* For hooked properties, the newly-updated rootPropertyValueCache is cached onto the element so that it can be used
+                               for subsequent hooks in this call that are associated with the same root property. If we didn't cache the updated
+                               rootPropertyValue, each subsequent update to the root property in this tick pass would reset the previous hook's
+                               updates to rootPropertyValue prior to injection. A nice performance byproduct of rootPropertyValue caching is that
+                               subsequently chained animations using the same hookRoot but a different hook can use this cached rootPropertyValue. */
+                            if (CSS.Hooks.registered[property]) {
+                                var hookRoot = CSS.Hooks.getRoot(property),
+                                    rootPropertyValueCache = Data(element).rootPropertyValueCache[hookRoot];
+
+                                if (rootPropertyValueCache) {
+                                    tween.rootPropertyValue = rootPropertyValueCache;
+                                }
+                            }
+
+                            /*****************
+                                DOM Update
+                            *****************/
+
+                            /* setPropertyValue() returns an array of the property name and property value post any normalization that may have been performed. */
+                            /* Note: To solve an IE<=8 positioning bug, the unit type is dropped when setting a property value of 0. */
+                            var adjustedSetData = CSS.setPropertyValue(element, /* SET */
+                                                                       property,
+                                                                       tween.currentValue + (parseFloat(currentValue) === 0 ? "" : tween.unitType),
+                                                                       tween.rootPropertyValue,
+                                                                       tween.scrollData);
+
+                            /*******************
+                               Hooks: Part II
+                            *******************/
+
+                            /* Now that we have the hook's updated rootPropertyValue (the post-processed value provided by adjustedSetData), cache it onto the element. */
+                            if (CSS.Hooks.registered[property]) {
+                                /* Since adjustedSetData contains normalized data ready for DOM updating, the rootPropertyValue needs to be re-extracted from its normalized form. ?? */
+                                if (CSS.Normalizations.registered[hookRoot]) {
+                                    Data(element).rootPropertyValueCache[hookRoot] = CSS.Normalizations.registered[hookRoot]("extract", null, adjustedSetData[1]);
+                                } else {
+                                    Data(element).rootPropertyValueCache[hookRoot] = adjustedSetData[1];
+                                }
+                            }
+
+                            /***************
+                               Transforms
+                            ***************/
+
+                            /* Flag whether a transform property is being animated so that flushTransformCache() can be triggered once this tick pass is complete. */
+                            if (adjustedSetData[0] === "transform") {
+                                transformPropertyExists = true;
+                            }
+                        }
+                    }
+
+                    /****************
+                        mobileHA
+                    ****************/
+
+                    /* If mobileHA is enabled, set the translate3d transform to null to force hardware acceleration.
+                       It's safe to override this property since Velocity doesn't actually support its animation (hooks are used in its place). */
+                    if (opts.mobileHA) {
+                        /* Don't set the null transform hack if we've already done so. */
+                        if (Data(element).transformCache.translate3d === undefined) {
+                            /* All entries on the transformCache object are later concatenated into a single transform string via flushTransformCache(). */
+                            Data(element).transformCache.translate3d = "(0px, 0px, 0px)";
+
+                            transformPropertyExists = true;
+                        }
+                    }
+
+                    if (transformPropertyExists) {
+                        CSS.flushTransformCache(element);
+                    }
+                }
+
+                /* The non-"none" display value is only applied to an element once -- when its associated call is first ticked through.
+                   Accordingly, it's set to false so that it isn't re-processed by this call in the next tick. */
+                if (opts.display && opts.display !== "none") {
+                    Velocity.State.calls[i][2].display = false;
+                }
+
+                /* Pass the elements and the timing data (percentComplete, msRemaining, and timeStart) into the progress callback. */
+                if (opts.progress) {
+                    opts.progress.call(callContainer[1],
+                                       callContainer[1],
+                                       percentComplete,
+                                       Math.max(0, (timeStart + opts.duration) - timeCurrent),
+                                       timeStart);
+                }
+
+                /* If this call has finished tweening, pass its index to completeCall() to handle call cleanup. */
+                if (percentComplete === 1) {
+                    completeCall(i);
+                }
+            }
+        }
+
+        /* Note: completeCall() sets the isTicking flag to false when the last call on Velocity.State.calls has completed. */
+        if (Velocity.State.isTicking) {
+            requestAnimationFrame(tick);
+        }
+    }
+
+    /**********************
+        Call Completion
+    **********************/
+
+    /* Note: Unlike tick(), which processes all active calls at once, call completion is handled on a per-call basis. */
+    function completeCall (callIndex, isStopped) {
+        /* Ensure the call exists. */
+        if (!Velocity.State.calls[callIndex]) {
+            return false;
+        }
+
+        /* Pull the metadata from the call. */
+        var call = Velocity.State.calls[callIndex][0],
+            elements = Velocity.State.calls[callIndex][1],
+            opts = Velocity.State.calls[callIndex][2];
+
+        var remainingCallsExist = false;
+
+        /*************************
+           Element Finalization
+        *************************/
+
+        for (var i = 0, callLength = call.length; i < callLength; i++) {
+            var element = call[i].element;
+
+            /* If the user set display to "none" (intending to hide the element), set it now that the animation has completed. */
+            /* Note: display:none isn't set when calls are manually stopped (via Velocity.animate("stop"). */
+            /* Note: Display is ignored with "reverse" calls, which is what loops are composed of, since this behavior would be undesirable. */
+            if (!isStopped && opts.display === "none" && !opts.loop) {
+                CSS.setPropertyValue(element, "display", opts.display);
+            }
+
+            /* If the element's queue is empty (if only the "inprogress" item is left at position 0) or if its queue is about to run
+               a non-Velocity-initiated entry, turn off the isAnimating flag. A non-Velocity-initiatied queue entry's logic might alter
+               an element's CSS values and thereby cause Velocity's cached value data to go stale. To detect if a queue entry was initiated by Velocity,
+               we check for the existence of our special Velocity.queueEntryFlag declaration, which minifiers won't rename since the flag
+               is assigned to jQuery's global $ object and thus exists out of Velocity's own scope. */
+            if ($.queue(element)[1] === undefined || !/\.velocityQueueEntryFlag/i.test($.queue(element)[1])) {
+                /* The element may have been deleted. Ensure that its data cache still exists before acting on it. */
+                if (Data(element)) {
+                    Data(element).isAnimating = false;
+                    /* Clear the element's rootPropertyValueCache, which will become stale. */
+                    Data(element).rootPropertyValueCache = {};
+
+                    /* 3D transforms, which trigger hardware acceleration, are de-applied entirely when they hit their zero values
+                       so that HA'd elements don't remain blurry from subpixel rendering. */
+                    var transformHAProperties = [ "transformPerspective", "translateZ", "rotateX", "rotateY" ],
+                        transformHAProperty,
+                        transformHAPropertyExists = false;
+
+                    for (var transformHAPropertyIndex in transformHAProperties) {
+                        transformHAProperty = transformHAProperties[transformHAPropertyIndex];
+
+                        /* If any transform subproperty begins with "(0", remove it. */
+                        if (/^\(0[^.]/.test(Data(element).transformCache[transformHAProperty])) {
+                            transformHAPropertyExists = true;
+                            delete Data(element).transformCache[transformHAProperty];
+                        }
+                    }
+
+                    /* Mobile devices have hardware acceleration removed at the end of the animation in order to avoid hogging the GPU's memory. */
+                    if (opts.mobileHA) {
+                        transformHAPropertyExists = true;
+                        delete Data(element).transformCache.translate3d;
+                    }
+
+                    /* Flush the subproperty removals to the DOM. */
+                    if (transformHAPropertyExists) {
+                        CSS.flushTransformCache(element);
+                    }
+                }
+            }
+
+            /*********************
+               Option: Complete
+            *********************/
+
+            /* Complete is fired once per call (not once per element) and is passed the full raw DOM element set as both its context and its first argument. */
+            /* Note: Callbacks aren't fired when calls are manually stopped (via Velocity.animate("stop"). */
+            /* Note: If this is a loop, complete callback firing is handled by the loop's final reverse call -- we skip handling it here. */
+            if (!isStopped && opts.complete && !opts.loop && (i === callLength - 1)) {
+                opts.complete.call(elements, elements);
+            }
+
+            /***************
+               Dequeueing
+            ***************/
+
+            /* Fire the next call in the queue so long as this call's queue wasn't set to false (to trigger a parallel animation),
+               which would have already caused the next call to fire. Note: Even if the end of the animation queue has been reached,
+               $.dequeue() must still be called in order to completely clear jQuery's animation queue. */
+            if (opts.queue !== false) {
+                $.dequeue(element, opts.queue);
+            }
+        }
+
+        /************************
+           Calls Array Cleanup
+        ************************/
+
+        /* Since this call is complete, set it to false so that the rAF tick skips it. This array is later compacted via compactSparseArray().
+          (For performance reasons, the call is set to false instead of being deleted from the array: http://www.html5rocks.com/en/tutorials/speed/v8/) */
+        Velocity.State.calls[callIndex] = false;
+
+        /* Iterate through the calls array to determine if this was the final in-progress animation.
+           If so, set a flag to end ticking and clear the calls array. */
+        for (var j = 0, callsLength = Velocity.State.calls.length; j < callsLength; j++) {
+            if (Velocity.State.calls[j] !== false) {
+                remainingCallsExist = true;
+
+                break;
+            }
+        }
+
+        if (remainingCallsExist === false) {
+            /* tick() will detect this flag upon its next iteration and subsequently turn itself off. */
+            Velocity.State.isTicking = false;
+
+            /* Clear the calls array so that its length is reset. */
+            delete Velocity.State.calls;
+            Velocity.State.calls = [];
+        }
+    }
+
+    /*******************
+        Installation
+    *******************/
+
+    /* Both jQuery and Zepto allow their $.fn object to be extended to allow wrapped elements to be subjected to plugin calls.
+       If either framework is loaded, register a "velocity" extension pointing to Velocity's core animate() method. */
+    var framework = window.jQuery || window.Zepto;
+
+    if (framework) {
+        /* Assign the object function to Velocity's animate() method. */
+        framework.fn.velocity = Velocity.animate;
+
+        /* Assign the object function's defaults to Velocity's global defaults object. */
+        framework.fn.velocity.defaults = Velocity.defaults;
+    }
+
+    /* Support for AMD and CommonJS module loaders. */
+    if (typeof define !== "undefined" && define.amd) {
+        define(function() { return Velocity; });
+    } else if (typeof module !== "undefined" && module.exports) {
+        module.exports = Velocity;
+    }
+
+    /***********************
+       Packaged Sequences
+    ***********************/
+
+    /* slideUp, slideDown */
+    $.each([ "Down", "Up" ], function(i, direction) {
+        Velocity.Sequences["slide" + direction] = function (element, options) {
+            /* Don't re-run a slide sequence if the element is already at its final display value. */
+            //if ((direction === "Up" && Velocity.CSS.getPropertyValue(element, "display") === 0) ||
+            //    (direction === "Down" && Velocity.CSS.getPropertyValue(element, "display") !== 0)) {
+            //    return;
+            //}
+
+            var opts = $.extend({}, options),
+                originalValues = {
+                    height: null,
+                    marginTop: null,
+                    marginBottom: null,
+                    paddingTop: null,
+                    paddingBottom: null,
+                    overflow: null,
+                    overflowX: null,
+                    overflowY: null
+                },
+                /* Since the slide functions make use of the begin and complete callbacks, the user's custom callbacks are stored
+                   upfront for triggering once slideDown/Up's own callback logic is complete. */
+                begin = opts.begin,
+                complete = opts.complete,
+                isHeightAuto = false;
+
+            /* Allow the user to set display to null to bypass display toggling. */
+            if (opts.display !== null) {
+                /* Unless the user is overriding the display value, show the element before slideDown begins and hide the element after slideUp completes. */
+                if (direction === "Down") {
+                    /* All sliding elements are set to the "block" display value (as opposed to an element-appropriate block/inline distinction)
+                       because inline elements cannot actually have their dimensions modified. */
+                    opts.display = opts.display || Velocity.CSS.Values.getDisplayType(element);
+                } else {
+                    opts.display = opts.display || "none";
+                }
+            }
+
+            /* Begin callback. */
+            opts.begin = function () {
+                /* Check for height: "auto" so we can revert back to it when the sliding animation is complete. */
+                function checkHeightAuto() {
+                    element.style.display = "block";
+                    originalValues.height = Velocity.CSS.getPropertyValue(element, "height");
+
+                    /* Determine if height was originally "auto" by checking if the computed "auto" value is identical to the original value. */
+                    element.style.height = "auto";
+                    if (Velocity.CSS.getPropertyValue(element, "height") === originalValues.height) {
+                        isHeightAuto = true;
+                    }
+
+                    /* Revert to the computed value before sliding begins to prevent vertical popping due to scrollbars. */
+                    Velocity.CSS.setPropertyValue(element, "height", originalValues.height + "px");
+                }
+
+                if (direction === "Down") {
+                    originalValues.overflow = [ Velocity.CSS.getPropertyValue(element, "overflow"), 0 ];
+                    originalValues.overflowX = [ Velocity.CSS.getPropertyValue(element, "overflowX"), 0 ];
+                    originalValues.overflowY = [ Velocity.CSS.getPropertyValue(element, "overflowY"), 0 ];
+
+                    /* Ensure the element is visible, and temporarily remove vertical scrollbars since animating them is visually unappealing. */
+                    element.style.overflow = "hidden";
+                    element.style.overflowX = "visible";
+                    element.style.overflowY = "hidden";
+
+                    /* With the scrollars no longer affecting sizing, determine whether the element is currently height: "auto". */
+                    checkHeightAuto();
+
+                    /* Cache the elements' original vertical dimensional values so that we can animate back to them. */
+                    for (var property in originalValues) {
+                        /* Overflow values have already been cached; do not overwrite them with "hidden". */
+                        if (/^overflow/.test(property)) {
+                            continue;
+                        }
+
+                        /* Use forcefeeding to animate slideDown properties from 0. */
+                        originalValues[property] = [ Velocity.CSS.getPropertyValue(element, property), 0 ];
+                    }
+
+                    /* Hide the element inside this callback, otherwise it'll momentarily reveal itself before the rAF ticking. */
+                    element.style.display = "none";
+                } else {
+                    checkHeightAuto();
+
+                    for (var property in originalValues) {
+                        /* Use forcefeeding to animate slideUp properties toward 0. */
+                        originalValues[property] = [ 0, Velocity.CSS.getPropertyValue(element, property) ];
+                    }
+
+                    /* Both directions hide scrollbars since scrollbar height tweening looks unappealing. */
+                    element.style.overflow = "hidden";
+                    element.style.overflowX = "visible";
+                    element.style.overflowY = "hidden";
+                }
+
+                /* If the user passed in a begin callback, fire it now. */
+                if (begin) {
+                    begin.call(element, element);
+                }
+            }
+
+            /* Complete callback. */
+            opts.complete = function (element) {
+                var propertyValuePosition = (direction === "Down") ? 0 : 1;
+
+                if (isHeightAuto === true) {
+                    /* If the element's height was originally set to auto, overwrite the computed value with "auto". */
+                    originalValues.height[propertyValuePosition] = "auto";
+                } else {
+                    originalValues.height[propertyValuePosition] += "px";
+                }
+
+                /* Reset element to its original values once its slide animation is complete: For slideDown, overflow
+                   values are reset. For slideUp, all values are reset (since they were animated to 0).) */
+                for (var property in originalValues) {
+                    element.style[property] = originalValues[property][propertyValuePosition];
+                }
+
+                /* If the user passed in a complete callback, fire it now. */
+                if (complete) {
+                    complete.call(element, element);
+                }
+            };
+
+            /* Animation triggering. */
+            Velocity.animate(element, originalValues, opts);
+        };
+    });
+
+    /* fadeIn, fadeOut */
+    $.each([ "In", "Out" ], function(i, direction) {
+        Velocity.Sequences["fade" + direction] = function (element, options, elementsIndex, elementsSize) {
+            var opts = $.extend({}, options),
+                propertiesMap = {
+                    opacity: (direction === "In") ? 1 : 0
+                };
+
+            /* Since sequences are triggered individually for each element in the animated set, avoid repeatedly triggering
+               callbacks by firing them only when the final element has been reached. */
+            if (elementsIndex !== elementsSize - 1) {
+                opts.complete = opts.begin = null;
+            }
+
+            /* If a display was passed in, use it. Otherwise, default to "none" for fadeOut or the element-specific default for fadeIn. */
+            /* Note: We allow users to pass in "null" to skip display setting altogether. */
+            if (opts.display !== null) {
+                opts.display = (direction === "In") ? Velocity.CSS.Values.getDisplayType(element) : "none";
+                //opts.display = opts.display || ((direction === "In") ? Velocity.CSS.Values.getDisplayType(element) : "none");
+            }
+
+            Velocity.animate(this, propertiesMap, opts);
+        };
+    });
+})((window.jQuery || window.Zepto || window), window, document);
+
+/******************
+   Known Issues
+******************/
+
+/* When animating height/width to a % value on an element *without* box-sizing:border-box and *with* visible scrollbars
+   on *both* axes, the opposite axis (e.g. height vs width) will be shortened by the height/width of its scrollbar. */
+
+/* The CSS spec mandates that the translateX/Y/Z transforms are %-relative to the element itself -- not its parent.
+   Velocity, however, doesn't make this distinction. Thus, converting to or from the % unit with these subproperties
+   will produce an inaccurate conversion value. The same issue exists with the cx/cy attributes of SVG circles and ellipses. */
+},{}],14:[function(require,module,exports){
 // automatically inject CSS
 require('../styles/content.less');
 
 // third party modules
 var gifjs = require('gif.js');
-var $ = require('jquery');
+var $ = window.jQuery = window.$ = require('jquery');
+var velocity = require('velocity-animate');
+require('./vendor/velocity.ui.js');
 var getFormData = require('./vendor/getFormData.js');
 var toSeconds = require('./vendor/toSeconds.js');
 
@@ -9789,6 +12995,16 @@ var generateGIF = function( options ){
 
 $gifit_button.on( 'click', function( e ){
     $body.toggleClass('gifit-active');
+    if( $gifit_options.is(':visible') ){
+        $gifit_options.velocity( 'transition.slideDownOut', 200 );
+        $gifit_options.find('fieldset, .actions').velocity({
+            opacity: 0
+        }, 200 );
+    }
+    else {
+        $gifit_options.velocity( 'transition.slideUpIn', 200 );
+        $gifit_options.find('fieldset, .actions').velocity( 'transition.slideUpIn', { stagger: 35 }, 75 );
+    }
 });
 
 $gifit_options_form.on( 'submit', function( e ){
@@ -9797,7 +13013,7 @@ $gifit_options_form.on( 'submit', function( e ){
     console.log('opts',options);
     generateGIF( options );
 });
-},{"../styles/content.less":16,"../templates/button.hbs":17,"../templates/options.hbs":18,"./vendor/getFormData.js":14,"./vendor/toSeconds.js":15,"gif.js":1,"jquery":10}],14:[function(require,module,exports){
+},{"../styles/content.less":18,"../templates/button.hbs":19,"../templates/options.hbs":20,"./vendor/getFormData.js":15,"./vendor/toSeconds.js":16,"./vendor/velocity.ui.js":17,"gif.js":1,"jquery":10,"velocity-animate":13}],15:[function(require,module,exports){
 var getFormData = function( form ){
     var form_data = {};
     Array.prototype.forEach.call( form.elements, function( el, i ){
@@ -9817,7 +13033,7 @@ var getFormData = function( form ){
 };
 
 module.exports = getFormData;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var toSeconds = function( time_string ){
 	var seconds = 0;
 	var time_array = time_string.split(':').reverse();
@@ -9839,9 +13055,595 @@ var toSeconds = function( time_string ){
 };
 
 module.exports = toSeconds;
-},{}],16:[function(require,module,exports){
-var css = "@font-face {\n  font-family: 'robotoregular';\n  src: url(data:application/font-woff;base64,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) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n@font-face {\n  font-family: 'robotobold';\n  src: url(data:application/font-woff;base64,d09GRgABAAAAAGDoABMAAAAAr9AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAABGRlRNAAABqAAAABwAAAAcX89bEUdERUYAAAHEAAAAKQAAACwC8gHSR1BPUwAAAfAAAAYYAAAN4rMbf01HU1VCAAAICAAAAE4AAABgJsMg1U9TLzIAAAhYAAAAVgAAAGC5Ivx/Y21hcAAACLAAAAGIAAAB4p/QQipjdnQgAAAKOAAAAEIAAABCGBgRYGZwZ20AAAp8AAABsQAAAmVTtC+nZ2FzcAAADDAAAAAIAAAACAAAABBnbHlmAAAMOAAAS78AAI28GV5pwmhlYWQAAFf4AAAAMQAAADYDbZjlaGhlYQAAWCwAAAAfAAAAJA91BjFobXR4AABYTAAAAmgAAAOo1UJCPWxvY2EAAFq0AAABzAAAAdZcEjnIbWF4cAAAXIAAAAAgAAAAIAIHAbBuYW1lAABcoAAAAZEAAAMdMXMl8HBvc3QAAF40AAAB7QAAAuUHjy2QcHJlcAAAYCQAAAC6AAABR5tupKB3ZWJmAABg4AAAAAYAAAAG9pVSewAAAAEAAAAAzD2izwAAAADE8BEuAAAAAM6hpxN42mNgZGBg4ANiFQYQYGJgZmBkeArEz4CQieE5w0sgmwUswwAAUxAExQAAAHjarZdpbFVVFIXXfR1o66Pt47WMNiaEUQIYBimTMQRrAYNSQGYDCfJDBQkSww/RhFFAjEEQwlRkLoPEtMzIjCgBDQlToRRBAlwElYgJv7r97mmBB7YU0Ley7j0955599l5n2pUnKUUv6CWFuue81k+p740YP0b1FU+9zBS0x5a9d98eN0ZJQckxXiHeIaXEjZQX+t19207jwAR9rsVarrX6xhvrfajl3kfeNG+Zt8U74V3x7oTahLJDeaEJodWhotAOeILv72Mx/cqx/D7oVRQq8u44+wE8DVZYCeqoOuqE111UT/nwIIxTQyvUALuhwVbMl2G7xPNTOxD0sqvEnFa2UxGYBRvZMHVQhrrbLuXYUb0Kc2FPmGdH1I93fywMpOcgu6yhcBJ9JsMpcCqcBqfD5dhYAVfCVXA1XAMLsLEOrocb4EZYhO3NcAvcCrfBnYyxC34Hd8M9jLUPHuD7YnwtgaUwiGOLey5gBgYoneiGKFEdiLejXVAn89XFtisfHoQJtFyk5Tq1h6k9TO1h1SCuQmz8qNHWRxOtL1a6aq0t0Q77gvkMo+3LKNPfzmu4aruaCDWp1FyjJp1SMnaC72raWloy1cPO0Lof9S+4PqNtBpYPYnkCltdgeZXO23zn+0U8bmm/KRsugovhErgUJuNzQ9ZnQ6y3x3I3rDXWaf4+A8/Cc/AZZsxnxnxmzGfGfGbLR20ftX3U9lHbR20fBX3WRQ/VRa0GrJ0GeNBDaXiQZtsUgVmwGJbAUhj45uObj28+vvn45uObT892eJfC6I3URE3VTM3VSq3VRm1pac9q6sia7KKu7K0e6q3+GsSIQ/WWJmmypmiqpmm6ZmimZukzzdYczdU8faX5WsAa3qN9rOLTxHmWGEPJC4OdVaN2Uo6eUxa78aTl2SZbab4VWIGe4Ff2q/6Xn120y/Yxu+nJe5Y+0dfXHhjzqv3Eey3vK3bsMXr/Ba9TyHio/gZ7uepeV/+TMpcCTyupv2LHbaB9b3MqmZVT7JL7X7aw5mV/x/z9p43neQhetln/sjvQbtst3rdi7E2yQiu2URQjMV9+/VDPxbbU5ttGW2GrFXWQtXct++mfb9l2wUYGNmyU3bRVnCF3e35gRziNxGl131rzivcF/Nlalb60FFsJb8jZUV43oOLNTNmiarX9xRXTY6oz7Jodsxw7x0mmSmZ7hC2zT4horE2nLRPIkivaNrOHJgZrkrVMP+IstVM2oqJrWvkKjF2F96xeD2a58jiDVfrIOP6osuXnanrejl0XgaW7tuzUU6/Ys9W036qy5YenHvPA4ytkN4NZD57uF630+zH3is8+2q7bK7HWxz9uZJz67MCnivZmOZ+wVzfWdCcbbr25lcMOKvvStUyydyy3bIEVlQXrL6nsqh3lRqiIxIoesDLbdrPPrz1inL3u6W4Gm8de+dYOwSPBPnF7pYVr2eeewznHrrjSpioU8quN6/iDu7Oar7ffPRse2gEh7to04HHGRXhmAY/8oDEtTUAct3JT7s1mIEEtQSI3dCsyntYgid5taG0LkrmtO3CXZ4NE7u2O3OqdQFidQU1u8S5kOV1BmrqDdL0CIsoBtZQLouoFMvSG+vDMA5nqCyLc+/052weBOhoC6pIDDKU8DNTj/p+BnzO5/xPIAObgz1zu/3gt0lI8yQepZL5rGLEA1NI6bWSsQpChIm1jlD2gjvaCCDnDPsoHQaqKFWS9JcBTKfBQJZtREiilAM9pF8ZyOnYDBcNOwTD5TKMKBaN6HkSddg2cXlFym3Y8XwR1nWpJTrVMp1qyU612jGopTrVUp1ocauUSW08Q75RKcEolOqUS1A/E601QQwNBulMt4lSr51SLONXq631QizxqOn4GCkadalEtBFGnXabTLsVpF4dyG7EcqJbgVEvUTu3GfqBduWoR7QdRHQDxTsEUndQpRglyMM+pGXa5WLmmYadpmL9ed1lgGhayWHnlmWDLe5lgB7QJ8sDOLhPszqoJNOjlos8j6iArHEJkw6rIBBfxn9AS4sknkhVaqVVaTUQFrIP12kBUhcSzWVu0laj2sAbuZo3FztcSlf4DdYwOQnjaY2BkYGDgYtBjsGFgcnHzCWHgy0ksyWOQYmABijP8/88AkoexGRgYczLTExk4QCwwZgHLMQJFGBmEoDQLwzMGJgYfIIuRwRMAYs0K1wAAeNpjYGbRY9rDwMrAwjqL1ZiBgVEeQjNfZEhjYmBgAGEIeMDA9D6AQSEayFQA8d3z89OBLN7fLGxp/9IYGDhqmIIVGBjn+zMyMLBYsW4Aq2MCAIGcDksAAHjaY2BgYGaAYBkGRgYQuAPkMYL5LAwHgLQOgwKQxQNk8TLUMfxnDGasYDrGdEeBS0FEQUpBTkFJQU1BX8FKIV5hjaLSA4bfLP//g83hBepbwBgEVc2gIKAgoSADVW0JV80IVM34/+v/x/8P/S/47/P3/99XD44/OPRg/4N9D3Y/2PFgw4PlD5ofmN8/pPCU9SnUhUQDRjYGuBZGJiDBhK4A6HUWVjZ2Dk4ubh5ePn4BQSFhEVExcQlJKWkZWTl5BUUlZRVVNXUNTS1tHV09fQNDI2MTUzNzC0sraxtbO3sHRydnF1c3dw9PL28fXz//gMCg4JDQsPCIyKjomNi4+IREhrb2zu7JM+YtXrRk2dLlK1evWrN2/boNGzdv3bJtx/Y9u/fuYyhKSc28W7GwIPtJWRZDxyyGYgaG9HKw63JqGFbsakzOA7Fza+8lNbVOP3T46rVbt6/f2Mlw8AjD4wcPnz1nqLx5h6Glp7m3q3/CxL6p0ximzJk7m+HosUKgpiogBgB4kol1AAAEOgWwAOEBDADBAMgAzQDVANkA3QDlAO0A/QClASQBOgEMARIBGAEeASQBNAEIALQAygDjALsA6AC/ASIARAURAAB42l1Ru05bQRDdDQ8DgcTYIDnaFLOZkMZ7oQUJxNWNYmQ7heUIaTdykYtxAR9AgUQN2q8ZoKGkSJsGIRdIfEI+IRIza4iiNDs7s3POmTNLypGqd+lrz1PnJJDC3QbNNv1OSLWzAPek6+uNjLSDB1psZvTKdfv+Cwab0ZQ7agDlPW8pDxlNO4FatKf+0fwKhvv8H/M7GLQ00/TUOgnpIQTmm3FLg+8ZzbrLD/qC1eFiMDCkmKbiLj+mUv63NOdqy7C1kdG8gzMR+ck0QFNrbQSa/tQh1fNxFEuQy6axNpiYsv4kE8GFyXRVU7XM+NrBXbKz6GCDKs2BB9jDVnkMHg4PJhTStyTKLA0R9mKrxAgRkxwKOeXcyf6kQPlIEsa8SUo744a1BsaR18CgNk+z/zybTW1vHcL4WRzBd78ZSzr4yIbaGBFiO2IpgAlEQkZV+YYaz70sBuRS+89AlIDl8Y9/nQi07thEPJe1dQ4xVgh6ftvc8suKu1a5zotCd2+qaqjSKc37Xs6+xwOeHgvDQWPBm8/7/kqB+jwsrjRoDgRDejd6/6K16oirvBc+sifTv7FaAAAAAAEAAf//AA942r29B3wU1fYAfO/M7Gzf7GxNsmmbDiFsspsQAqFJU3pV6R1BOirYUSxYERW7gtifWGY2a3vqE/WpILZnwYq9RZ69Cxm+c+6d2WwK4Pv+3+8Tk52d3czcc+7pbYhAhhAizLdMJiKxkp4aJbGmpFUq/DauyZYPmpKiAIdEE/G0BU8nrXLRgaYkxfMJJaqURZXoEKFIL6XX64ssk//aPkR6mcAlyYWE0HstKrtugiThXJVG3S1Ji0CqqGqLqWSPKsU1MatFleOaNatFs9Mqolmo4lOlxppavDiFnwtpqf4BLaXkIKG/if88MAyuHZeyhJlyhEjETuqISmKqJZGiErFJVXAxqjrw6ikxTHLghOiFi1albOyd5oSb1NT6lYRiTeCv+JcLn/9yIVzPpX/7J/sF168hRLoM1h4hhXQhSebC2pPBUE4ikUhaYflJm9MFxylCc63uqmZBycsvDSc04mlpDoSzI6XheMoisY9Eb0EhfmSBj2S7ww0fUbUopubuSeWEiRNWl+PVQrC6IHsHN3FUNQ8M+u1VzbZgyFaVsvJvWWO4fvyG1YbfsEr2KjXoRWhSLvaBFqVVaq/cfw6w/fINCVY5/jnA/ssPeKDmepuFXKsfFsN+y/gbbttsz7HBQcjb7Ag5/Xi1ZnfQBV/wst8K+x3A3/idMPsO/FU2+yu4ZsS8Tp55nXz8TnOB+c1CPC8O9AoiQu5VEDV5+QWFPTv8pw7MxR2pj/pL4CchJvAnWMJ+Svz405Dwl9RQkviaysc8csyOEY8c88FfiU/0ox89esfwR49+66nEDnrjP2jxdnqrPht/tusf/kNfSG/EHzgPpEcomX2wu9Rbvp5UkyuI2j0GO0QcgNm8WMrHjqjaM6Z69miFQJCkaI+iCYEWtdCrKYDiAN+F7nA61Y0fB7yaDTCeE9fK4A/CcS1Gq7RCDxCvq1Hr1l3xNTstecWl4UYgaXinVVY1Nqp5ykOEesLZZXBe9fk0JdAIlO5viAZCiXiv+rryip60vq5XQ30iWECzaLSuvKRYDgZC4QIaDMjWYEl9TzpboPlnzJo2Z8aqD99+++Gt6i5B1D+bM+nYSVPW7n1rz6NbH/+FPm258OQ5E8Yv7DH+hYfuedv/9ru5Pz1tWXPOvAlj5sSOez75wGv+55/zf0YsZNbB/1qutDxH3EjpgJm+5CqSrEJOrfW0JCUgdS3b05LqXVoluau03nCoONmh4mmhahPjMk+Y+AAfHq8W4FyG72xerQje9eTvenq1OnhXyd5p/QBRAQ8iSMoD5mjU6nrCm/zSqgKGrd61gMO8Ri1bgdcCRA9gJBEP5dOAXFJc3sBQ1Y9y1PhpmJYd5vNZd19z3V13XXPtPc8MbOozYGDfvgMKhBc2tjbSEfdcc+3d8ME/nhnae1DvgX2bBkgjR5973/b1o8+9995z+4wd22d0n/Hj+xwoklaP3L9x++hz7tt+7uj1924/t3H8yAGjG8ePbyQg2fod3GfJA/xFSQ/SiLiLoKQoRASWiS1JOyKwQQRU9UFUacVAKcVetRqpSw6D3Itp1WE8xdDj4shycUQGObL6ArKqZcCE2KjWKSl7YVk3LxKPy5dU8iobgaYCihoBtJVFGNrUBiAx2ZXdrQa+BbgDYmIkBQgCCsqitD+tTwApha3RCg8tKS4tY/hqoFYP9QOhNcDnDHX91l8wZPA7D219Ye7kGTRQWvnekGGvCfoToyenTnhP12np8in1J9bqb/oTZXOqqo7tXXFM30HD6EVrts+Yfv3Y+1997rK5t/U7Sv9X02VjLvl66i+WKQ0NX7ww5aRIhE5310wTNlRNa+hdOqo6PuY4xptx8QeaLWeDPK9AaW6IcqpaMuS48aLJaQEuguwWfxAq9Z/1LziPn6n3F+6WRxGF+AlVfQzpjnCL5ud/U+8lDYmwLChBry9sLSknZ9KaHXL9ecnkefXyDv01oU+IXiSUjL9qrj5KfyBXv18fveCK8UIxu3YhXHtq5rXFPZq77dq9fEq9V6hoSIQIXJ5YSwrPTT28rpf8DO2nP/uMrL88lz5MJ+bScfSxeRvHtb6urw/p57a+MY5dOyIMFpeDvvHA1UHlooLMimlefuUGi5gQy8IWv9VJK/yRRtrN97iflvTWX9l5/QP33/AfqVA7g07Tt56amqL/vpwW61+dSL0cH73JVVKB9DBxkglMS1oTqIJVSzxJKKoR4rBXJSnBQyra4a6umOrYowpxze5rAe2ctDvwM7sVvuaw46GD2Ks0t4FOUP1KNIi/e9MTaYAu0q/X/yvUHKCX6GsO6HPpFlzDAP11uo38BdKmjO2tYOytHFPpHk0KtGhWoHEJ1b6lES4bofXRoDhgGM3bCn855PNv9ecYLKuoLtwpfARcV4zX0ajYgj9UlWIaAYYRvXhdVPV8bcFVQh3VP/kE/3YT/EpR5NhuGZaIeYCXQEoBU4T98Eug/bGJ2x14/4M/HTxPLGX2DOwRZXsEd+bftdIo9Qghmtf6zVly9Z9voP0z6+A+qbchW/uQpBNvpoimVMWF57G7ekAocOGp2eDm+YZ01JxSYyMjdC9JxEkObGlJMaFcUSiGdKP2zz6lTv33Tz/Xf6MlJ8yfu3DR3HkLhQY6iBbRav0N/WP9Kf0j/S1aRS3qrbeq9Iz7t936AKeN7bDI3wEeC1pnEsotAVdGBW/RDsCotYVtkcTQkpRE3HwJN99qILgM8LNdGKV/ID3wSt1f46QH4JqjwG4aCjDnkhUk6UGInQAxErQWgoMQu0ooFyktgkaQlgM6Fiwg4CFNhtvIfvyC7AZy88t46PfAHfPgU3+O4kuKTgdIPKI5Uc1mNaohJSkTfyPToeWAJQmVJA0DSdZTU44Fo6Ms1P35J5ReebfeKgjzDxTQtxceO2/agsX65+L3z1Hlm2fP/+gh/QvLx0/RP0/ZNnT6KRevRvwMg/2rB1i6k9NJshJhsQAIlkpcloXCCvMQrACcC+ThuUC2vSrldlXmgXp02wF7VTHVtodZBwoKfLArkkohflNxAVA90FywARzFAJDLAhtOykCauxU4oQZ8Wk5hB9OgCgQ3O2BAVZSXGvCiaSCBIB8m0Mip0xecctLKO+5YNH/+rAkr9S8Emfp2f0rdpy4+bZ2+97Pd+l56oTxp2crZJy15f9mc40+cPUbe/uE7O2dtr6lKrtn5xdtIt6DYpNlAFw6SRUaTpA0pA8k95XDaqBvM6YTmEFGGUNWLEKouZr2D0EjarAieDalEQVve6QD4SKNKFdWDwNCoAkYdCg3wGiqsjcJ0Wn7nnfre1geoSMfKYbpPfO7A8k/1f9OmTwWX0I3R6XLYh76wnkIyhiTzzX3wIvL9rpZU2JnvBYyHbS3MsAaM5wIXgTGs5QJ2NcXHCAbwmyKCJysXdWdYUQMMt2UmbgGl1jI/0I3Ynzb08gUDAiB0uUBzlk9ZOGfRwklT/PrBSWKP1mcrK1cPff2r1u926Z/SCy2eOcuuPOXs6/vXK2LVN7paUEFF/cDXr+vfvA94nAfrPpbxQgVyQzauvMDkf6ezJeUrzUZTyueAlVcyURBBURBXI162/iDA0Q1eoxFmK/myce1BRbNZEaTSAsBtEKxIBSQIEI7Tp9oaVUlRrY1caETjobC1J6h4uRCYIREHqDIkCId5Hh1BDk64dFjdUScMuWCbLNZeO/PZvfr3736lf0hLz1o0ddny6eNXFwqNNI8W0AmFBXvC4RfA1eqj73v7A8BAI/Xc/887Tznt2rpqLlOagHYGwV65wCtroxyNoLRzs80BSjFdGFA4mgfJhNiYfcOltoOK1mhDLm1okizfbC/z6B94ij9+Vnr1k0/07/RyXdu8mQ4Scj7B+4lkGuC4CXAcJiUkRi4hySBiOWKaXtViS6oiGrQDlitwCTUMy9mA5WyvWsqssCxmhZWyU1oBYNsHh2jnay5Afy2cKDWsr+5KczAStXPjC6QPYRuj+Qggv0LRskR4rfZpLrmxvd3VjkkzKc6fcTztglMWrtZfe5WSkxacfKH+3d6P9G9p2coZ01aunjZ9RXTa+LHTZowdN5VuXPNQPHb3smfeeuuZZffEah8+5cV33/1w/kknz5u7Zo2QP23JkmnHL1lMmP89AXBTY9DfMpJ0mPqHSWOwTlPZBQ4RMJNta0d/EaaK1Ch3yZH+IgTAdHuYqdnsUMRsZqYryNvuRjUbeVstYLRYpgC3I/BtGqu8oqGAMoMcrU3BsDY50BNo4K2PaEjf9eOobUOLB60bd9KVtRvG7G6hJQtmHL00unL28SvEF9+jUf1l/Rv9Hv13/bXCgjdywtu3Ht1/ILV/euYNvaovvPWuOwBWpt+lpSzWUN2m4ZmCRv3eMdogGtGGtijDprYog7jU0PkCWQ0WyJtwXQuxk3qClGLFyzliqrxHs8O17F5VQmKhoMdojFkz4JLDtdtZM068w2q0aO6A2xhGjXSjcRvgm15kqLhZssDqib+eKpagReklzmx9ShhEU5/R5foPr8q79R/4mi6ioySb+DGDNZdbQk4OqZNBagCGvIT3vkg858A54jl01Bdf0Ae/MOzktXC/j/j9GpQyUOU0uFYY0fqwuGgo9fxHfoW69as+g3sVAZO9ymiogCzg3o2W5zY1urO9Ri+MqZE9qjuuFQBiXHG1IK3X0RfUCiKowZUQ+ix+RXU0qrJPtQMlhfLgA/BZDD1u6jUPDUZBGpt63BpFaIpEKr72MTl4zcp+5aDMxp82fPKcqSNOoPrnYIGVS407Xvrs2XXvHBObNfGy9TP6XDhx+qLjJ+9/+a+/AJaj9L7yM5ZLwNoZTB4lSTuTx+DlZuFBg6dFrY1p3eFlUEwLwktpTBPRyR3CXJAK7ptVMMmcknnEZagRcXnqr4kYaPGo/bxq/x1aJOdPNXcHac6N9OuP8Q2aPlIH5lKtAtmJguumRpWBdruolHbvWVvfB+WK7NOsxSjc7d2BfqobtYYCHk8IDoLXHESPj0SLiCgLyFnIUeWgrhIo6ROizFiLf0EA8d+rIQzfKCKUf9BEG/xMHRzlo+/T8+l59Gav/btvx6zO7nHe8ZdfF8j59h8nXz5JtCSs3UtPutTm1V/Vn9b/o1+bpdBhND75oUHlg1+dp5+sTxS2OhoH9p5WSnuEe+asOJl+SLcLVI/o09/T/3382AkTvvu3TuN1vaTWZ2cNe+9uOodeph+r36jfoi+sLLi6e4z+RE9ad17dMMki0R+stqeRpl2EWApBb1jBUxnJ+RfsDG52yDYCZocmI3W7mJhCa8PqBZehijGyG90HK+hIgdrsTDZRVCgOjCECVUTFqOiPiiUu+iuYwT/r787T6bztdEVKtqh/jaN99OeFQqGJ65OLQH+9yPywMND+MsOGzQKpyWzjIpSaYY+AUlOG5UTZcrJQecTVLE7uTnjn9KoWlAp5cJwHjAmLLIaPLH4FlTTRwllw4GSyE3R2EYoKJomKMnRFWZTrhmi9af5dRP9LKS1asvC88/T/tuo/U/fJpy9aqe99/ZSz152906LufGHB1sq8R0/7z9sfL5i3ZNWLs6cvmA28PgP0wNvAwyVkJklGiWmKR03G5QYJwpgl4bksJzJzKQPNDwD4vVoOEDpYefkg5GxxrQxAyfErXAdmhYCabZFG0+iQwqFgIGg1IlcKV3HRcCAYssplRWQGHUgJ9Vy/WdA/v+Sq82687ZKLz6MRgW7arP+l/6k/KgyHHbPTSfSSDV/KsrzphrfAPLz7rauvhDefXXgJpRO4DIR9+gT2yQ6+eI3Byw5zl/yo6gPc94f1O7xoZTAxFDRFfhHz0aMVRqQIcfsLddKp+l36r689fUsyecvTFlXfrv/6o/6Lfv/Hb27/+R9votzE+y6D+zrJcEPL2OGuzMaRgDYsnFQtYppUUUegG81cbDtYPKojzv1pw4lOcAea/VwkftY6SJjWeqcAd/9Ev+oTffbHXF7jfU9m8A7k9227p83C7mkTW4ywd+d7Gjd0drjhReJ/W3sLc1u34M1WfNJ6O78X2q1fAr0UgZZIFhCOUE4kLjhwMSJx2cDZyc4pkNqzghdu7WUBbdUeR3MiGYowOgPfSA15NauPc0LICyJf8hcwb86PQi7SqLnAxWuzXotI2Bpl8sqgogYlWh9VZAkk2jw6FKjIQSOioH9rO3/dhXfcu2nhmUW6LpQP0r99Xf9Vf0AYSGuojY7WW9+QT97w6u36K3e92r2Qel5sff/YC+kojlNLlO3lAEPiWLnEwVyCQ2RYdbTtpJO5OMDaLOwrcfMovYfpfxfRUmECLUGfxqK2bhRW/zVOmAGopeRGQO6/WPwgmrGHh4493EhLUUCxPRkAe+KGv/Uj3XnSvqgn7Yva2aWA6H17WNxaYMvERSPRazYBUOtBxQKOkOrLdCzhTmiZVpTX1w0QaN7yGeNXwfK/ff3zC86h2+STFp+1TNx/wPLG7yuWvGQzadHSyGz8RgNvtja8iU6GN9HNDX4AzMXwxg190WnsMMIHstkOzF6CKFtH19MFekhQ9Jv1024DxN0vTGydeuA3YXbrrSb917FYRQ+D70SD71iQguMvKTKKFy3pIAXbmCBuyUUWdX/Nx+b65dVwLYXMM65ldSXSEJhRQwUwlxUG150j0lA5DjjjiDE5r2QxlKo2pVmwuNyovh0o1EH7EBaq8DB7BpZAAVJYiL+CllCrH8A9i54k0zX0bP2DPFk//d/6mXIeLO9VqRbUUVI4j+5/UYrT1nP1MWl8czod1olOM4nTyTWiQZaaE1ahCswjtBmL0kS7uaQGxAy1MnIdJTN6RX14oICKn/w1TvyMHihAOTv94D5L5JAxLOcRY1iSMx3DAoZGjwBe2sewptOx1E2z6CT9fv1H/WddpSV3bb72nnuvueYOYTKVQSrP0rcBR/8Fkvg2OpO67n/vvfup7d733t1O0rrgKxav8JOjDM4y9UDK7iSore3tVYIzjlohC1WyoRU0v1NJq+E4QQUczaGmCr5IGLKfFukf79c/pkWnn33WGfrHFvUg+c9/9NYfhB8vOGHxxQxXQctCwJUf+HsMSSqIq7CJqwLEVTFbQAAWEPBquQauSjBSEQCK8UgKmsY2RXO6USyGFQwCehobM/DHAvdl3KrrGovHjvvxKf2vXif3Pxwqz/9k4n9v1v3BDuhkuLT4AJe5YC3MMajNm+DoLAF05kQYOnMQndxCyEWXMa7mcq+xMM743cKNBFcAbQMFgckh3OKJMIunpA3VhsWTD+CEgyDvWeIGUJ9Io77sT5qzZvW5q6KV+huV2WuX6t8cOOO009boBy3qZ7tX3RYvT563pN8FRcGiawefsOy01n+KFYsWzl/DddlUkJv/gj2pbovhOdrF8BSELA/O5Sl4Li/b3i4P2CMjD5iR7Qsa2T6BWeewZUmLsxg3r8ynlgC0eSBlmz3Bsh48B5OR3usB3kxpolc7I8lI70kl5SiEp4IQ3rpx7dlrr9EP6L/R2m9/uO4qQf9iw+mnnHPxPT/+ob/703faffRJef1pcydMWlg98pXm5s/oOWekwEBacNai8SNm1Q/+oPnxd+jpa9+UGQ7ygD/WMNsaOFjOjMmoYpy5xuDLAh8kLSziagGDISlbWBwWA3lt3iQKsTxpqj5f/wDDMftrpVfx+qeCjLAxedpAuDMlG7JZdaTFKfrdohcvxuIqKEDB82EmJJJ3VGlTRkjpp9KyGzdcfDMt058Axt+vP0W/EZ8/0GfTFRuvxNdfATEOvDf4rxYvs4v6cSswSfC+csK0hWgI/HIv5ow0a4j75jJFqrQjVRK7GXiK0nCiAZ0FK62jfX2ygoSoK/qbIJjfGDtaiqEipiQbdMd+uF8WudKA1ekB3YE3TUoWWyKRYEFRvHGA3Rh1hz3QguFQdBX7Pf59PsvJSz09qrhDc+f+aVE9O/75zOjvCTvvhPOuHeDswHnLDpE0i7LLzZzIR0TJIjtdbk9G2hwuD7A4sriQjfrDoGoSAAtoVRrNpgX/AVjfpn75NZqv3wfS9VcZuP9HEPMRKn55IFf8EkT90wcGcF4pBFxamZ4pb9PrQpueYcaOJqAekRxMj9iZBmf/F9LH9XF0AsggBST5OLpL36p/pX8lfCi83npAkFp7thYL7taf8T4W4z52EjdihGzPJL5nPETINsqK8VtRYBtlY8qMbRT6dEAnFvAk+su0Px2ou/S9YDLMEbYeGKcTIQvuMdqgeTvpaep4UxKL3FBm1rBmRbFEG8GQhlcZYaqnUQycRIOjhVTraCnceoyw83qp4ZOr9j9j2OJrdVXoJt8EtAf0zi4p2ME4ADfPbkaaUlYvqy0AuwcYy3wnxk1mAqOkREkE19Lk5ZfrqnXfO38+9w67tnDwPPE8M8dE2ueYcF8F+H+2/pFFxRQTfN8NMv4ptpaBPG+oSXwtxFiLdQ/cNiXzBchejWZhnAqOzEVZzXhROKGUYELPvXEjTepjTpX7vvNHEO/RQ3hXPJbhMp33MtCHEf0ELRErSqxiD1r1Jq366k6bbL1NeFd4u7UbvaW4WJ/HcUYPlolXMA8717Tf7Dz/lgFgAkQMFTceWP0++5vR0hPCMZbniQSUyTWQJLWkU8JeYm/LBTdE/SWjBVr/3LeWHbL+G7cLGkD2Z0ljQJP1JKcYmXnm/lbArf0UDmy2lpTYI+pHgxVDPTHGuRgLLvVq3TGqUBCPg7PeotVgHBjNOpc7C+V8dyXp9EfxKOxj2XcxCrQaLmD6O+nMCjUaQeC+ZhaqrKKuvq6BpeFB1oVB0/HwjRkQhe80/Lrv9gnjho/Wv6Rrz375mZ/COfoH3rCl+uqF9z5KS47uP/rU4O0zZtParQ8eO+bYof2obLWeM3P+cw/rg0ZdeFTZhKqxix7c1uuoUfEbZjD4VwL8A+Vs2LVC09JNuhH+ILCCjPDn4QHLXckU9V4Rg9/HHR2fV8sGqB1GMsWHnOLFkIUmM/MkyE9ocp4hQ9HYZnkGhaVPyiusfiPyy+N3K2lJ7LzJr7zzzkszL68NdYvMGrpq6oyVQ2ZG5OzWBwcN03fprcGf9A/HjrqQJmrrtl4V3PJYYz3QQf+D+8Tv2D4eKn5B28cvXIeMXyjt4xeSGb9w5DfyOhOSiIdD1rRqzqdt8YuAVbYWk/7U8tOu09dSQf9t+viTZ806ZcxMahfPPOeJn/S/BHfB97Ru9fIkqOJJK1IbC67Upo2SLZably6nNM72ZDDsia9tT9Ce5moE90Qy90RieyLZ2u8J3xDVGk/vSbYPZTEmfxwK2CGwJ04eLpTyTE+63suig7A1JRWZAXiFe9aD9+4av76Wlu3PTlw69YW9tGT20gEzCwpm9F8yjx4MAt/2GTZIGP/n1+ePHENLf9h4e6KWvpxo/NcNCMtogEWAfckhxWQiSYYRDC96pdSIlEVcYQuwVsQCrFUSU/PA9g6AocUqCvLQtChF+oKlav4AUpQ3DKsONKouRfWztfdCfgGCyge1zEiJBTSLCQ1HOVeNpuef/wEV3v+p9XTBtm7ZnHNGjT1qz3nf6F/TniJdeNzx42dSvfLHm2/S//hkq7zkkoruqV7DaQ96iiV3xoozWd0FAPJfuZqEyfEkGWK2EaxeVRKY/1b9cfBheeAxO6aGWF1EECMc8Yw6vWQoyCgRAcpBneKmLPioyopqZ2AkePmNkYzLpzwFGtn2+r/KRvfMya4uGH7M22/rH4jLXj714eecjnclecwxp7584GpxGacZfaQUADznkyqy0ojBRwHPNkoM2q8EUw4WGnDBQnswesEIfIFXCwO9lHJ6qcYIPOpur4JSS2mWAu6I4bRaAfkRsNVVpVGrdMNrNoqxdgTUkGBRgq6zOSYxfbRr2iW14QP6vt8nPDqm1+BLJ5y6qmb9pBc+oqWzlw6ekZc3Y1CarCaMumT/7je+qq54ryg6/8S5/QbSsu833l4bo3tqeyF5wd4sBh2ONUF+zEIze8SR4HILeV3OapNbgTSvg9zys6JIBjNGPpx+ptmJJmd1kFMgiKPce7Iqi2lpYvPUfzytfzDl+KbpBSCRbhgx8ZN9rWcL55+9uKriwFewD+tgUbfDelidrBnBQWqRMlX/oZNMYFas40kmqc/+5y393n+f6amDW/SRdDtcNwsgTRC2rbibEiZ1vMxM98Y0xc4dWNDnXrahqi9uhDNFviXMdsYCODTV53rCPXP7AlJfTFUe9SSY0dM/kuWJx0pz92/516s2+b/vvsv18krA8Uy4t8vMmqHNhwzcVfTGwkIIjkYzfuM34jcraenR++kE/S56ha7pb42Tsw9cSq/TQ60qfU7vy+7Thrs8klb7XYe9AEdy9p9fp9cnnwm0X4axeGY3ePMwVoOkj6SguhLIC+CQUbWcXRDcM00AOV/mZVEIFoFnNZwYm9Qq4LVMYISg5aECszeqiqK5gih/aDQzRBJmNBLuQCmBTKpZSbNcdbecsGhzefzWpbc+pn8wbmz/aRFB3ztuXN8p+VKfK8ZMnj7juLl7P21dJWw6Y3ZDrT/iaW0UNp06r7rbgX0I3xLAfy7A58eIgUnjaeiQ0DOoWxN8LR3J28+BUZ0KI3KaQeQdl64soV53ry1z73hUf//4KX2mF0p9bpo4/ZUPWqcLty+bFqs68D1J66iBsKZOMR/6v9UtMW1KQIVi1UFZu6rMwdTz/Q/Uq//4/Q/6j7Rk0cmrFp+4etViwRf8idbrL/0c/EV/mSZ+2dycujq46eFHruD2jD6brQt15zTSZsq0oQt0p0pips5UGJNgAC/TjlEIRxjYMW6Z2TFubsdQ047xG6hL2zE5tIMdY1VqNkzd9eGHL0w+PxaZMeTEeQsXHzUjos+2vHcOWG/PHyTBH/QPBvRr/VPY1bPmro3BG/7VK27gFmDIaoMhrfrbZDnC4Ix10Puw42p2m953Zup9FN7BLK73bR31fgNyVNd6f+pFtZE/9A9qzp3I9f7A6fn50wakBfTYERf8VS5Ymvqj3r+rpif9uKZuxw0GTwo7AYYspI60FOQ74EQL3WtmxZARGetlcSoF+nR2pM+wWGGwkrv8tLGhMn/hkkGTQlKfWyfPslr0VrFXbWsZlwUDwQ58E+5bTU41Yzly+1gOw5+cjuXkZMRy/O1COH5gnnC8rWQ7KboEHntrtjgVLNo+ZCSngGYWaqO52DmSI5fIGMkZKFCnuPS48ZNnnL3j2X3PvXr6GkH/cuK44eMnr9/5zF8vv332qXSCfNyYgQ01wyIVN5x/2bNzZlwGpuOgCUPr4gNzKm+66KrH6PLF51sBdvvBfcJVlsFgp8wmST/C7nJyygfnnNkq1rhZxykh2Gl7xUwGhdJ1nCF7e3vF5eeWPVHULG6vKLxMi1MMM7nK6xX7Flr68MN1PcLRUE6PSbXX3Q72CrXrv7/c+u6AXhb5jaysu1JCJeptkB/ZUh+QaSM4l/JQqGywKgsKBboKCgXNoJDCbEBMV8huFmTPCBE1pE3Z8sW0ZNyYYfOLaOmfufEb529/mt4vXN66as0J1T1E//7nb548/X2kGy/IWCusx455Fx4joukYEQ8DZMSB/OFEA3raXlr7sF8OJGmtvklvkfq0Tpk/X7h7//OcFvMJsTwD18zCmHyWIbfxsppky4gB+dpiQD7OCW0BG40A0yYFs+wh6k+wf6BQRfiXT31XyC8++5J8OfXp3/6yS971M6xhpPBQ6zHCI/ufF85vZfYrkIJkg3W40jEbeyIpmOCBFeFpi9k4zZiNn2tuJ/XT8fpj9Ojb5LvoCP2f8OYRTRNKhLB+Dz2+taV1Lz1Bv4HDawEbVIH7BDHbSjjZIfYUtI1DMdWyR5O9LWhvthUGAT2lUQpgsS0zzMcB1EL7POKSX6V99GN6btlSNqC62F3gOnpMsBigvKxJUPeXnrzV5XxLkIbXT4L7jSREfIXtYbt4Dv0f4jkjBVF3i3NBKGffJ9z36d2to414To1+vXCu3I8UAGysmgbTmbyWBWy5QBhrWVgBSyDCGIXnUuAAeYWpBcYk2H5gBrKtPI5dM/W4O5/tPXnYlKlTpwyb3PvZO48T5F3LFuze/n3DLYVb1+xetK06tm3h7jVbC7c0/LB997zlbD336z/RGSwGVEwyU4RY/+7kZfDOtjpnJaHcr+o/yf/68yj422KA5WQTlnBMCxmwiHtUR1yLhJnZiLBERIXb/aGwoTJAHDNQ+NJxo5j3G2ReMLi+k4dNnzlzOoDxzF3HTp9+7F3PvMhAuLW6ettiBOGWhu+3716wbNfyebu3/9CAcoCeLv0bhH4OeIdAI5robGm2iyEbWGJINbkMphxeV5Pj1Vy0KuXmPQ8RFAg5aIx5kVEwWayRnMZGMM7gyOU2YiuoPbg4DjPDt4LrtsX3XzzxulG1I3vER+zWNkzeNKZuZI+64XTHbW8PPqq6YtExkW3vDxjWo3LhcNDHG/VLaBLoCm164CDmukqHLxjzGwVjG7ktr18iPnZguPQgpTqvEydHH3SKuqUcdm81AdyngrzPyGN2HDFnuE23F7JscqqAI0JmZVPo5zvjWi7YsbBt6CYXFALkHmamBvEwvwjUlUdJOrJzUXFZgL+tRgzDx7uHgh1DGCHWP1QuHL331Z2bH9C/S8cvnIKoXbHz1b2Cu+A9WpWz94vit7ek4xeWDS9Fv/sCGRthmw7y5hzLcwDbdSSZh3yYD/ZKTjwpY3zOAzzpYUkEj9NelSI0T3ZXqb4Ec2ICcQa4wABPCj78mkCwOEHIs1epgleNYrIllJWO7QTww1AEPvQZRm+ghSHDF2XVUJoTYzeyB5HiocyYZ+qrgpFGunsKy8GBQKxYFZ7oT+srpt9k+/HFt7+VBP3z6cOHjXPQefrdUlNvYdeBPEcsJgmjPtnz+g8fPSLPnnbK0j2fTB6zqfHjj113HT8X6GXcwS8sR0k/smrTdYQ3+kRKEgmtwtKiVsc0t4VXmUp7UqW8TYxHElMhzrSsnlQCk4Ja7SVoZnRXmh1e1iamhnzNij8nwgqYKmCPm3MJ/6Baga/7c/DQ7Wu2Obw+ZowMoLxXrKLBsKQawlbeJha2cgVZYWUlpj4eLBm3oTbRu37T5RtHaHNmJ0du2rg50TsRu3Tj+aMfnb/gsZHnjvvuvnu///7e+75bc/Go5rkL/jnm6k1XNjT16735yuvGPDJ/jjby8isv7D9oUL/zhdMf08nBRx/RdUYTIaCJV0BehckargvNeH5K8WURN6pGTZFRiqaCIXZCTmhBGUNxzE7J2qP648ybsMeTHubWe1x2DHQls1iBQ5aCvY5xtFbga205gVD7nEAiGOX/6o1/ITqIZss0hw7U1/+iP0GH6E/oH+j304nw47SorbcKs1t77Vy+8+uv4Re3z9eB7L3A6FkF6duxVTXMZUG4oyxYR2X9L/j5SYwc+ELcKfzW6uDXm6knpJuBXxJkKLmG8KJk9KUUZoMpHgCsJKZVoQobxu5SHtfqABOVcVVGbsBccZ1X6wnywAOCm9dVFnnVXPywX6BF7RfTcoErhqN6khE1cZAGPZWBDsUeLqmqbewzcDDSTZFPy85HpClViu9h2VVUXtlncLsGMay67NxwaJYtD6BlGR2KZezzMKvMrGCB7JmTxg4dQiPf/kz9FkH/4tSlq1ev0H5vmTR2yFD962+/1ndZBBq5cumStaf/45dvaMkKrXhoSUXVmfdWDiksLxOyp1zSI3753Pv+8+FO+fiTjhs8cnTNwMfvm3ZRVeKyudrOF96T6YnTJw4ePD4+8PHnx02scwScoRE1w6fWOUJwwPB8s/S5eKOxb72IWR3BDGMwfnm+02qKdU1UmN3JqiWUlowMZwJ+bqaOb6hD+vwl+I9lLI49uM/yqeXfxAkUXk8e5DZkKstDPFIVy7mkguw4laiyi2544Z9UJXCLq2IgCPNK2Qd5/INSFt0tLUIzvRdTgryBFxv/snmXJL6r5Nsejadq+InCuFrj1Xxt5acNsP6elbCf9qygWJqXYJKjFDb4IdnlKyRGAyCrHOD1A37WSaSwRiKjqTKLlrRTEwlQEyA5jqVbaCWtoFv12fp7+jv63NPpcb/+Qo/T//HLb/q9nzx56y2aJGyeOnXm/Pkzp07ZLEjqLbc+KbxL+1JVH6c/p/9bH0OTtEn/Q7+OLqY2akVTUn9y7f17tl4jz5x8yapTT7p44mz5ulve5HyyUkiJblZzVkXOJay5I2XzkKEAdkEsVcoQp3aLpUR2ZEQ5U1GOmKiXxXWkSDxuNOqyaGcUrV6Xh1XnJ53eAtYribFN3juhhSNwohvwGAHLwgb2UNLp8nfK28RoeTppU2ImbRrakjYr/3HbxX0bjzr6Tirfe9mFt7g8ms0hRleMWbv+wT59E0uVi0ZMFK9fcWqi/6C6mFueu37jhfrzieO7B2O5sX6nL6+qbio5YSDHwVxyinieuJnIxM2qwBOiv8R4mUuzH//hh8d78Re6308v1Ffqq+iFxgGTw2fTNeLTYhnr52J2rKfF7PJjLiFr5kLrEeyMrvq5wK9SzhYH7xRO366Pp9L/sedOasc3cdKXPHVozgG3BBmkln9SyzinFksGK+Op3L7ss1xj55u64Jg4f5eIq3Ev9lWpDXFT/ebHTX4qbcc72IPcIw5KlvEOSMhSRS0CyqjFSEpJo5pQUsBEpAg/6utT8w/DSaAAWG9tuoqlhJvQVdSsYqmih+cnWkZzrnugT+8+9VbHTXZp8KgtG4bPGzNn/ZEYqnW6OOGis/scV1iwbETvboOC3uD47r2GD9EfpG839T66D+zfZotLXGEB+ws8AkMMelrSB5nJZdi7zcL7FteddyItni3eIdwE/Ih7N4Zk7pVqjxk7yJR3u73IwC/qap8LuMwuNhoBKk0mbYZ7MKNXm3Pa2dtWLt+yZfmqW68eUZcYNixRN0JqXnnbbStXbdmyqn74sF69RozgfDL14Fvid5YCWFsWmUJYYYKzxWxudR6uudWbbm4NH6a5VenU3Iqh+6l0NCV0uP7YQaLvFo8Sdn9Nl+jXfK2fS9e1Oj7/HHC9VLhJ+NjyAsklowlY+5rT08LcHk+nvkf/HkQT6/WOd+hzzOxtNBFWnm7eZp2NZenOxpKlsrZ505YlZy0T6NTWq2h9U0mstqH3LumFE69dv2bCWSfMkG+66UB8cLeK+qYY4+dZwhXCT5bnSXeUsrx/0ZPZv6hWxnBURUZUDfCbchv7zRoaU2V86aCOyrwphb9RYkmljJk0bqO1sexvtDYmumxtLKkwAebmLNDJLGHXgKbeQ4YNXrGif1NjQ6JxpyCrF16vDe83bGTz9Vc9IZ4ld4/V9Ij3uqC2Z3miR6G84Iy1yxum5WTPGrLyzLNwb6QnhBNZLUE3kw+6qiXQRNQZAg9gR2g0TJe+QOsFfZ/0BHXI+gGGw0v12dJ4FguZcIj4FgtCh5ipEeRJqWBblCuM0aBgpyiX5uGjIDLjXFHDjFcupSVTp46cnwfu5g9yj1WDE8eVYLS5dfM1SxrqRLr/+cFV1cGwfgxbXz8wWm5l9ZANRr0Xbyh3MmAlL7HChkleo/UNjlKEnwP57uK0X0cSSPcg3PqhtF+rfzCxRW8VP3iVWv4aJ9ioiPfZKvSmz4pNbbrB3XLoZmqEaysthT+RGBrh7+fo9fRL0HZZpImAVNEcnhbW+m8QGzCrew9OSWBxM4Yiw+53sNgONpVifCnckDDopIKR0JzC950Dj33kHmuiaeBFGxudE8YtOWdbt+7donjPMcIN9FaQaxbMd7HaJq4oj6wdy0A7jqET3rBkbQ0feFNYw2XRGqFZrDLqY4fwaqBUNrdbnLGUYoCSZ87JcLabk4FysousySFnWax5YsuWJ5+4ZeuTDx4/ecLxUyZOOk6ip2x+/PHNp1zz2GPXTD7hhMmnTFy0aCKuayG5TtwsPsxtiQa/mKBBmuAvC7///gmarX+9xXi9jl5BN+mn+/XT0wcIm0TuJsTyHuhv7H0LkBxyM0n6zNraVCDoE8CTcydQgKhZ8WQwwBLi4PenO8g9PMrTFVrR/AZtoYbipgRxxVnYR5RQUdgbsa81ZbU5nEFm1QZ8PFcXVDSHDB8SX1K0ZaNFR808NW4QmwZCExi9DpbURxsSSoX1bti0LD7zo4He88aCBW/oC198TXZbPHwj9yfZhI/NQrZuveXSS2+hVAgwux/gl50G/KXkdqODN+jhXSapInc2lsIWebCMMlnkRtCKSjuAX3Zo8GHnU14OeyiezPfiZ/kggrXydmjIVx6y2pzuAMdDEQiOZtnrwGCARrKNQsZOSLDTQ+sMxEcex8cLXauPDpihj3SlTSSyAvBzHei77qQnaST9yW6SbMAIdGNMrUtofQAv8fjh9IkaiGl57bQPVQf8PQ2D2V3wftS+8VQv/nFtXBtoaB2tuGcjjkFJ9aiO1fRhaOvTCKdjOICnUlH7sXBZTW0jyl9DM/mYZlKSOYXVjf+jbrJ3QXMrjqCv6Hl8A/plEqR49uGUWGtzl2QKvD5SXyP+BfoIezTngVbHGGbE3QLWGQZak95sxJrXb3RogmR2g+B3e5HdMJqBpSJWHhR2G7nRiKJK2NILXlM269CJeFmHZpDhpqGuFzZlRj04MibIlVU0HMLqEDSURm5e1VRBS4Txa4+ePGfaMQtFGhEEvfWVT3W6kJZHznpnZPWsyZefN73PhglTFx07WX5q96fiV/v38/471gdoLQYv3gVKaXLHTkC32QkIVESBJLpoBvShU08Uoxk+JVCn28N7At3MrmrrCVSwalDs2BjIqgjnZ3YHWvNk/bcDVqGp3fqcsL4ph+xUPPz6sFnxYWxWdLnZLB+Rt/Afom8RfoVp5+bFy7hlktnDSJ/kVoq5zqNgnV6Q3bM6rlNp66gMdrXIkIFELl0k5RGBOpweIAK2Wh6Ch9XigCZ/22qdtL4sYQEesXbCapDm/oMWfn3ZpSWZmJV75/7wc/iCC/Z/ZfZf8nUvg3XjPKrrOq47L43fYEzzeFqasz1BG9Zgm7MfUhGmVputERucJzjJK8aAi/A5Xj7+seRTbBxSTKdHbNygUJSHBCcN4iw3HM6F/du8KqAAFY8aaVQ9SFYZ8DJd3ZaAYAOpOoKeu3Zq7x11xXU3rp02TKsrrenWDgNLZ1563MBY9ewNxw2q3r8X0CAZOHAzGsOaoPM7YsGVxoItpnoTmt3aoipxllS17dGcSkuz1dkBfKcXhwlpfvhM8nsN2Fl5FMCepCwJqXqNSRJ+X1KwuBnjU5eRf23b4mgQdxf9xXZgllBHE0K2ijrSwA166aX9HwJZfvnSS2m4rgC4/Gxew7aOcAXScCmxVITriGgs5TSsqNJMSrXBZmZzg4rPbcgwr0wqxjpPm5XvbTa26DeiUGtWQmEn7rBH0YQgkrex01gAF2rkQx08tsZMLsxwWRlHZrit7ZBw8RlTjz/9tClTzyhGVMzr3a1bfX237g1phOyeuGrVxElLl+6/R2gSVlY1NFT16N2IMhwMausxrK/Aj9zqQryQREZzqbMl5fG6ED8eF/aZutJ9prznTwq0JCWWU5FksCFwa4HIsV5ZYRspoRfm8xtQBaN+4wegAxArRNEr/tF6nxcACSnCogNne/Sj76FFtFcYSPVz/arP9EWf0bG6JgwQYhTWO0OvYz3F+WBHX8xrElOFPHrTRaOoWhHTKpFHe2Y2iVZhLiTMaq2NftHsAFNFWJVRBcKmuaCwopLHZh5ySRF/tIgJ8kglwFUQLQW4NBfmSaz+UDaPdfLgTDqMne4+DrG2sw6OgtGKTGuk9r3Ikv4u70WmD2a4EmZjsr7v+8yu5H36t3SC3qe9n8F70paBnkAtMenwncLg6Jiq4jDNwqg27MTIfnZoG6aoyDJ6hw9s4KXwZgsxU2BtvXLmukYcYV2uv7mujqtBdZWxmtZppqIyliNnm760uZ6jYD0BMv5IHdXBIy0mdDgkmbopE1HnmmqpbXGGSjJmASwDOcyl8OojYgtFsbtNFB92qTg3JIsNmVHwT7UsBUeJmDK6rU89Y/k8O5G5+pUsU9G29EFGyoIIB58HZ/cZ2GeJ2NDTtaDfJrOsHGyqndVr2LD4Jq45UEiicJAEhjORWUXgrfdhRNSXljLy+fNroxdZINfDr2u7ujYxr62SOCsJbLs2bYuo4LWv5yTxFZZ6MmJIXx7WvgN+3QY0YQON0d2o2HEIRkmqnZWksoZ+lx14X5QFG0oFWHja+IAbDDQ31g63MLb0z53mPcSDD8I97oe9FZmWHWrMP7NwKFRbQqNWTEey9lqJKZ1m0SqhTlWYThVBkdrYCVC3Rhe4iKoR7o2v46mjkJZGADbYlD+fwhvjEcNfIdDVQZD1GDOYYdRXeszupDBQFQVFBr51LqzCgpMlWADBxQKXHjZqNOlxsSwpNj+4WIrUhU6lh/nUZjEmMUq5+KiDblSh6WEH6KsUbmibeKC7aCkfevDLL8JlDwkr0pMPhMv0SWz4gb76IYNfLVGwz5wAxd2dupHVnJjmA6ssz5cDmMkyrLJ0e7JaiONTzXBxLFXIj9r6lptDiFJjFC6wu5k1RyOtkAWTgUYxBpCV04j5ck20NWa2Nqs5ilrYqOaxWsgsH9Pn7dudxS4stnYt0GM7WGvtW6LbmWtor7L+aOAFN/GRInKMsZshczfzwZbxxczhCG3NKGyPcA6CH5fOjK4cJSV5nT6FE3P7hmnW3yQevmv6d8aunx2uddryBjoy/dr3T5swNDB6LMJ6ti66vKNdVfwWG7GrlOTMy2eZEpuiFRQeseObiYHDtH3fw6XDkbq/hddMPWLCcBzAECKlZKwBQ64JQ9TJYzEAQxg5iNeGIwwYbAmnNyFfeUjyKgFniAHDDabOu5EWNIffkR9NGaQddlMkLp0O2Lrel/UAU5TEyHoDpjITph5AW5EYht+aCwIRmzGSt8acM9vsKSbAS0aKtNirVXKIm7NtlXA+zM+HY4YVzSpTwlHF95CkOCOs3BUsLQlYKMomzHoaO6GhC1Y6Aka+7sBccw6LmN6ZrpGeiR0pg++wkroEZ1M5021UrKUbsOOJqUUJLQskeTRuug8+xIyPILoUs6WKoaXElg0ni+BkUUwrUbj3UAQebrPkDOZ1yZUo79sBjEq6E9AfU8cLJpxUo44uYXWDp3Qwg7T/ZLqCkoHkVfF36XKQt8Rvpw12DO1Z7WC41uu776MxWnOfvpvW36e/pv+HnkT70r536C/SXnfoz+nP3YHf4XS0zRKxfEdySBmpJfONyQTdTEwVI2/E0738uSyDiqyuJXAyAeFTBnuAeAooheXMceKVg91wPkEgDGxTDGxfyzwpzepozBg/yC1ufIPFSCUNrHSkkFJeqOc3+lbqymNcHMzXRky8Yv3YyYi6sZv6jbti7aJVtKSwQKZvdl855Jo7ro9OiF17j8cpmzisr9n40cSPz+VoLCq8+KWJrdePWNeDiiXV8Xe3t24JhRGj1ZMK0WdhfepAMwrIiOGdO9XVEAjqcFd1ydlmYgjFgWpXmrMCwZBJER0715ms7tS+/jGTzl00scsVadv8SOvzHW59WDfdnOXzM8nlUrRAsLHr9THzvHN7fYrL3C5WaCkxxWx6jUfBGjHL2UW3f6SrBeZ1QGAKEJidywcpaqHwIVaalrOdVvueKVm7Wu5gw4BnMpSvF6VEEOh/TpdYVUMJzW9Fu8ooSsXlN/tEFBJBJROQ5hyXHU6GFJbYzQEhgSmLUBAgy5IPCQU33DsBsYtZ711BMCptx/NeeaAJO/HgtJ3MbnnVEcMh0WbDvNdomE+JgsPJI55dNM0z1du+c95mumdtDfSSnW+5QM4HYbuVzfoJmnPZeLDGyUOxTjBXxSAf+SO2mElP3HPBHY9jTYBijKRhpeGs1yY9/wdnf0iZVRLn09K9Os3TP9f37j0D/ttrUfWf/ti56w/9I0FYN2vWeiYTNxzcJ+2Wy0gFzqdiK/Iao1awlk4S09MsK4AKK9gceiNqpDrQ5cqH4/wYNtM051qLYD/dxpzL/AqU9gE/K8x0KJo3zMawEBblVEuUpNUdMGb6YLkcBoSCAcLDQkZhe30dqa8zkwXKBip8lPpuCe3x5bvjt1Y0VKweNOpY/c1lU/uMmiWN/vS3p9Slzw7prX9x2ZNPFOR+FIqOGjScujdO3TlyyNQNp+x/BOmX9bBb3gO7rIzUkNN4DooP5epmb0l6013sPQu8Zhd7LQO+HKAs57IcC6OwklCLw5tyAKfZ5YmyytIeykNOb0FJKXscgVEbJWJtVCBidLJ3URFVVlHeuY09w0Tt2MtuPdChl/1cJgyXddHQfvEL7brZLX3QYF2S7mnPxAf4NzjTpQ0fpe3w0a0jPqKAj4xCsTQ+MqvEEBk9qms4MpLZPWMsdPb/DiEZff2M6Q6HkLbm/rghhg+JEqPBX5zYZvsynMgEcNKN1JGzM3FS3Q4n8Tac1DOcdMdRt1423CCNk17wpnsmjdQoDzMaqehm4qWs/P+Alw7W8xGJ5QxT1vc9Mr1I0w1bemiaZNL4qQL81JEB5MlM/PQG/FSgEdQTrOjaip4gDEo9mSjr14aygQxl9SA16uozLOtoLFXHj+q97GENJiabuwf6wtequHk9CD7pWwfmNeCytKIW07eI5aQnuydDZr9szLAhNtvVImo9vSB96pA4wRD/O+jtKiXx9zC9uoN1HvwbCN+UYaMf6GtiXTL4dDfgvBR8lwS5NRPrle2ostpEMTqZNQmtGFRxLajiupga3aOVKhggVstQcBv5jDI+n6MqA9dqDX6eAIVcj0Fl7OMtcDYi7Sa9NvaQjAQXbtVdo/lv0a1p7TNEoql/OGSeSB3j0/jrC3r+0Dhc8NJLB5oMtl7PFL+BP3k04K8HaSCDyeOZ+Ktph7/6NP66x1J9edZkkFkza4yv1aqBHqPVSLa9ObFWe5l5nybWikACPuzPP+wfw3m3xoRbrXcanf2VlNfWvaYUBUEFR2j9Ieh2UF/4o4ro30ItzUyvtKE4czz2YaVn0My6eEyMLzQzL4dB+/dGLuaAzHEvudL5GJH0PLhPvlwawyobjiL3k2Q5Rrp6JLRCMB3xWItb+Sag9WgD02NgPNU3Ug5bofZKaH0tfLbWYIb8GBBozIuSFZsI8kItap84NqU34RySQIs2BF5jaTXUC4uVeyDN5vk0fzd4bVKaIyHueuX4tOISlBd9yxHvxd0yJsapXp6N7YDvUrOLveMYjfJOiio9V6On/vNDE0aMn44PECAH31x4T99+t89786fWNYJ05pnTzxwzuv+es8/dNbhp96U7/kNLJ07oc3ZZ89xlgibQEydPnDWT9tt6X9+x00b29smbnmioq2vQ//h0i7zygspuj9YcM37UkCkP3dB3aL/u6vFUseTNXHEGt3X763Vszks+e0JT+5wSbZ9Tsh8qp2QmkhRMJDWXZmO3WVW4Ra2KYaqpc2YppDwkufyRouiRMkusmT3dU5TZVIUVwB0ySzgkZuevUvsZMdLBJ3/S/6KZ5Wl8YMzn/8yYFnPHXhrXp7ZPJwE9slkrlo/BM4yARJ1IkgGkQbfZA1kMZni+PYDDWPMtPNRVAG5BoCVZwJ7IUECMuiJrgTEBhGhuPvAD3DGjlbGOhDuPWuF2Xdu8FftHnYetLGP23JiMiSu0N20/ckV6Fiy51oeNuSuZ8BQCPMd2hCcf5yxzeLINeHI4PDkMnpw0PDmwS16luITt398DKU3lzC7rGqT0/BjDO+oSKGOODP2izRZjcMmUwVXZGa5ygCvK4YoiXN1iajGHq5jBVYxw4eApazGDK5L3P8DVZlkdfrtOMC2qvMPtmPgxt6Var+GbJhl79hLAhtMhK/BpC+2hiwJ0eRy6PBCA4ZhamtCyQZ2XxZlLFt7DOhpzvayJrwIO81FtI/j5DPx8BB89sdwwOLJ2p4PBr5YqSXcAh21pFfm8Vd2qADqIZnen+3APgRHQ2SYyUGN3jZBjqSNuokIBVd0lOlpeeqn1MoYKIQuVtHAQfE/6ANAw5sG6m3kwNjrl7yXYxjC2aaKllveAOfZ3x6kwhPvcwnqwnQ5x3SMm187nJPs1LZWeZpS5fwC/NKz5Pvi10fJt+9wa/d9ya5NM+nHAHT4zKnjyjVsQ8eBNcI8bLA8bubXhRm6NxVvsvCXLFjdmzPy/zK4toI4iWppLHdI3L720P4S3xiN8biPQ6EqALwqaexJJP4hN7QEXtaUnvPHHsLGIeJ4x3K2yGEMnLmsQH0in5ilaKBuFZI8y/gAbUdFk3l/L9EC4AWwXK3j08AKOP3ZehnwdJp2wGGcNdX81flOd5BnX9OuYHbRwROX047cNfX70bQtX6c/v+05/g5ZedNLJF5ecc9zp59M3P6VKolqaeHnDRatOlL15rvf8g2PLVk09Uf/mjn//pT9Lc15becPT166pqNuCdMJmx4Bf4wdevLFtekwuS3iAP1OaGwUMhj0tHQfKVGYOlGmu8KNZaDzgMGBafhlzZprzHU74RgG3CLu1DZ3RnBgwkcO5XHsaA5a0KLbiVjSqufwpO11NoukqDddxOs1zHdyRTtNqLN0zk3Ein1sD/MhzccMyc3GGTvm7iTinV0on4tpNscmIcnQ5yuZaxtLrDzHPRnoClWBT21SbzDV3yr2lp+0cPvfmlDrn3g4zeYdJiUOM3xlu5N0ONYVHeNBQdMa6ZdJVvs3QBH833+b0KgGpY76tPdLbRwy6RPwmUyaNOwTuxXcMdZaXMVTIhKPKyLGdlpFjCyAbRTKTaxy0HmJmlk2NxkGSpGvPYoZYwceBArSZuTUmYJxKICJ1mVprD3EX7KEcGvgNHTjlUOTnyuCXVl8GHiSDDnen82kLM/Np5liiQ+TTVJ+XP+DMo+B3OiTW1CL8qF1CzSmlE2odNtp0sU0wUWe3A3UddSw0waPjqKPjLn8CWtrfRrDv8Di6SAaQO6QhkqmTehLjcTlGSyN7aI7xeBFpD46IxHixI972nEO2EvwZIFlal9Iy/X1aJvT77DP9hJYWsVtLC6elk6SB0lNGnm1BZp7NsNH/Vp7tISswRDrRZjtCoq3e0EcJ3n3IHrh0iEQbIjXGeD8+o8ewbSfMWgg4rTm+cvi2ExYspiWKT6aSv1t41eKrs8qCqxZ7PTLHrtdzxRsj9m1CDHtcV70x/Ptr+y8qpoLfZn/kCl21WgDZvWYXU+bDsdk/QEd+kk2OO+T0n5yukkS5ZpIIU1eYZVNC4WzjYVtHHAXEBHOneUAreNat01Qg6SBPurVf78T/fb0s66YEgnydStKDyawjrZVl4DrPLhpseBqdVivub6uX4+v9FtabR6Yfcr35Xa23oAN+U4Df3DzjUbKe7JwjLzwtiDstfnE6IdcZ1/mZ+Ti+/odZBXAE5W17CIJoJOYktIAV657aAMrLAEgNs8EIIGQCMS3cLj+nZuNHEYUPo8sO4+P/sFsoorDHlx0RPJ6p6wTd8TxT1xm0UiNRJ/D5SEBHQfCN+nSekBRJT0jCVKiMVjsi/G/OSmINAIccmOQxOhQ7z02SdhiEI5DT9NnSCDZLM0qmGrPz8NkExHQu8MmEmAulMfMxBTguUQjE4xhWyTUG6LFnFeA0Hj4COGyMzpMLDjUCGJtn2w3PO42WxtZPNmbn6XtpSdv8PDm7VRs4NHN8Hr2VdsscoCcaeH6YZXPzySKSDCPFRBJaCCgmN94J8QU4Bg0ztThhyIK497bw4Rn5QCWFGIAL4TQWxYH9VWCyaqL09/fFIJhDbs3vfJREFzvTwihHIHMO7rMexZ5fWEZO5v11bLpp+jGG+LR59mQjXqsBHrbTE5R45tUceZnd9vDCLKa3klkFbG4Khsm8cTjAplzMfBVgx1gQIFSzFNWXLmkBBdJWaRrNeLqEOS5wDh1DPUM3jhXnpItPb5l+7mD9Jyzbuntz5diK6tHlm+9kz9yx01Euu1GS6nDSkdTx8L8kiyRLlicfIobNZXVJY0gxqSGNmMMrQs8lN4HREdUfZ9oSZ8ZUw9uGeCqeVYTwxi3pp2iXAJAlPH7tDrSwpEsC1NdAu+TI8ucWebvVslE5Ci8t0MqLcNhDPgc61KhJ1ekhiVx5Hjo42sF4LjNjCahE1+0cPOjJtR2iCeteHDJ457p2VrVYaMQWuDadMXHS9MzQwvTJk6dnGtkL0jEynvt3Ezuzyk7slP1XPQnNacXmS/aQBV4H0Oy2YuuHQ2HPqXGDI+1hJ8AoYw9dsDn4gDQP9tMKYmOjpliNSdhdlAu0UXhmxcBnRt1xRsFAnNEzJRdLn4tLLN8RGylgz5u2JDQBG62xvdecRGe2KnJdcrGpOqTP04qCkrXSK+J8y58gr8YSNoMZDHGv7LYZuThWXp3ypz1VkP8pB7e12RBBPxaEMhHldTMHXhNlo7OqK9t6bUdX8492ZZ7t5mCQdlMu/i+fXS5MkXaJ/eCzsPkUR/zpMJThcqlJmMLmC5woTLHcesTvn2jpZXw/Lv5O54HM7+K528BEljB/7raFPyaI/bU/IQbjt13RJP6+g87Rb32ar7NR/IMu6fo6+PzucBfP704Excam326DP5zx7DP6bfw6cf1POp8W/g/XYY94b/rtavhDB83Tf9G/RF0GcAn3sfU4yVGMyuSEcTE2Usplwqda+IM/nGH+RCQDVBzMLRrPy02DnUgDPykDAQYaBMSB8MTh78lhwMZ6BMNh3NMAByOWsvmAKBNFCb+JqKczkGWgDOA8WCjcS7uzex5N2LYlUjZ+T8G8Z0oKkxzez2/lTADvDnPnsF9J3zne9OVtbzV9ddsn1EUO/qx/TQO/w29eY0P3CfMlB0ge8JWcsZTEbmu8UPQEgf9sbG6C8YJPU+rUv75h/ZLl689dtmy98NLU+eesWzB1wZlnMR2wCWSbnz2P3ai/Z70VODuTjRGw2OPxjKezuzLtWantaVzmE87ansJm/myipdfR0nP481zNH5wDQa4TBrC++CihqpWBYWHrx1CtzSQSiRMGm72zlA/dEfIzZ+2Mg+uUtr8O7IlxqbbrULyO0X4/rlO/PVxn+MF94reg/6vIWSRZQfjgfNbtgEGgFKEVDjeziImMj1lKWSR2IpzA2bds6nWPmNp9jybI8TgWNmmBbMBcfncWTcfJeaF4sns+vuuOHQJSHCcjgagvYlNuNMVi2sP1ifoSHFRPMgfVG/PUghmDYEk/Ovyqq66i1b80nTQkWL+q95oN9D59Ev5sOLXPikSw8fT+v+qv0xd2nrzTvZsWe7O+8Pq3Lc6Ct7Z5VyrKZ1le6n/ahnw8W7xamseeSxQmVxmz0ag7YdJ40pLljwMwdjYLip9ix4TnuEU+PU6GDWSSv+vHF6EMwF5Bs96Z9dikstqG1OBDBzSH23zITLPT5QsaKT98SEuJAlIIB7PCUYVYIlqV2XTjOZvocVvXyqfeeK68+JjlsmX44sU4nkcfJeTr19ITWz+juVT/gnan+tuEsmEKvaXeqANqgTTxeP9OgD8A5+ewZw9E0ArCpw+o2Xz6t6bkJNo9gsDFp24f+REEOGkEIy8RYyJ3NhYnug0nyMEeevQ3n0+A+j+w7c9Px1w/v/sxa0cvWPDWW/oHwkW0VFz28oiX9hbmfxnKnj5lBHtOwYGrWfhfwOcpSOsMmE5qD1PGQxXsMSDpZo9d9lTh7J7/C2hyJkiHB6bTAxeErQyYjg9dOHC1OX9eRHis/Rg8WMXyHIdIq64xZtA3KzlobDLAkv7sKqBXDHuC8VrgajFmeTIA6/4ugDjyLTeO9RpqZTxZ3RM/q66Cr/WsxsOeOKOnmpdsJbJ4uUtPEw9aDVi2Whk+hCahaMVRxEwZZWN4tAK09+y8HuMQOIr+T7irOwRpdMTmoWiF43ZaGrf3dcRtEnCbSLRDrTumFidYg3BBXLPbW7RobTz+/ytyC6JGgPr/CxT2/ZsEeSgK/X8AgZH2TQB42mNgZGBgAGIJk0Vn4vltvjLIczCAwLmFy4Vh9P/Z/4zZo9n7geo4GJhAogA5ZQujAAAAeNpjYGRg4Kj5uxZIMvyf/X8mezQDUAQFvAIAku4GtwB42m2TW0hUURSG/1l77TkFGoahhcqY1VM3mQdzwhujWHkJCYm0sdGEwJSyHrIgnKhRx8qaoovd7CWKbgRBvQVWkET0GEEFIVIQSLenIGr6z9iQhg8f/9p7r73P2etfWyZRNQeA5/cUshL9Eodfn6JQz6PVfkLYBlHqqYFfxnBQnsNnjiNHW1AsGSg3i7FHGhE3gcR35ofJbVJHqkmA7CLtpIRsJZukGnHxY69mokivIKYF6DG/kO8sQtD6kGYLELN5aLFlXBsmIxw3od3eQkyacFFPodwu53wjYt6fXOO87UHIFlEvUGuomWhmXq6NYL/NhuNkYyHVZ9Ng9SHqZS2/GYZQ080hrDCn4ZHrqNc6rNEounUpyqiVWsLcd7yvG0fRIUsQEV9iRDeg2429k8yNovPvuhtXyktqPirkBea6ezQLGXYCedRMYkmtXEOhOLhLLbCr0ZGsfRVOsB7rdZR3GESDfkCWWESsg20axGVvNTabIZ7twXbtQK9be3dOFWdMLnq1Hs0mhC6zBWF5jS79imNahFLpxFVZhjYpxUZzE/u4f4d9hRve+eQBdms6apN1nwWnD8b1IunDNKQp8YxeDFNHyT0bYm1TPvyHVqDCHmbsejEd14v3iNp5GEjWfRa8j7Eq6QV9mI74E/fZQ1HqHXJJn7Bf//kwkzjKU/7NwPXiKA646oyizSlGpftP5gcGzRv2xxjgnARSKn18IxMkOAW+UY9QO5lDL1LYPgx5+7HTcxZ+EvCc49v5SD4jwF7yyzgG7BfE3b0SQRf9aXDP1RDWsRatWsx4HAs0gRznEXmLnD88gLvfeNpjYGDQgcIohi7GEsZ/TPOYnZjTmKcwH2J+x2LAEsJSxDKFZQ3LH1Y11h42DrYAtjXsauxx7G84kjj6OA5x3OD4xcnHWcLlxNXG9YE7insa9yUeDp4ani08l3gleIN4K3gv8PHxJfAt4Wfjz+P/IKAgECcwTZBF0EIwS3CG4DHBe0ICQkZCPkI5Qm+EA4S3iciI1IlcEPURnSJ6QPSfmJGYn9g+cQ7xEPFtEhISIRKXJDUkCyRnSd6TEpIKkmqQOiH1TFpHug4IV8iIyUyTVZBtk10nlyQ3Qd5J/oj8EwU+BR2Fd4pcihGKSxS/KRUpzVB6oSyjbKNcpjxP+ZUKj0qPqozqAzU3tWlqr9Td1E9omGgc0pTSXKX5TctOq0frlbaEtod2lfYOHTGdeboMukm6Z/Si9M7pfdAv0T9iIGaQZ3DOkM8wwvCcUZjRA+MCEy2TU6ZdZi5ml8ytzJdZiFjMsThh8c1SwzLN8o5VitU+aynrOhsmmyKbJbZqtnW21+zM7BbZfbIPs9/nYOFwxlHN0ctxEg64wHGd4x7HK45vnAScTJwinCY5nXHmcrZyLgPCWc77nPe52LhscNnjquba52bjdg8AzqWS7gABAAAA6gBGAAUAAAAAAAIAAQACABYAAAEAAWYAAAAAeNpdUstOwkAUPQOoIaImKq67coWlIMYEE6MYNCaEBRJZ6KaFIobHmFI0rlgav8qtfIAfYfwJz0yHZydz59z3mTsFkBYxCKhvUUa2CMc1inACezO8znOfXpFIUjtH2mDBqDuDY/Q0DI4v4ATXFK8hgweD15nxYfAGLvBpcBIpTAzeZNcfg1M4xK/BW3gUOwZvoy66Bu/iQHwZ/E08zZ3AEX/jmvRkKK2S7LWshu+15SAc4xoSA4Sw0ILL0yVq0vaCdwR4xhM62ntDm6TWg08tDwc5Shtjve9pDTBkvKpm0WdzOzqqwH02yzlmdI1RHnfIbTFnSKn6hqzhkoePPs8AXdok2ivd7SVt2aOY93FFzoGuG1K6mlHUU7EMaVcsK/Q1aRlQ99nVwoi4pWMUl46+6SUn4TIu0pZzMrSs3lzNxNEzC5lZRJbrTS+bdea1bMYH5J0l88WaQ1oquOUdyqjy5yrjyNRcnlqJske2DeZ4nNH0FXM6ts4eI2pV2l95WjjVvhMyynMV+SqF+Zv8A3zCbH0AAAB42m3QN2xTcRDH8e8ljp04vfeE3st7z3YK3SY2vfdOIIntEJLgYCB0REIHgZDYQLQFEL0KBAyA6E0UAQMzXQzACg7vz8Zv+ehOutPpiOJvftdSxf/yCSRKoonGQgxWbMQSh514EkgkiWRSSCWNdDLIJItscsglj3wKKKSIYtrRng50pBOd6UJXutGdHvSkF73pQ180dAwcOHFRQilllNOP/gxgIIMYzBDceBhKBV58DGM4IxjJKEYzhrGMYzwTmMgkJjOFqUxjOjOYySxmM4e5zGM+lWLhCC20cp19fGATu9jOfo5xVGLYxjs2slesYmOnxLKFW7yXOA5wnJ/84BeHOcl97nKKBSxkd+RTD6nmHg94yiMe84SP1PCCZzznNH6+s4fXvOQVAT7zla3UEmQRi6mjnoM0sIRGQjQRZinLWB758gpW0swq1rCaKxxiHWtZzwa+8I2rnOEs13jDW7FLvCRIoiRJsqRIqqRJumRIpmRJNuc4zyUuc5sLXOQOmzkhOdzgpuRKHjskXwqkUIqk2Oqva24M6LZwfVDTtApTt6ZUtcdQOpQuZXmbRmRQqSsNpUPpVLqUJcpSZZny3z63qa726rq9JugPh6qrKpsCZsvwmbp8Fm841NBWeNUdPo95R0RD6VA6/wALxJ7JAAAAeNpFzj8SwVAYBPA8jyQiyD9RGTGo3oyOGdFKGo1RJcYFXECtUXIKB/iicjt2+Dzd/na22Kd4XUhcjQ3Z26IS4lZWuamKEXnlhqIdwrkckKkOhUEyyUiqNdWT7CGHNfVBA6j/YAKNO8MCzD3DBqyU0QTsJcMBmlNGC3AmDBdojRltwB0xOkC7/4WgLv/y0HZXNVXJ/AT6oDfXDED/qBmCwX8cgWGq2QOjpWYM9haafTCe/VhSpN51ulsMAAAAAVJ79pQAAA==) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n@font-face {\n  font-family: 'arizoniaregular';\n  src: url(data:application/x-font-woff;charset=utf-8;base64,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) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n  color: #757575;\n}\n#gifit-start:hover {\n  color: #ffffff;\n}\n#gifit-start .gif {\n  font-family: 'robotobold', sans-serif;\n}\n#gifit-start .it {\n  font-family: 'arizoniaregular', sans-serif;\n  font-size: 125%;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  right: -15px;\n  bottom: 60px;\n  z-index: 2147483247;\n  padding: 25px 30px;\n  font-family: 'robotoregular', sans-serif;\n  font-size: 12px;\n  color: #969696;\n  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%) rgba(0, 0, 0, 0.5);\n  -webkit-filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.9));\n}\n#gifit-options:before {\n  content: '';\n  position: absolute;\n  bottom: -30px;\n  left: 80px;\n  border: rgba(0, 0, 0, 0.5) 15px solid;\n  border-right-color: transparent;\n  border-bottom-color: transparent;\n}\n#gifit-options fieldset {\n  height: 35px;\n  line-height: 35px;\n  border-bottom: rgba(255, 255, 255, 0.1) 1px dotted;\n}\n#gifit-options label {\n  display: inline-block;\n  width: 110px;\n  font-weight: normal;\n  text-transform: uppercase;\n}\n#gifit-options input {\n  width: 85px;\n  font-family: 'robotobold', sans-serif;\n  font-size: 22px;\n  border: none;\n  color: rgba(255, 255, 255, 0.8);\n  background: none;\n  outline: none;\n}\n#gifit-options input:focus {\n  color: #ffffff;\n}\n#gifit-options input:hover {\n  color: #ffffff;\n}\n#gifit-options input[type=\"range\"] {\n  vertical-align: middle;\n  margin-top: 0;\n}\n#gifit-submit {\n  cursor: pointer;\n  display: block;\n  width: 90px;\n  margin: 25px auto 0 auto;\n  padding: 0 10px;\n  font-size: 24px;\n  line-height: 35px;\n  background: #2d2d2d;\n  border-bottom: #141414 3px solid;\n  border-radius: 5px;\n  outline: none;\n}\n#gifit-submit:hover {\n  background: #474747;\n}\n#gifit-submit .gif {\n  font-family: 'robotobold', sans-serif;\n  color: #28ffff;\n}\n#gifit-submit .it {\n  font-family: 'arizoniaregular', sans-serif;\n  font-size: 125%;\n  color: #ff2828;\n}\n#gifit-canvas {\n  position: fixed;\n  top: -9999px;\n  left: -9999px;\n}\nbody.gifit-active #gifit-start {\n  color: #ffffff;\n}\nbody.gifit-active #gifit-options {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
-},{"lessify":12}],17:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+/***************
+    Details
+***************/
+
+/*!
+* velocity.ui.js: UI effects pack for Velocity. Load this file after jquery.velocity.js.
+* @version 3.1.0
+* @docs http://velocityjs.org/#uiPack
+* @support <=IE8: Callouts will have no effect, and transitions will simply fade in/out. IE9/Android 2.3: Most effects are fully supported, the rest fade in/out. All other browsers: Full support.
+* @license Copyright Julian Shapiro. MIT License: http://en.wikipedia.org/wiki/MIT_License
+* @license Indicated portions adapted from Animate.css, copyright Daniel Eden. MIT License: http://en.wikipedia.org/wiki/MIT_License
+* @license Indicated portions adapted from Magic.css, copyright Christian Pucci. MIT License: http://en.wikipedia.org/wiki/MIT_License
+*/   
+
+(function() {
+    var Container = (window.jQuery || window.Zepto || window);
+
+    if (!Container.Velocity || !Container.Velocity.Utilities) {
+        console.log("Velocity UI Pack: Velocity must be loaded first. Aborting.");
+
+        return;
+    }
+
+    /* Sequence registration. */
+    Container.Velocity.RegisterUI = function (effectName, properties) {
+        /* Register a multi-element-aware custom sequence. */
+        Container.Velocity.Sequences[effectName] = function (element, sequenceOptions, elementsIndex, elementsSize) {
+            var finalElement = (elementsIndex === elementsSize - 1);
+
+            /* Iterate through each effect's call array. */
+            for (var callIndex = 0; callIndex < properties.calls.length; callIndex++) {
+                var call = properties.calls[callIndex],
+                    propertyMap = call[0],
+                    durationPercentage = call[1],
+                    callOptions = call[2] || {},
+                    opts = {};
+
+                /* Assign the whitelisted per-call options. */
+                opts.duration = (sequenceOptions.duration || properties.defaultDuration || 1000) * (durationPercentage || 1);
+                opts.queue = sequenceOptions.queue || "";
+                opts.easing = callOptions.easing || "ease";
+                opts.delay = callOptions.delay || 0;
+
+                /* Special processing for the first effect call. */
+                if (callIndex === 0) {
+                    /* If a delay was passed into the sequence, combine it with the first call's delay. */
+                    opts.delay += (sequenceOptions.delay || 0);
+
+                    /* Only trigger a begin callback on the first effect call with the first element in the set. */
+                    if (elementsIndex === 0) {
+                        opts.begin = sequenceOptions.begin;
+                    }
+
+                    /* If the user isn't overriding the display option, default to block/inline for "In"-suffixed transitions. */
+                    if (sequenceOptions.display !== null) {
+                        if (sequenceOptions.display && sequenceOptions.display !== "none") {
+                            opts.display = sequenceOptions.display;
+                        } else if (/In$/.test(effectName)) {
+                            opts.display = Container.Velocity.CSS.Values.getDisplayType(element);
+                        }
+                    }
+                }
+
+                /* Special processing for the last effect call. */
+                if (callIndex === properties.calls.length - 1) {
+                    if (properties.reset) {
+                        opts.complete = function() {
+                            for (var resetProperty in properties.reset) {
+                                var resetValue = properties.reset[resetProperty];
+
+                                /* Format each non-array value in the reset property map to [ value, value ] so that changes apply
+                                   immediately and DOM querying is avoided (via forcefeeding). */
+                                if (typeof resetValue === "string" || typeof resetValue === "number") {
+                                    properties.reset[resetProperty] = [ properties.reset[resetProperty], properties.reset[resetProperty] ];
+                                }
+                            }
+
+                            /* So that the reset values are applied instantly upon the next rAF tick, use a zero duration and parallel queueing. */
+                            var resetOptions = { duration: 0, queue: false };
+
+                            /* Since the reset option uses up the complete callback, we trigger the user's complete callback at the end of ours. */
+                            if (finalElement && sequenceOptions.complete) {
+                                resetOptions.complete = sequenceOptions.complete;
+                            }  
+
+                            Container.Velocity.animate(element, properties.reset, resetOptions);
+                        };
+                    /* Only trigger the user's complete callback on the last effect call with the last element in the set. */
+                    } else if (finalElement && sequenceOptions.complete) {
+                        opts.complete = sequenceOptions.complete;
+                    }
+
+                    /* If the user isn't overriding the display option, default to "none" for "Out"-suffixed transitions. */
+                    if (sequenceOptions.display !== null) {
+                        if (sequenceOptions.display) {
+                            opts.display = sequenceOptions.display;
+                        } else if (/Out$/.test(effectName)) {
+                            opts.display = "none";                        
+                        }
+                    }
+                }
+
+                Container.Velocity.animate(element, propertyMap, opts);
+            }
+        };
+    };
+
+    /* Externalize the packagedEffects data so that they can optionally be modified and re-registered. */
+    Container.Velocity.RegisterUI.packagedEffects = 
+        { 
+            /* Animate.css */
+            "callout.bounce": {
+                defaultDuration: 550,
+                calls: [
+                    [ { translateY: -30 }, 0.25 ],
+                    [ { translateY: 0 }, 0.125 ],
+                    [ { translateY: -15 }, 0.125 ],
+                    [ { translateY: 0 }, 0.25 ]
+                ]
+            },
+            /* Animate.css */
+            "callout.shake": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { translateX: -10 }, 0.125 ],
+                    [ { translateX: 10 }, 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ { translateX: 0 }, 0.125 ]
+                ]
+            },
+            /* Animate.css */
+            "callout.flash": {
+                defaultDuration: 1100,
+                calls: [ 
+                    [ { opacity: [ 0, "swing", 1 ] }, 0.25 ],
+                    [ { opacity: [ 1, "swing" ] }, 0.25 ],
+                    [ { opacity: [ 0, "swing" ] }, 0.25 ],
+                    [ { opacity: [ 1, "swing" ] }, 0.25 ]
+                ]
+            },
+            /* Animate.css */
+            "callout.pulse": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { scaleX: 1.1, scaleY: 1.1 }, 0.50 ],
+                    [ { scaleX: 1, scaleY: 1 }, 0.50 ]
+                ]
+            },
+            /* Animate.css */
+            "callout.swing": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { rotateZ: 15 }, 0.20 ],
+                    [ { rotateZ: -10 }, 0.20 ],
+                    [ { rotateZ: 5 }, 0.20 ],
+                    [ { rotateZ: -5 }, 0.20 ],
+                    [ { rotateZ: 0 }, 0.20 ]
+                ]
+            },
+            /* Animate.css */
+            "callout.tada": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { scaleX: 0.9, scaleY: 0.9, rotateZ: -3 }, 0.10 ],
+                    [ { scaleX: 1.1, scaleY: 1.1, rotateZ: 3 }, 0.10 ],
+                    [ { scaleX: 1.1, scaleY: 1.1, rotateZ: -3 }, 0.10 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ "reverse", 0.125 ],
+                    [ { scaleX: 1, scaleY: 1, rotateZ: 0 }, 0.20 ]
+                ]
+            },
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipXIn": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 800, 800 ], rotateY: [ 0, -55 ] } ]
+                ],
+                reset: { transformPerspective: 0 }
+            },
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipXOut": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 800, 800 ], rotateY: 55 } ]
+                ],
+                reset: { transformPerspective: 0, rotateY: 0 }
+            },
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipYIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 800, 800 ], rotateX: [ 0, -45 ] } ]
+                ],
+                reset: { transformPerspective: 0 }
+            },
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipYOut": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 800, 800 ], rotateX: 25 } ]
+                ],
+                reset: { transformPerspective: 0, rotateX: 0 }
+            },
+            /* Animate.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipBounceXIn": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 0.725, 0 ], transformPerspective: [ 400, 400 ], rotateY: [ -10, 90 ] }, 0.50 ],
+                    [ { opacity: 0.80, rotateY: 10 }, 0.25 ],
+                    [ { opacity: 1, rotateY: 0 }, 0.25 ]
+                ],
+                reset: { transformPerspective: 0 }
+            },
+            /* Animate.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipBounceXOut": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 0.9, 1 ], transformPerspective: [ 400, 400 ], rotateY: -10 }, 0.50 ],
+                    [ { opacity: 0, rotateY: 90 }, 0.50 ]
+                ],
+                reset: { transformPerspective: 0, rotateY: 0 }
+            },
+            /* Animate.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipBounceYIn": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 0.725, 0 ], transformPerspective: [ 400, 400 ], rotateX: [ -10, 90 ] }, 0.50 ],
+                    [ { opacity: 0.80, rotateX: 10 }, 0.25 ],
+                    [ { opacity: 1, rotateX: 0 }, 0.25 ]
+                ],
+                reset: { transformPerspective: 0 }
+            },
+            /* Animate.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.flipBounceYOut": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 0.9, 1 ], transformPerspective: [ 400, 400 ], rotateX: -15 }, 0.50 ],
+                    [ { opacity: 0, rotateX: 90 }, 0.50 ]
+                ],
+                reset: { transformPerspective: 0, rotateX: [ 10 ] }
+            },
+            /* Magic.css */
+            "transition.swoopIn": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformOriginX: [ "100%", "25%" ], transformOriginY: [ "100%", "100%" ], scaleX: [ 1, 0 ], scaleY: [ 1, 0 ], translateX: [ 0, -700 ], translateZ: 0 } ]
+                ],
+                reset: { transformOriginX: "50%", transformOriginY: "50%" }
+            },
+            /* Magic.css */
+            "transition.swoopOut": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformOriginX: [ "25%", "100%" ], transformOriginY: [ "100%", "100%" ], scaleX: 0, scaleY: 0, translateX: -700, translateZ: 0 } ]
+                ],
+                reset: { transformOriginX: "50%", transformOriginY: "50%", scaleX: 1, scaleY: 1, translateX: 0 }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3. (Fades and scales only.) */
+            "transition.whirlIn": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: [ 1, 0 ], scaleY: [ 1, 0 ], rotateY: [ 0, 180 ] } ]
+                ]
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3. (Fades and scales only.) */
+            "transition.whirlOut": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: 0, scaleY: 0, rotateY: 180 } ]
+                ],
+                reset: { scaleX: 1, scaleY: 1, rotateY: 0 }
+            },
+            "transition.shrinkIn": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: [ 1, 1.625 ], scaleY: [ 1, 1.625 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.shrinkOut": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: 1.35, scaleY: 1.35, translateZ: 0 } ]
+                ],
+                reset: { scaleX: 1, scaleY: 1 }
+            },
+            "transition.expandIn": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: [ 1, 0.625 ], scaleY: [ 1, 0.625 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.expandOut": {
+                defaultDuration: 700,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformOriginX: [ "50%", "50%" ], transformOriginY: [ "50%", "50%" ], scaleX: 0.5, scaleY: 0.5, translateZ: 0 } ]
+                ],
+                reset: { scaleX: 1, scaleY: 1 }
+            },
+            /* Animate.css */
+            "transition.bounceIn": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], scaleX: [ 1.05, 0.3 ], scaleY: [ 1.05, 0.3 ] }, 0.40 ],
+                    [ { scaleX: 0.9, scaleY: 0.9, translateZ: 0 }, 0.20 ],
+                    [ { scaleX: 1, scaleY: 1 }, 0.50 ]
+                ]
+            },
+            /* Animate.css */
+            "transition.bounceOut": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: 1, scaleX: 0.95, scaleY: 0.95 }, 0.35 ],
+                    [ { scaleX: 1.1, scaleY: 1.1, translateZ: 0 }, 0.35 ],
+                    [ { opacity: 0, scaleX: 0.3, scaleY: 0.3 }, 0.30 ]
+                ],
+                reset: { scaleX: 1, scaleY: 1 }
+            },
+            /* Animate.css */
+            "transition.bounceUpIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 0 ], translateY: [ -30, 1000 ] }, 0.60 ],
+                    [ { translateY: 10 }, 0.20 ],
+                    [ { translateY: 0 }, 0.20 ]
+                ]
+            },
+            /* Animate.css */
+            "transition.bounceUpOut": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { opacity: [ 1, "easeInQuad", 1 ], translateY: 20 }, 0.20 ],
+                    [ { opacity: 0, translateY: -1000 }, 0.80 ]
+                ],
+                reset: { translateY: 0 }
+            },
+            /* Animate.css */
+            "transition.bounceDownIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 0 ], translateY: [ 30, -1000 ] }, 0.60 ],
+                    [ { translateY: -10 }, 0.20 ],
+                    [ { translateY: 0 }, 0.20 ]
+                ]
+            },
+            /* Animate.css */
+            "transition.bounceDownOut": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { opacity: [ 1, "easeInQuad", 1 ], translateY: -20 }, 0.20 ],
+                    [ { opacity: 0, translateY: 1000 }, 0.80 ]
+                ],
+                reset: { translateY: 0 }
+            },
+            /* Animate.css */
+            "transition.bounceLeftIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 0 ], translateX: [ 30, -1000 ] }, 0.60 ],
+                    [ { translateX: -10 }, 0.20 ],
+                    [ { translateX: 0 }, 0.20 ]
+                ]
+            },
+            /* Animate.css */
+            "transition.bounceLeftOut": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 1 ], translateX: 20 }, 0.20 ],
+                    [ { opacity: 0, translateX: -1000 }, 0.80 ]
+                ],
+                reset: { translateX: 0 }
+            },
+            /* Animate.css */
+            "transition.bounceRightIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 0 ], translateX: [ -30, 1000 ] }, 0.60 ],
+                    [ { translateX: 10 }, 0.20 ],
+                    [ { translateX: 0 }, 0.20 ]
+                ]
+            },
+            /* Animate.css */
+            "transition.bounceRightOut": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: [ 1, "easeOutQuad", 1 ], translateX: -30 }, 0.20 ],
+                    [ { opacity: 0, translateX: 1000 }, 0.80 ]
+                ],
+                reset: { translateX: 0 }
+            },
+            "transition.slideUpIn": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateY: [ 0, 20 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideUpOut": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateY: -20, translateZ: 0 } ]
+                ],
+                reset: { translateY: 0 }
+            },
+            "transition.slideDownIn": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateY: [ 0, -20 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideDownOut": {
+                defaultDuration: 900,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateY: 20, translateZ: 0 } ]
+                ],
+                reset: { translateY: 0 }
+            },
+            "transition.slideLeftIn": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateX: [ 0, -20 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideLeftOut": {
+                defaultDuration: 1050,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateX: -20, translateZ: 0 } ]
+                ],
+                reset: { translateX: 0 }
+            },
+            "transition.slideRightIn": {
+                defaultDuration: 1000,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateX: [ 0, 20 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideRightOut": {
+                defaultDuration: 1050,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateX: 20, translateZ: 0 } ]
+                ],
+                reset: { translateX: 0 }
+            },
+            "transition.slideUpBigIn": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateY: [ 0, 75 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideUpBigOut": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateY: -75, translateZ: 0 } ]
+                ],
+                reset: { translateY: 0 }
+            },
+            "transition.slideDownBigIn": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateY: [ 0, -75 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideDownBigOut": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateY: 75, translateZ: 0 } ]
+                ],
+                reset: { translateY: 0 }
+            },
+            "transition.slideLeftBigIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateX: [ 0, -75 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideLeftBigOut": {
+                defaultDuration: 750,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateX: -75, translateZ: 0 } ]
+                ],
+                reset: { translateX: 0 }
+            },
+            "transition.slideRightBigIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], translateX: [ 0, 75 ], translateZ: 0 } ]
+                ]
+            },
+            "transition.slideRightBigOut": {
+                defaultDuration: 750,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], translateX: 75, translateZ: 0 } ]
+                ],
+                reset: { translateX: 0 }
+            },
+            /* Magic.css */
+            "transition.perspectiveUpIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 800, 800 ], transformOriginX: [ 0, 0 ], transformOriginY: [ "100%", "100%" ], rotateX: [ 0, -180 ] } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%" }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveUpOut": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 800, 800 ], transformOriginX: [ 0, 0 ], transformOriginY: [ "100%", "100%" ], rotateX: -180 } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%", rotateX: 0 }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveDownIn": {
+                defaultDuration: 800,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 800, 800 ], transformOriginX: [ 0, 0 ], transformOriginY: [ 0, 0 ], rotateX: [ 0, 180 ] } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%" }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveDownOut": {
+                defaultDuration: 850,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 800, 800 ], transformOriginX: [ 0, 0 ], transformOriginY: [ 0, 0 ], rotateX: 180 } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%", rotateX: 0 }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveLeftIn": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 2000, 2000 ], transformOriginX: [ 0, 0 ], transformOriginY: [ 0, 0 ], rotateY: [ 0, -180 ] } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%" }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveLeftOut": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 2000, 2000 ], transformOriginX: [ 0, 0 ], transformOriginY: [ 0, 0 ], rotateY: -180 } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%", rotateY: 0 }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveRightIn": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: [ 1, 0 ], transformPerspective: [ 2000, 2000 ], transformOriginX: [ "100%", "100%" ], transformOriginY: [ 0, 0 ], rotateY: [ 0, 180 ] } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%" }
+            },
+            /* Magic.css */
+            /* Support: Loses rotation in IE9/Android 2.3 (fades only). */
+            "transition.perspectiveRightOut": {
+                defaultDuration: 950,
+                calls: [ 
+                    [ { opacity: [ 0, 1 ], transformPerspective: [ 2000, 2000 ], transformOriginX: [ "100%", "100%" ], transformOriginY: [ 0, 0 ], rotateY: 180 } ]
+                ],
+                reset: { transformPerspective: 0, transformOriginX: "50%", transformOriginY: "50%", rotateY: 0 }
+            }
+        };
+
+    /* Register the packaged effects. */
+    for (var effectName in Container.Velocity.RegisterUI.packagedEffects) {
+        Container.Velocity.RegisterUI(effectName, Container.Velocity.RegisterUI.packagedEffects[effectName]);
+    }
+})();
+},{}],18:[function(require,module,exports){
+var css = "@font-face {\n  font-family: 'robotoregular';\n  src: url(data:application/font-woff;base64,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) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n@font-face {\n  font-family: 'robotobold';\n  src: url(data:application/font-woff;base64,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) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n@font-face {\n  font-family: 'arizoniaregular';\n  src: url(data:application/x-font-woff;charset=utf-8;base64,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) format('woff');\n  font-weight: normal;\n  font-style: normal;\n}\n#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n  color: #757575;\n}\n#gifit-start:hover {\n  color: #ffffff;\n}\n#gifit-start .gif {\n  font-family: 'robotobold', sans-serif;\n}\n#gifit-start .it {\n  font-family: 'arizoniaregular', sans-serif;\n  font-size: 125%;\n}\n#gifit-options {\n  display: none;\n  position: absolute;\n  right: -15px;\n  bottom: 60px;\n  z-index: 2147483247;\n  padding: 25px 30px;\n  font-family: 'robotoregular', sans-serif;\n  font-size: 12px;\n  color: #969696;\n  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%) rgba(0, 0, 0, 0.5);\n  -webkit-filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.9));\n}\n#gifit-options:before {\n  content: '';\n  position: absolute;\n  bottom: -30px;\n  left: 80px;\n  border: rgba(0, 0, 0, 0.5) 15px solid;\n  border-right-color: transparent;\n  border-bottom-color: transparent;\n}\n#gifit-options fieldset {\n  opacity: 0;\n}\n#gifit-options fieldset {\n  height: 35px;\n  line-height: 35px;\n  border-bottom: rgba(255, 255, 255, 0.1) 1px dotted;\n}\n#gifit-options label {\n  display: inline-block;\n  width: 110px;\n  font-weight: normal;\n  text-transform: uppercase;\n}\n#gifit-options input {\n  width: 85px;\n  font-family: 'robotobold', sans-serif;\n  font-size: 22px;\n  border: none;\n  color: rgba(255, 255, 255, 0.8);\n  background: none;\n  outline: none;\n}\n#gifit-options input:focus {\n  color: #ffffff;\n}\n#gifit-options input:hover {\n  color: #ffffff;\n}\n#gifit-options input[type=\"range\"] {\n  vertical-align: middle;\n  margin-top: 0;\n}\n#gifit-submit {\n  cursor: pointer;\n  display: block;\n  width: 90px;\n  margin: 25px auto 0 auto;\n  padding: 0 10px;\n  font-size: 24px;\n  line-height: 35px;\n  background: #2d2d2d;\n  border-bottom: #141414 3px solid;\n  border-radius: 5px;\n  outline: none;\n}\n#gifit-submit:hover {\n  background: #474747;\n}\n#gifit-submit .gif {\n  font-family: 'robotobold', sans-serif;\n  color: #28ffff;\n}\n#gifit-submit .it {\n  font-family: 'arizoniaregular', sans-serif;\n  font-size: 125%;\n  color: #ff2828;\n}\n#gifit-canvas {\n  position: fixed;\n  top: -9999px;\n  left: -9999px;\n}\nbody.gifit-active #gifit-start {\n  color: #ffffff;\n}\n";(require('lessify'))(css); module.exports = css;
+},{"lessify":12}],19:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9853,7 +13655,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   return "<div id=\"gifit-start\" class=\"ytp-button ytp-button-gif\" role=\"button\">\r\n	<span class=\"gif\">GIF</span><span class=\"it\">it!</span>\r\n</div>";
   });
 
-},{"hbsfy/runtime":9}],18:[function(require,module,exports){
+},{"hbsfy/runtime":9}],20:[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var Handlebars = require('hbsfy/runtime');
 module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -9862,7 +13664,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<fieldset>\r\n			<label for=\"gifit-option-start\">Start</label>\r\n			<input id=\"gifit-option-start\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-end\">End</label>\r\n			<input id=\"gifit-option-end\" name=\"end\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-width\">Width</label>\r\n			<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-colors\">Colors</label>\r\n			<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n			<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-quality\">Quality</label>\r\n			<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		</fieldset>\r\n		<button id=\"gifit-submit\" type=\"submit\">\r\n			<span class=\"gif\">GIF</span><span class=\"it\">it!</span>\r\n		</button>\r\n	</form>\r\n</div>";
+  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<fieldset>\r\n			<label for=\"gifit-option-start\">Start</label>\r\n			<input id=\"gifit-option-start\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-end\">End</label>\r\n			<input id=\"gifit-option-end\" name=\"end\" type=\"text\" value=\"0:00\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-width\">Width</label>\r\n			<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-colors\">Colors</label>\r\n			<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n			<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		</fieldset>\r\n		<fieldset>\r\n			<label for=\"gifit-option-quality\">Quality</label>\r\n			<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		</fieldset>\r\n		<div class=\"actions\">\r\n			<button id=\"gifit-submit\" type=\"submit\">\r\n				<span class=\"gif\">GIF</span><span class=\"it\">it!</span>\r\n			</button>\r\n		</div>\r\n	</form>\r\n</div>";
   });
 
-},{"hbsfy/runtime":9}]},{},[13])
+},{"hbsfy/runtime":9}]},{},[14])

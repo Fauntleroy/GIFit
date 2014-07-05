@@ -3,7 +3,9 @@ require('../styles/content.less');
 
 // third party modules
 var gifjs = require('gif.js');
-var $ = require('jquery');
+var $ = window.jQuery = window.$ = require('jquery');
+var velocity = require('velocity-animate');
+require('./vendor/velocity.ui.js');
 var getFormData = require('./vendor/getFormData.js');
 var toSeconds = require('./vendor/toSeconds.js');
 
@@ -85,6 +87,16 @@ var generateGIF = function( options ){
 
 $gifit_button.on( 'click', function( e ){
     $body.toggleClass('gifit-active');
+    if( $gifit_options.is(':visible') ){
+        $gifit_options.velocity( 'transition.slideDownOut', 200 );
+        $gifit_options.find('fieldset, .actions').velocity({
+            opacity: 0
+        }, 200 );
+    }
+    else {
+        $gifit_options.velocity( 'transition.slideUpIn', 200 );
+        $gifit_options.find('fieldset, .actions').velocity( 'transition.slideUpIn', { stagger: 35 }, 75 );
+    }
 });
 
 $gifit_options_form.on( 'submit', function( e ){
