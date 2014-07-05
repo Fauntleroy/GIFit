@@ -1,0 +1,31 @@
+@MAXIMUM_Z_INDEX: 2147483647;
+
+@video_controls_height: 27px;
+
+#gifit-start {
+	float: right;
+	height: @video_controls_height;
+	line-height: @video_controls_height;
+}
+
+#gifit-overlay {
+	background: rgba( 15, 15, 15, 0.95 );
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: @MAXIMUM_Z_INDEX - 1000;
+	display:none;
+}
+
+body.gifit-active {
+	#player-api .html5-video-container {
+		z-index: @MAXIMUM_Z_INDEX - 500;
+        -webkit-filter: drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) );
+	}
+
+	#gifit-overlay {
+		display: block;
+	}
+}

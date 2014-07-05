@@ -1,19 +1,21 @@
+require('../styles/content.less');
 var gifjs = require('gif.js');
 var dq = require('domquery');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
+var body = dq('body');
 var youtube_video_container = dq('#player-api .html5-video-container');
 var youtube_video = dq('#player-api video.video-stream');
 var youtube_controls = dq('#player-api .html5-video-controls .html5-player-chrome');
-var gifit_button = dq('<div class="ytp-button typ-button-gif" role="button">GIF</div>');
+var gifit_button = dq('<div id="gifit-start" class="ytp-button ytp-button-gif" role="button">GIF</div>');
 var gifit_canvas = dq('<canvas></canvas>');
 var gifit_canvas_context = gifit_canvas[0].getContext('2d');
-var gifit_overlay = dq('<div style="background:rgba(15,15,15,0.95);position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483447;display:none;"></div>');
+var gifit_overlay = dq('<div id="gifit-overlay"></div>');
 
 youtube_controls.add( gifit_button );
-document.body.appendChild( gifit_canvas[0] );
-document.body.appendChild( gifit_overlay[0] );
+body.add( gifit_canvas[0] );
+body.add( gifit_overlay[0] );
 
 var gif;
 var capture_interval;
@@ -56,13 +58,7 @@ var endCapture = function(){
 gifit_button.on( 'click', function( e ){
     console.log('gifit button clicked', arguments);
     youtube_video[0].pause();
-    youtube_video_container.style({
-        'z-index': MAXIMUM_Z_INDEX - 100,
-        '-webkit-filter': 'drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) )'
-    });
-    gifit_overlay.style({
-        display: 'block'
-    });
+    body.addClass('gifit-active');
 });
 
 chrome.runtime.onMessage.addListener( function( request, sender, cb ){

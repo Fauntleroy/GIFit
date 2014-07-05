@@ -25,6 +25,7 @@
     "browserify-shim": "~3.6.0",
     "gulp-less": "~1.3.1",
     "gif.js": "~0.1.6",
-    "domquery": "~1.2.0"
+    "domquery": "~1.2.0",
+    "lessify": "~0.4.1"
   }
 }

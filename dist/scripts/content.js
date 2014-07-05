@@ -1734,22 +1734,52 @@ exports.right = function(str){
 // gif.js 0.1.6 - https://github.com/jnordberg/gif.js
 
 },{}],39:[function(require,module,exports){
+module.exports = function (css) {
+  var head = document.getElementsByTagName('head')[0],
+      style = document.createElement('style');
+
+  style.type = 'text/css';
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+  
+  head.appendChild(style);
+};
+
+module.exports.byUrl = function(url) {
+  var head = document.getElementsByTagName('head')[0],
+      link = document.createElement('link');
+
+  link.rel = 'stylesheet';
+  link.href = url;
+  
+  head.appendChild(link);
+};
+},{}],40:[function(require,module,exports){
+module.exports = require('cssify');
+
+},{"cssify":39}],41:[function(require,module,exports){
+require('../styles/content.less');
 var gifjs = require('gif.js');
 var dq = require('domquery');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
+var body = dq('body');
 var youtube_video_container = dq('#player-api .html5-video-container');
 var youtube_video = dq('#player-api video.video-stream');
 var youtube_controls = dq('#player-api .html5-video-controls .html5-player-chrome');
-var gifit_button = dq('<div class="ytp-button typ-button-gif" role="button">GIF</div>');
+var gifit_button = dq('<div id="gifit-start" class="ytp-button ytp-button-gif" role="button">GIF</div>');
 var gifit_canvas = dq('<canvas></canvas>');
 var gifit_canvas_context = gifit_canvas[0].getContext('2d');
-var gifit_overlay = dq('<div style="background:rgba(15,15,15,0.95);position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483447;display:none;"></div>');
+var gifit_overlay = dq('<div id="gifit-overlay"></div>');
 
 youtube_controls.add( gifit_button );
-document.body.appendChild( gifit_canvas[0] );
-document.body.appendChild( gifit_overlay[0] );
+body.add( gifit_canvas[0] );
+body.add( gifit_overlay[0] );
 
 var gif;
 var capture_interval;
@@ -1792,13 +1822,7 @@ var endCapture = function(){
 gifit_button.on( 'click', function( e ){
     console.log('gifit button clicked', arguments);
     youtube_video[0].pause();
-    youtube_video_container.style({
-        'z-index': MAXIMUM_Z_INDEX - 100,
-        '-webkit-filter': 'drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) )'
-    });
-    gifit_overlay.style({
-        display: 'block'
-    });
+    body.addClass('gifit-active');
 });
 
 chrome.runtime.onMessage.addListener( function( request, sender, cb ){
@@ -1812,4 +1836,6 @@ chrome.runtime.onMessage.addListener( function( request, sender, cb ){
     }
 });
 
-},{"domquery":1,"gif.js":38}]},{},[39])
+},{"../styles/content.less":42,"domquery":1,"gif.js":38}],42:[function(require,module,exports){
+var css = "#gifit-start {\n  float: right;\n  height: 27px;\n  line-height: 27px;\n}\n#gifit-overlay {\n  background: rgba(15, 15, 15, 0.95);\n  position: fixed;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 2147482647;\n  display: none;\n}\nbody.gifit-active #player-api .html5-video-container {\n  z-index: 2147483147;\n  -webkit-filter: drop-shadow(0 50px 75px rgba(0, 0, 0, 0.9));\n}\nbody.gifit-active #gifit-overlay {\n  display: block;\n}\n";(require('lessify'))(css); module.exports = css;
+},{"lessify":40}]},{},[41])

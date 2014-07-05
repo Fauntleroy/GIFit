@@ -3,20 +3,14 @@ var path = require('path');
 var vinyl_source = require('vinyl-source-stream');
 var watchify = require('watchify');
 var gulp = require('gulp');
-var gulp_less = require('gulp-less');
-
-gulp.task( 'compile css', function(){
-	gulp.src('./src/styles/content.less')
-		.pipe( gulp_less({
-			paths: [ path.join( __dirname, 'src', 'styles' ) ]
-		}))
-		.pipe( gulp.dest('./dist') );
-});
+var w;
+var bundle;
 
 gulp.task( 'compile content.js', function(){
-	var w = watchify('./src/scripts/content.js');
+	w = watchify('./src/scripts/content.js');
 	w.transform('hbsfy');
-	var bundle = function(){
+	w.transform('lessify');
+	bundle = function(){
 		return w.bundle()
 			.pipe( vinyl_source('content.js') )
 			.pipe( gulp.dest('./dist/scripts') );
@@ -26,6 +20,10 @@ gulp.task( 'compile content.js', function(){
 		console.log('error', arguments);
 	})
 	return bundle();
+});
+
+gulp.task( 'recompile content.js', function(){
+	bundle();
 });
 
 gulp.task( 'copy static files', function(){
@@ -39,7 +37,7 @@ gulp.task( 'copy static files', function(){
 });
 
 gulp.task( 'watch css', function(){
-	gulp.watch( './src/styles/**/*.{less,css}', ['compile css'] );
+	gulp.watch( './src/styles/**/*.{less,css}', ['recompile content.js'] );
 });
 
 gulp.task( 'watch static files', function(){
@@ -52,7 +50,6 @@ gulp.task( 'watch static files', function(){
 });
 
 gulp.task( 'default', [
-	'compile css',
 	'compile content.js',
 	'copy static files',
 	'watch css',
