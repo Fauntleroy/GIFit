@@ -1,5 +1,8 @@
 @MAXIMUM_Z_INDEX: 2147483647;
 
+@color_panel_text: rgb( 150, 150, 150 );
+@color_panel_background: rgba( 0, 0, 0, 0.9 );
+@color_panel_shadow: rgba( 0, 0, 0, 0.9 );
 @video_controls_height: 27px;
 
 #gifit-start {
@@ -38,9 +41,9 @@
 	top: 100px;
 	right: 200px;
 	z-index: @MAXIMUM_Z_INDEX - 400;
-	color: rgb( 150, 150, 150 );
-	background: rgba( 0, 0, 0, 0.9 );
-	-webkit-filter: drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) );
+	color: @color_panel_text;
+	background: @color_panel_background;
+	-webkit-filter: drop-shadow( 0 50px 75px @color_panel_shadow );
 
 	label {
 		display: block;
@@ -60,17 +63,57 @@
 	background: rgb( 45, 45, 45 );
 }
 
+#gifit-range {
+	display: none;
+	position: absolute;
+	top: 300px;
+	left: 200px;
+	z-index: @MAXIMUM_Z_INDEX - 400;
+	width: 400px;
+	height: 20px;
+	background: @color_panel_background;
+
+	.start {
+		cursor: col-resize;
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 5px;
+		height: 20px;
+		background: rgb( 255, 255, 255 );
+	}
+
+	.range {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background: rgb( 40, 255, 255 );
+	}
+
+	.end {
+		cursor: col-resize;
+		display: block;
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 5px;
+		height: 20px;
+		background: rgb( 255 ,255, 255 );
+	}
+}
+
 body.gifit-active {
 	#player-api .html5-video-container {
 		z-index: @MAXIMUM_Z_INDEX - 500;
         -webkit-filter: drop-shadow( 0 50px 75px rgba( 0, 0, 0, 0.9 ) );
 	}
 
-	#gifit-overlay {
-		display: block;
-	}
-
-	#gifit-options {
+	#gifit-overlay,
+	#gifit-options,
+	#gifit-range {
 		display: block;
 	}
 }
