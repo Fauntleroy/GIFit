@@ -9707,9 +9707,7 @@ var gifjs = require('gif.js');
 var $ = require('jquery');
 var getFormData = require('./vendor/getFormData.js');
 var gifit_button_template = require('../templates/button.hbs');
-var gifit_overlay_template = require('../templates/overlay.hbs');
 var gifit_options_template = require('../templates/options.hbs');
-var gifit_range_template = require('../templates/range.hbs');
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
@@ -9723,20 +9721,12 @@ var $youtube_controls = $('#player-api .html5-video-controls .html5-player-chrom
 var $gifit_button = $( gifit_button_template() );
 var $gifit_canvas = $('<canvas></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
-var $gifit_overlay = $( gifit_overlay_template() );
-var $gifit_close = $gifit_overlay.find('#gifit-close');
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
-var $gifit_range = $( gifit_range_template() );
-var $gifit_range_start = $gifit_range.find('.start');
-var $gifit_range_end = $gifit_range.find('.end');
-var $gifit_range_range = $gifit_range.find('.range');
 
 $youtube_controls.append( $gifit_button );
 $body.append( $gifit_canvas );
-$body.append( $gifit_overlay );
 $body.append( $gifit_options );
-$body.append( $gifit_range );
 
 var gif;
 var capture_interval;
@@ -9780,72 +9770,7 @@ var endCapture = function(){
 };
 
 $gifit_button.on( 'click', function( e ){
-    console.log('gifit button clicked', arguments);
-    youtube_video.pause();
-    $body.addClass('gifit-active');
-});
-
-$gifit_close.on( 'click', function( e ){
-    e.preventDefault();
-    $body.removeClass('gifit-active');
-});
-
-var rangePosition = function( e ){
-    var mouse_location = e.pageX - $gifit_range.offset().left;
-    var current_position = ( mouse_location / $gifit_range.width() );
-    if( current_position > 1 ) current_position = 1;
-    if( current_position < 0 ) current_position = 0;
-    return current_position;
-};
-
-var previewFrame = function( position ){
-    youtube_video.currentTime = position * youtube_video.duration;
-};
-
-var moveRangeIndicator = function( $indicator, position ){
-    $indicator.css({
-        left: $gifit_range.width() * position
-    });
-    $gifit_range_range.css({
-        left: $gifit_range_start.css('left'),
-        right: $gifit_range.width() - parseInt( $gifit_range_end.css('left'), 10 )
-    });
-};
-
-$gifit_range_start.on( 'mousedown', function( e ){
-    $window.on({
-        'mousemove.gifit-range-start': function( e ){
-            var position = rangePosition( e );
-            previewFrame( position );
-            moveRangeIndicator( $gifit_range_start, position );
-            start_time = position * youtube_video.duration;
-        },
-        'mouseup.gifit-range-start': function( e ){
-            var position = rangePosition( e );
-            previewFrame( position );
-            moveRangeIndicator( $gifit_range_start, position );
-            start_time = position * youtube_video.duration;
-            $window.off('.gifit-range-start');
-        }
-    });
-});
-
-$gifit_range_end.on( 'mousedown', function( e ){
-    $window.on({
-        'mousemove.gifit-range-end': function( e ){
-            var position = rangePosition( e );
-            previewFrame( position );
-            moveRangeIndicator( $gifit_range_end, position );
-            end_time = position * youtube_video.duration;
-        },
-        'mouseup.gifit-range-end': function( e ){
-            var position = rangePosition( e );
-            previewFrame( position );
-            moveRangeIndicator( $gifit_range_end, position );
-            end_time = position * youtube_video.duration;
-            $window.off('.gifit-range-end');
-        }
-    });
+    $body.toggleClass('gifit-active');
 });
 
 $gifit_options_form.on( 'submit', function( e ){
@@ -9853,7 +9778,7 @@ $gifit_options_form.on( 'submit', function( e ){
     var options = getFormData( $gifit_options_form.get(0) );
     console.log('opts',options);
 });
-},{"../styles/content.less":15,"../templates/button.hbs":16,"../templates/options.hbs":17,"../templates/overlay.hbs":18,"../templates/range.hbs":19,"./vendor/getFormData.js":14,"gif.js":1,"jquery":10}],14:[function(require,module,exports){
+},{"../styles/content.less":15,"../templates/button.hbs":16,"../templates/options.hbs":17,"./vendor/getFormData.js":14,"gif.js":1,"jquery":10}],14:[function(require,module,exports){
 var getFormData = function( form ){
     var form_data = {};
     Array.prototype.forEach.call( form.elements, function( el, i ){
@@ -9896,31 +9821,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<label for=\"gifit-option-width\">Width</label>\r\n		<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		<label for=\"gifit-option-colors\">Colors</label>\r\n		<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n		<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		<label for=\"gifit-option-quality\">Quality</label>\r\n		<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		<button id=\"gifit-submit\" type=\"submit\">GIFit</button>\r\n	</form>\r\n</div>";
-  });
-
-},{"hbsfy/runtime":9}],18:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var Handlebars = require('hbsfy/runtime');
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<div id=\"gifit-overlay\">\r\n	<a id=\"gifit-close\" href=\"#close\"></a>\r\n</div>";
-  });
-
-},{"hbsfy/runtime":9}],19:[function(require,module,exports){
-// hbsfy compiled Handlebars template
-var Handlebars = require('hbsfy/runtime');
-module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<div id=\"gifit-range\">\r\n	<var class=\"range\"></var>\r\n	<var class=\"start\"></var>\r\n	<var class=\"end\"></var>\r\n</div>";
+  return "<div id=\"gifit-options\">\r\n	<form>\r\n		<label for=\"gifit-option-range\">Range</label>\r\n		<input id=\"gifit-option-range\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n		<span class=\"input-interstitial\">to</span>\r\n		<input name=\"end\" type=\"text\" value=\"0:00\" />\r\n		<label for=\"gifit-option-width\">Width</label>\r\n		<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"800\" value=\"320\" />\r\n		<label for=\"gifit-option-colors\">Colors</label>\r\n		<input id=\"gifit-option-colors\" name=\"colors\" type=\"number\" min=\"2\" max=\"256\" value=\"128\" />\r\n		<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n		<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n		<label for=\"gifit-option-quality\">Quality</label>\r\n		<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n		<button id=\"gifit-submit\" type=\"submit\">GIFit</button>\r\n	</form>\r\n</div>";
   });
 
 },{"hbsfy/runtime":9}]},{},[13])
