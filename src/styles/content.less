@@ -7,7 +7,7 @@
 @color_it: rgb( 255, 40, 40 );
 @color_youtube_toolbar: rgb( 117, 117, 117 );
 @color_panel_text: rgb( 150, 150, 150 );
-@color_panel_background: rgba( 0, 0, 0, 0.65 );
+@color_panel_background: rgba( 0, 0, 0, 0.5 );
 @color_panel_shadow: rgba( 0, 0, 0, 0.9 );
 @color_input_text: rgb( 255, 255, 255 );
 @color_input_border: rgb( 100, 100, 100 );
@@ -38,14 +38,30 @@
 	display: none;
 	position: absolute;
 	right: -15px;
-	bottom: 50px;
+	bottom: 60px;
 	z-index: @MAXIMUM_Z_INDEX - 400;
 	padding: 25px 30px;
 	font-family: 'robotoregular', sans-serif;
 	font-size: 12px;
 	color: @color_panel_text;
-	background: @color_panel_background;
+	background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%,rgba(0,0,0,0) 100%) @color_panel_background;
 	-webkit-filter: drop-shadow( 0 15px 15px @color_panel_shadow );
+
+	&:before {
+		content: '';
+		position: absolute;
+		bottom: -30px;
+		left: 80px;
+		border: @color_panel_background 15px solid;
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+	}
+
+	fieldset {
+		height: 35px;
+		line-height: 35px;
+		border-bottom: rgba( 255, 255, 255, 0.1 ) 1px dotted;
+	}
 
 	label {
 		display: inline-block;
@@ -70,6 +86,11 @@
 		&:hover {
 			color: @color_input_text;
 		}
+
+		&[type="range"] {
+			vertical-align: middle;
+			margin-top: 0;
+		}
 	}
 }
 
@@ -77,7 +98,7 @@
 	cursor: pointer;
 	display: block;
 	width: 90px;
-	margin: 30px auto 0 auto;
+	margin: 25px auto 0 auto;
 	padding: 0 10px;
 	font-size: 24px;
 	line-height: 35px;
