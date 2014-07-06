@@ -94,7 +94,7 @@ $gifit_button.on( 'click', function( e ){
         $gifit_options.velocity( 'transition.slideDownOut', 200 );
         $gifit_options.find('fieldset, .actions').velocity({
             opacity: 0
-        }, 200 );
+        }, 0 );
     }
     else {
         $gifit_options.velocity( 'transition.slideUpIn', 200 );

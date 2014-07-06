@@ -12941,6 +12941,11 @@ $youtube_controls.append( $gifit_button );
 $youtube_player_api.append( $gifit_options );
 $body.append( $gifit_canvas );
 
+// use velocity to reset opacity to avoid jitter
+$gifit_options.find('fieldset, .actions').velocity({
+    opacity: 0
+}, 0 );
+
 var gif;
 var capture_interval;
 
@@ -13002,7 +13007,7 @@ $gifit_button.on( 'click', function( e ){
         $gifit_options.velocity( 'transition.slideDownOut', 200 );
         $gifit_options.find('fieldset, .actions').velocity({
             opacity: 0
-        }, 200 );
+        }, 0 );
     }
     else {
         $gifit_options.velocity( 'transition.slideUpIn', 200 );
