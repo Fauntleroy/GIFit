@@ -14,3 +14,9 @@ Since GIFit hasn't yet been released to the Chrome Web Store, you'll need to ins
 4. Navigate to [YouTube](http://youtube.com). You should now see a "GIFit!" button in video toolbars.
 
 If you have any problems with the extension, be sure to speak up and [file issues](https://github.com/Fauntleroy/GIFit/issues)!
+
+##Contributing
+
+Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project. To start developing, just run `gulp` and it'll run the default task (build/watch everything). Source files are in `src`, and the distributable extension files are in `dist`.
+
+When fixing bugs/adding features please make NEW BRANCHES and submit pull reqs. Please follow the existing code style as well as you're able.
