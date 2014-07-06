@@ -16,9 +16,5 @@
         "scripts/vendor/gif.worker.js.map",
         "scripts/gif.js.map"
     ],
-    "browser_action": {
-        "default_title": "GIFYT",
-        "default_icon": "images/icon.png"
-    },
     "manifest_version": 2
 }
