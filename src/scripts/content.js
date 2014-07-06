@@ -59,6 +59,7 @@ var generateGIF = function( options ){
         workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
     });
     gif.on( 'finished', function( blob ){
+        $gifit_options_form.find('input, button').prop( 'disabled', false );
         window.open( URL.createObjectURL( blob ) );
     });
     // make sure the video is paused before we jump frames
@@ -105,6 +106,6 @@ $gifit_button.on( 'click', function( e ){
 $gifit_options_form.on( 'submit', function( e ){
     e.preventDefault();
     var options = getFormData( $gifit_options_form.get(0) );
-    console.log('opts',options);
     generateGIF( options );
+    $gifit_options_form.find('input, button').prop( 'disabled', true );
 });

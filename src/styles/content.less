@@ -12,6 +12,7 @@
 @color_input_text: rgb( 255, 255, 255 );
 @color_input_border: rgb( 100, 100, 100 );
 @color_button_background: rgb( 45, 45, 45 );
+@color_border_color: rgba( 255, 255, 255, 0.1 );
 @video_controls_height: 27px;
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -71,7 +72,7 @@ input[type=number]::-webkit-outer-spin-button {
 	fieldset {
 		height: 35px;
 		line-height: 35px;
-		border-bottom: rgba( 255, 255, 255, 0.1 ) 1px dotted;
+		border-bottom: @color_border_color 1px dotted;
 	}
 
 	label {
@@ -98,6 +99,11 @@ input[type=number]::-webkit-outer-spin-button {
 			color: @color_input_text;
 		}
 
+		&:disabled,
+		&:disabled:hover {
+			color: @color_panel_text;
+		}
+
 		&[type="range"] {
 			vertical-align: middle;
 			margin-top: 0;
@@ -117,9 +123,15 @@ input[type=number]::-webkit-outer-spin-button {
 	border-bottom: darken( @color_button_background, 10% ) 3px solid;
 	border-radius: 5px;
 	outline: none;
+	-webkit-transition: -webkit-transform 150ms, background 100ms;
 
 	&:hover {
 		background: lighten( @color_button_background, 10% );
+	}
+
+	&:active {
+		-webkit-transform: scale( 0.95 );
+		-webkit-transition: -webkit-transform 0;
 	}
 
 	.gif {
