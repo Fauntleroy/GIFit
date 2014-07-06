@@ -30,7 +30,7 @@ var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
 
 $youtube_controls.append( $gifit_button );
-$youtube_player_api.append( $gifit_options );
+$body.append( $gifit_options );
 $body.append( $gifit_canvas );
 
 var gif;
@@ -89,6 +89,18 @@ var generateGIF = function( options ){
     }, options.frame_interval );
 };
 
+var setPopupPosition = function(){
+    var offset = $gifit_button.offset();
+    $gifit_options.css({
+        top: offset.top,
+        left: offset.left
+    });
+};
+
+$window.resize( function(){
+    setPopupPosition();
+});
+
 $gifit_button.on( 'click', function( e ){
     $body.toggleClass('gifit-active');
     if( $gifit_options.is(':visible') ){
@@ -98,6 +110,7 @@ $gifit_button.on( 'click', function( e ){
         }, 0 );
     }
     else {
+        setPopupPosition();
         $gifit_options.velocity( 'transition.slideUpIn', 200 );
         $gifit_options.find('fieldset, .actions').velocity( 'transition.slideUpIn', { stagger: 35 }, 75 );
     }
