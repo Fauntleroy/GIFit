@@ -48,11 +48,14 @@ var generateGIF = function( options ){
     options.frame_interval = 1000 / options.framerate;
     options.start = toSeconds( options.start );
     options.end = toSeconds( options.end );
+    options.height = Math.ceil( ( options.width * $youtube_video.height() ) / $youtube_video.width() );
     // create GIF encoder
     gif = new gifjs.GIF({
         workers: 8,
         quality: options.quality,
         repeat: 0,
+        width: options.width,
+        height: options.height,
         workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
     });
     gif.on( 'finished', function( blob ){
@@ -64,8 +67,8 @@ var generateGIF = function( options ){
     }
     // prepare canvas for receiving frames
     $gifit_canvas
-        .width( options.width )
-        .height( ( $gifit_canvas.width() * $youtube_video.height() ) / $youtube_video.width() );
+        .attr( 'width', options.width )
+        .attr( 'height', options.height );
     // play the part of the video we want to convert
     youtube_video.currentTime = options.start;
     youtube_video.play();
@@ -77,7 +80,7 @@ var generateGIF = function( options ){
             clearInterval( addFrameInterval );
             return;
         }
-        gifit_canvas_context.drawImage( $youtube_video.get(0), 0, 0, $gifit_canvas.width(), $gifit_canvas.height() );
+        gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
         gif.addFrame( $gifit_canvas.get(0), {
             delay: options.frame_interval,
             copy: true
