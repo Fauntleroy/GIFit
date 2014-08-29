@@ -13,12 +13,28 @@
 @color_input_border: rgb( 100, 100, 100 );
 @color_button_background: rgb( 45, 45, 45 );
 @color_border_color: rgba( 255, 255, 255, 0.1 );
+@color_white_glow: rgba( 255, 255, 255, 0.25 );
 @video_controls_height: 27px;
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-	-webkit-appearance: none; 
-	margin: 0; 
+@-webkit-keyframes glow {
+	0% {
+		background: lighten( @color_button_background, 10% );
+		box-shadow: 0 0 10px fadeout( @color_white_glow, 50% );
+	}
+	50% {
+		background: lighten( @color_button_background, 20% );
+		box-shadow: 0 0 20px @color_white_glow;
+	}
+	100% {
+		background: lighten( @color_button_background, 10% );
+		box-shadow: 0 0 10px fadeout( @color_white_glow, 50% );
+	}
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
 }
 
 #gifit-start {
@@ -113,7 +129,7 @@ input[type=number]::-webkit-outer-spin-button {
 #gifit-submit {
 	cursor: pointer;
 	display: block;
-	width: 90px;
+	width: 130px;
 	margin: 25px auto 0 auto;
 	padding: 0 10px;
 	font-size: 24px;
@@ -138,10 +154,29 @@ input[type=number]::-webkit-outer-spin-button {
 		color: @color_gif;
 	}
 
-	.it {
+	.it,
+	.ing {
 		font-family: 'arizoniaregular', sans-serif;
 		font-size: 125%;
 		color: @color_it;
+	}
+
+	.ing {
+		display: none;
+	}
+}
+
+#gifit-options.processing {
+	#gifit-submit {
+		-webkit-animation: glow 2000ms infinite;
+
+		.it {
+			display: none;
+		}
+
+		.ing {
+			display: inline;
+		}
 	}
 }
 
