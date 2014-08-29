@@ -24,6 +24,7 @@ var $youtube_video = $youtube_player_api.find('video.video-stream');
 var youtube_video = $youtube_video.get(0);
 var $youtube_controls = $youtube_player_api.find('.html5-video-controls .html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
+var $gifit_button_it = $gifit_button.find('.it');
 var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
 var $gifit_options = $( gifit_options_template() );
@@ -37,6 +38,8 @@ var gif;
 var capture_interval;
 
 var generateGIF = function( options ){
+    $gifit_options_form.find('input, button').prop( 'disabled', true );
+    $gifit_options.addClass('processing');
     // generate GIF options
     var defaults = {
         width: 320,
@@ -60,6 +63,7 @@ var generateGIF = function( options ){
     });
     gif.on( 'finished', function( blob ){
         $gifit_options_form.find('input, button').prop( 'disabled', false );
+        $gifit_options.removeClass('processing');
         window.open( URL.createObjectURL( blob ) );
     });
     // make sure the video is paused before we jump frames
@@ -120,5 +124,4 @@ $gifit_options_form.on( 'submit', function( e ){
     e.preventDefault();
     var options = getFormData( $gifit_options_form.get(0) );
     generateGIF( options );
-    $gifit_options_form.find('input, button').prop( 'disabled', true );
 });
