@@ -109,14 +109,14 @@ $gifit_button.on( 'click', function( e ){
     $body.toggleClass('gifit-active');
     if( $gifit_options.is(':visible') ){
         $gifit_options.velocity( 'transition.slideDownOut', 200 );
-        $gifit_options.find('fieldset, .actions').velocity({
+        $gifit_options.find('fieldset, .gifit-actions').velocity({
             opacity: 0
         }, 0 );
     }
     else {
         setPopupPosition();
         $gifit_options.velocity( 'transition.slideUpIn', 200 );
-        $gifit_options.find('fieldset, .actions').velocity( 'transition.slideUpIn', { stagger: 35 }, 75 );
+        $gifit_options.find('fieldset, .gifit-actions').velocity( 'transition.slideUpIn', { stagger: 35 }, 75 );
     }
 });
 
