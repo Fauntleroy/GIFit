@@ -53,7 +53,9 @@
 	display: none;
 	box-sizing: border-box;
 	position: absolute;
-	z-index: @MAXIMUM_Z_INDEX - 400;
+	right: 0;
+	bottom: 35px;
+	z-index: 700;
 	width: 280px;
 	margin: -362px 0 0 -62px;
 	padding: 25px;
@@ -122,12 +124,6 @@ body.gifit-active {
 
 .gifit {
 
-	input[type=number]::-webkit-inner-spin-button,
-	input[type=number]::-webkit-outer-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-
 	fieldset {
 		line-height: 35px;
 	}
@@ -139,13 +135,17 @@ body.gifit-active {
 		line-height: @label_font_size;
 	}
 
-	input {
+	input[type="text"],
+	input[type="number"] {
 		font-family: 'robotoregular', sans-serif;
 		font-size: 22px;
 		color: fadeout( @color_input_text, 20% );
 		background: none;
 		outline: none;
 		transition: background-color 550ms, border-color 550ms;
+		border: @color_input_border 1px solid;
+		border-radius: @input_border_radius;
+		padding: 13px 7px 0 7px;
 
 		&:focus {
 			color: @color_input_text;
@@ -154,7 +154,14 @@ body.gifit-active {
 			transition: background-color 225ms, border-color 225ms;
 		}
 
+		&[type="number"]::-webkit-inner-spin-button,
+		&[type="number"]::-webkit-outer-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+
 		&[type="range"] {
+			cursor: pointer;
 			vertical-align: middle;
 			margin-top: 0;
 		}
@@ -185,13 +192,6 @@ body.gifit-active {
 			box-sizing: border-box;
 			width: 100%;
 		}
-
-		input[type="text"],
-		input[type="number"] {
-			border: @color_input_border 1px solid;
-			border-radius: @input_border_radius;
-			padding: 13px 7px 0 7px;
-		}
 	}
 
 	.gifit-inputs-linked__vertical {
@@ -204,6 +204,10 @@ body.gifit-active {
 				margin-top: -1px;
 				border-radius: 0 0 @input_border_radius @input_border_radius;
 				border-top-color: transparent;
+
+				&:focus {
+					border-top-color: darken( @color_input_border, 10% );
+				}
 			}
 		}
 	}
@@ -221,6 +225,10 @@ body.gifit-active {
 				margin-left: -1px;
 				border-radius: 0 @input_border_radius @input_border_radius 0;
 				border-left-color: transparent;
+
+				&:focus {
+					border-left-color: darken( @color_input_border, 10% );
+				}
 			}
 		}
 	}
