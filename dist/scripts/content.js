@@ -14319,15 +14319,20 @@ var youtube_video = $youtube_video.get(0);
 var $youtube_controls = $youtube_player_api.find('.html5-video-controls');
 var $youtube_controls_chrome = $youtube_controls.find('.html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
-var $gifit_button_it = $gifit_button.find('.it');
+$youtube_controls_chrome.append( $gifit_button );
+
 var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
+$body.append( $gifit_canvas );
+
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
-
 $youtube_controls.append( $gifit_options );
-$youtube_controls_chrome.append( $gifit_button );
-$body.append( $gifit_canvas );
+
+var $gifit_progress = $gifit_options.find('.gifit-progress');
+var $gifit_progress_progress = $gifit_progress.find('progress');
+var $gifit_progress_image = $gifit_progress.find('img');
+var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
 
 var gif;
 var capture_interval;
@@ -14438,6 +14443,10 @@ $gifit_options_form.on( 'submit', function( e ){
 	generateGIF( options );
 });
 
+$gifit_options_form.find('input').on( 'keydown', function( e ){
+	e.stopPropagation();
+});
+
 },{"../styles/content.less":18,"../templates/button.hbs":19,"../templates/options.hbs":20,"../templates/progress.hbs":21,"./vendor/getFormData.js":16,"./vendor/toSeconds.js":17,"gif.js":1,"hbsfy/runtime":9,"jquery":10,"velocity-animate":13,"velocity-animate/velocity.ui.js":14}],16:[function(require,module,exports){
 var getFormData = function( form ){
     var form_data = {};
@@ -14519,7 +14528,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div class=\"gifit-progress\">\n	<a href=\"#close\"></a>\n	<progress></progress>\n	<img />\n</div>";
+  return "<div class=\"gifit-progress\">\n	<a class=\"gifit-progress-close\" href=\"#close\"></a>\n	<progress></progress>\n	<img />\n</div>";
   });
 
 },{"hbsfy/runtime":9}]},{},[15])
