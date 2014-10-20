@@ -142,6 +142,13 @@ body.gifit-active {
 .gifit-progress {
 	display: none;
 
+	.gifit-progress-close {
+		&:after {
+			content: '×';
+			text-decoration: none;
+		}
+	}
+
 	progress {
 		-webkit-appearance: none;
 		width: 70%;

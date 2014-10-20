@@ -75,8 +75,7 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 });
 
 var generateGIF = function( options ){
-	$gifit_options_form.find('input, button').prop( 'disabled', true );
-	$gifit_options.addClass('processing');
+	progressState();
 	// generate GIF options
 	var defaults = {
 		width: 320,
@@ -99,9 +98,12 @@ var generateGIF = function( options ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( blob ){
-		$gifit_options_form.find('input, button').prop( 'disabled', false );
-		$gifit_options.removeClass('processing');
-		window.open( URL.createObjectURL( blob ) );
+		displayState();
+		$gifit_progress_progress.attr( 'value', 0 );
+		$gifit_progress_image.attr( 'src', URL.createObjectURL( blob ) );
+	});
+	gif.on( 'progress', function( progress_ratio ){
+		$gifit_progress_progress.attr( 'value', progress_ratio );
 	});
 	// make sure the video is paused before we jump frames
 	if( !youtube_video.paused ){
@@ -130,6 +132,22 @@ var generateGIF = function( options ){
 	}, options.frame_interval );
 };
 
+var progressState = function(){
+	$gifit_options_form.find('input, button').prop( 'disabled', true );
+	$gifit_options.addClass('processing');
+};
+
+var displayState = function(){
+	$gifit_options_form.find('input, button').prop( 'disabled', false );
+	$gifit_options.removeClass('processing');
+	$gifit_options.addClass('displaying');
+};
+
+var normalState = function(){
+	$gifit_options.removeClass('displaying');
+	$gifit_progress_image.attr('src', '');
+};
+
 $gifit_button.on( 'click', function( e ){
 	$body.toggleClass('gifit-active');
 	if( $gifit_options.is(':visible') ){
@@ -153,6 +171,11 @@ $gifit_options_form.on( 'submit', function( e ){
 	generateGIF( options );
 });
 
-$gifit_options_form.find('input').on( 'keydown', function( e ){
-	e.stopPropagation();
+$gifit_options.on( 'keydown keypress click', function( e ){
+	e.stopImmediatePropagation();
+});
+
+$gifit_progress_close.on( 'click', function( e ){
+	e.preventDefault();
+	normalState();
 });
