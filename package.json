@@ -1,10 +1,10 @@
 {
-  "name": "GIFYT-extension",
+  "name": "GIFit-extension",
   "version": "0.0.0",
   "description": "Make a GIF from a YouTube video in Chrome",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Fauntleroy/GIFYT-extension.git"
+    "url": "https://github.com/Fauntleroy/GIFit.git"
   },
   "keywords": [
     "GIF",
@@ -13,7 +13,7 @@
   "author": "Timothy Kempf",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Fauntleroy/GIFYT-extension/issues"
+    "url": "https://github.com/Fauntleroy/GIFit/issues"
   },
   "devDependencies": {
     "browserify": "~4.2.0",
