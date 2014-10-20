@@ -40,6 +40,7 @@ var $gifit_options_form = $gifit_options.children('form');
 $youtube_controls.append( $gifit_options );
 
 var $gifit_progress = $gifit_options.find('.gifit-progress');
+var $gifit_progress_container = $gifit_progress.find('.gifit-progress-container');
 var $gifit_progress_progress = $gifit_progress.find('progress');
 var $gifit_progress_image = $gifit_progress.find('img');
 var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
@@ -98,9 +99,13 @@ var generateGIF = function( options ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( blob ){
-		displayState();
-		$gifit_progress_progress.attr( 'value', 0 );
 		$gifit_progress_image.attr( 'src', URL.createObjectURL( blob ) );
+		// you have to wait for the image to load in order to measure it
+		// even though it's just a blob image
+		$gifit_progress_image.on('load', function(){
+			$gifit_progress_progress.attr( 'value', 0 );
+			displayState();
+		});
 	});
 	gif.on( 'progress', function( progress_ratio ){
 		$gifit_progress_progress.attr( 'value', progress_ratio );
@@ -138,6 +143,8 @@ var progressState = function(){
 };
 
 var displayState = function(){
+	var image_height = $gifit_progress_image.height();
+	$gifit_progress_container.css('height', image_height);
 	$gifit_options_form.find('input, button').prop( 'disabled', false );
 	$gifit_options.removeClass('processing');
 	$gifit_options.addClass('displaying');
@@ -146,6 +153,7 @@ var displayState = function(){
 var normalState = function(){
 	$gifit_options.removeClass('displaying');
 	$gifit_progress_image.attr('src', '');
+	$gifit_progress_container.css('height', '');
 };
 
 $gifit_button.on( 'click', function( e ){
