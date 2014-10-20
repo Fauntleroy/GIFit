@@ -6,14 +6,19 @@
 @color_gif: rgb( 255, 255, 255 );
 @color_it: rgb( 255, 255, 255 );
 @color_youtube_toolbar: rgb( 117, 117, 117 );
+@color_youtube_toolbar_hover: rgb( 164, 164, 164 );
+@color_youtube_toolbar_active: rgb( 255, 255, 255 );
 @color_panel_text: rgb( 175, 175, 175 );
 @color_panel_background: rgba( 255, 255, 255, 0.9 );
 @color_input_text: rgb( 25, 25, 25 );
 @color_input_border: rgb( 215, 215, 215 );
 @color_button_background: rgb( 235, 15, 15 );
-@color_border_color: rgba( 255, 255, 255, 0.1 );
-@video_controls_height: 27px;
+@color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
+
+@youtube_controls_height: 27px;
+@youtube_progress_bar_height: 8px;
 @label_font_size: 10px;
+@input_horizontal_padding: 7px;
 @input_border_radius: 3px;
 @button_border_radius: 3px;
 
@@ -31,12 +36,12 @@
 
 #gifit-start {
 	float: right;
-	height: @video_controls_height;
-	line-height: @video_controls_height;
+	height: @youtube_controls_height;
+	line-height: @youtube_controls_height;
 	color: @color_youtube_toolbar;
 
 	&:hover {
-		color: rgb( 255, 255, 255 );
+		color: @color_youtube_toolbar_hover;
 	}
 
 	.gifit-gif {
@@ -49,18 +54,21 @@
 	}
 }
 
+body.gifit-active {
+	#gifit-start {
+		color: @color_youtube_toolbar_active;
+	}
+}
+
 #gifit-options {
 	display: none;
 	box-sizing: border-box;
 	position: absolute;
 	right: 0;
-	bottom: 35px;
+	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
 	width: 225px;
-	margin: -362px 0 0 -62px;
 	padding: 25px;
-	font-family: 'robotoregular', sans-serif;
-	font-size: 12px;
 	color: @color_panel_text;
 	background: @color_panel_background;
 
@@ -93,7 +101,7 @@
 	&:focus {
 		transform: scale( 1.025 );
 		background: lighten( @color_button_background, 10% );
-		box-shadow: 0 2px 5px rgba( 0, 0, 0, 0.25 );
+		box-shadow: 0 2px 5px @color_subtle_shadow;
 	}
 
 	&:active {
@@ -117,12 +125,6 @@
 	position: fixed;
 	top: -9999px;
 	left: -9999px;
-}
-
-body.gifit-active {
-	#gifit-start {
-		color: rgb( 255, 255, 255 );
-	}
 }
 
 .gifit {
@@ -151,7 +153,7 @@ body.gifit-active {
 		transition: background-color 550ms, border-color 550ms;
 		border: @color_input_border 1px solid;
 		border-radius: @input_border_radius;
-		padding: 13px 7px 0 7px;
+		padding: 13px @input_horizontal_padding 0 @input_horizontal_padding;
 
 		&:focus {
 			color: @color_input_text;
@@ -183,7 +185,7 @@ body.gifit-active {
 			border-radius: 50%;
 			background: rgb( 235, 235, 235 );
 			border: rgb( 25, 25, 25 ) 2px solid;
-			box-shadow: 0 2px 1px 0 rgba( 0, 0, 0, 0.25 );
+			box-shadow: 0 2px 1px 0 @color_subtle_shadow;
 			transition: border-width 125ms, background-color 125ms;
 		}
 
@@ -202,7 +204,7 @@ body.gifit-active {
 				width: 100%;
 				border-radius: 3px;
 				background: @color_input_border;
-				box-shadow: inset 0 1px 1px rgba( 0, 0, 0, 0.25 );
+				box-shadow: inset 0 1px 1px @color_subtle_shadow;
 				transition: background-color 125ms;
 			}
 		}
@@ -232,13 +234,13 @@ body.gifit-active {
 
 		&.gifit-input-container__range {
 			box-sizing: border-box;
-			padding: 20px 7px 0 7px;
+			padding: 20px @input_horizontal_padding 0 @input_horizontal_padding;
 		}
 
 		label {
 			position: absolute;
 			top: 5px;
-			left: 7px;
+			left: @input_horizontal_padding;
 		}
 
 		input {
