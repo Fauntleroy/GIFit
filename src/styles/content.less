@@ -67,7 +67,7 @@ body.gifit-active {
 	right: 0;
 	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
-	width: 225px;
+	width: 260px;
 	padding: 25px;
 	color: @color_panel_text;
 	background: @color_panel_background;
@@ -77,9 +77,21 @@ body.gifit-active {
 		opacity: 0;
 	}
 
+	form {
+		transition: -webkit-filter 300ms, opacity 300ms;
+	}
+
 	&.processing {
 		#gifit-submit {
 			-webkit-animation: glow 2000ms infinite;
+		}
+	}
+
+	&.processing,
+	&.displaying {
+		form {
+			-webkit-filter: blur( 2px );
+			opacity: 0.25;
 		}
 	}
 }
@@ -125,6 +137,29 @@ body.gifit-active {
 	position: fixed;
 	top: -9999px;
 	left: -9999px;
+}
+
+.gifit-progress {
+	display: none;
+
+	progress {
+		-webkit-appearance: none;
+		width: 70%;
+	}
+}
+
+#gifit-options.processing,
+#gifit-options.displaying {
+	.gifit-progress {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 }
 
 .gifit {

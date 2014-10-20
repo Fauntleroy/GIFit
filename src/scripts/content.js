@@ -12,6 +12,10 @@ var toSeconds = require('./vendor/toSeconds.js');
 // templates
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
+var _gifit_progress_template = require('../templates/progress.hbs');
+
+var Handlebars = require('hbsfy/runtime');
+Handlebars.registerPartial( 'progress', _gifit_progress_template );
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
