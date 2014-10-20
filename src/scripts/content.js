@@ -42,7 +42,7 @@ $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	defaultDuration: 900,
 	calls: [ 
 		[{
-			//opacity: [ 1, 0 ],
+			scaleX: [ 1, 0.8 ],
 			translateY: [ 0, 400 ],
 			translateZ: 0
 		}, 1, {
@@ -55,7 +55,7 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 	defaultDuration: 500,
 	calls: [ 
 		[{
-			//opacity: [ 0, 1 ],
+			scaleX: [ 0.8, 1 ],
 			translateY: 400,
 			translateZ: 0
 		}, 1, {

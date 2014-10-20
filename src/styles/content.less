@@ -87,17 +87,18 @@
 	background: @color_button_background;
 	border-radius: @button_border_radius;
 	outline: none;
-	-webkit-transition: -webkit-transform 150ms, background 100ms;
+	transition: transform 150ms, background 100ms, box-shadow 150ms;
 
 	&:hover,
 	&:focus {
 		transform: scale( 1.025 );
 		background: lighten( @color_button_background, 10% );
+		box-shadow: 0 2px 5px rgba( 0, 0, 0, 0.25 );
 	}
 
 	&:active {
-		-webkit-transform: scale( 0.95 );
-		-webkit-transition: -webkit-transform 25ms;
+		transform: scale( 0.95 );
+		transition: transform 25ms;
 	}
 
 	.gifit-gif {
