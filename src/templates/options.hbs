@@ -1,32 +1,44 @@
-<div id="gifit-options">
+<div id="gifit-options" class="gifit">
 	<form>
-		<fieldset>
-			<label for="gifit-option-start">Start</label>
-			<input id="gifit-option-start" name="start" type="text" value="0:00" />
+		<fieldset class="gifit-inputs-linked__vertical">
+			<div class="gifit-input-container">
+				<label for="gifit-option-start">Start</label>
+				<input id="gifit-option-start" name="start" type="text" value="0:00" />
+			</div>
+			<div class="gifit-input-container">
+				<label for="gifit-option-end">End</label>
+				<input id="gifit-option-end" name="end" type="text" value="0:01" />
+			</div>
+		</fieldset>
+		<fieldset class="gifit-inputs-linked__horizontal">
+			<div class="gifit-input-container">
+				<label for="gifit-option-width">Width</label>
+				<input id="gifit-option-width" name="width" type="number" min="10" max="1920" value="320" />
+			</div>
+			<div class="gifit-input-container">
+				<label for="gifit-option-height">Height</label>
+				<input id="gifit-option-height" name="height" type="number" min="10" max="1080" value="240" />
+			</div>
+		</fieldset>
+		<fieldset class="gifit-inputs-linked__horizontal">
+			<div class="gifit-input-container">
+				<label for="gifit-option-framerate">Frame Rate</label>
+				<input id="gifit-option-framerate" name="framerate" type="number" min="1" max="60" value="10" />
+			</div>
+			<div class="gifit-input-container">
+				<label for="gifit-option-colors">Colors</label>
+				<input id="gifit-option-colors" name="colors" type="number" min="2" max="256" value="128" />
+			</div>
 		</fieldset>
 		<fieldset>
-			<label for="gifit-option-end">End</label>
-			<input id="gifit-option-end" name="end" type="text" value="0:01" />
+			<div class="gifit-input-container gifit-input-container__range">
+				<label for="gifit-option-quality">Quality</label>
+				<input id="gifit-option-quality" name="quality" type="range" min="0" max="10" value="5" />
+			</div>
 		</fieldset>
-		<fieldset>
-			<label for="gifit-option-width">Width</label>
-			<input id="gifit-option-width" name="width" type="number" min="10" max="800" value="320" />
-		</fieldset>
-		<fieldset>
-			<label for="gifit-option-colors">Colors</label>
-			<input id="gifit-option-colors" name="colors" type="number" min="2" max="256" value="128" />
-		</fieldset>
-		<fieldset>
-			<label for="gifit-option-framerate">Frame Rate</label>
-			<input id="gifit-option-framerate" name="framerate" type="number" min="1" max="60" value="10" />
-		</fieldset>
-		<fieldset>
-			<label for="gifit-option-quality">Quality</label>
-			<input id="gifit-option-quality" name="quality" type="range" min="0" max="10" value="5" />
-		</fieldset>
-		<div class="actions">
+		<div class="gifit-actions">
 			<button id="gifit-submit" type="submit">
-				<span class="gif">GIF</span><span class="it">it!</span><span class="ing">ing…</span>
+				<span class="gifit-gif">GIF</span><span class="gifit-it">it!</span>
 			</button>
 		</div>
 	</form>
