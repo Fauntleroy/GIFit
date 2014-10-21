@@ -139,19 +139,21 @@ var generateGIF = function( options ){
 
 var progressState = function(){
 	$gifit_options_form.find('input, button').prop( 'disabled', true );
-	$gifit_options.addClass('processing');
+	$gifit_options.addClass('gifit-processing');
 };
 
 var displayState = function(){
 	var image_height = $gifit_progress_image.height();
+	$gifit_progress.addClass('gifit-loaded');
 	$gifit_progress_container.css('height', image_height);
 	$gifit_options_form.find('input, button').prop( 'disabled', false );
-	$gifit_options.removeClass('processing');
-	$gifit_options.addClass('displaying');
+	$gifit_options.removeClass('gifit-processing');
+	$gifit_options.addClass('gifit-displaying');
 };
 
 var normalState = function(){
-	$gifit_options.removeClass('displaying');
+	$gifit_options.removeClass('gifit-displaying');
+	$gifit_options.removeClass('gifit-loaded');
 	$gifit_progress_image.attr('src', '');
 	$gifit_progress_container.css('height', '');
 };

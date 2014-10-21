@@ -81,14 +81,14 @@ body.gifit-active {
 		transition: -webkit-filter 300ms, opacity 300ms;
 	}
 
-	&.processing {
+	&.gifit-processing {
 		#gifit-submit {
 			-webkit-animation: glow 2000ms infinite;
 		}
 	}
 
-	&.processing,
-	&.displaying {
+	&.gifit-processing,
+	&.gifit-displaying {
 		form {
 			-webkit-filter: blur( 2px );
 			opacity: 0.25;
@@ -165,6 +165,7 @@ body.gifit-active {
 		width: 70%;
 		height: 5px;
 		overflow: hidden;
+		transition: width 350ms, height 350ms;
 
 		progress,
 		img {
@@ -178,16 +179,30 @@ body.gifit-active {
 		}
 
 		img {
+			opacity: 0;
 			position: absolute;
 			top: 0;
 			left: 0;
 			width: 100%;
+			transition: opacity 250ms, -webkit-filter 750ms;
+			-webkit-filter: brightness( 0% );
+		}
+	}
+
+	&.gifit-loaded {
+		.gifit-progress-container {
+			width: 80%;
+
+			img {
+				opacity: 1;
+				-webkit-filter: brightness( 100% );
+			}
 		}
 	}
 }
 
-#gifit-options.processing,
-#gifit-options.displaying {
+#gifit-options.gifit-processing,
+#gifit-options.gifit-displaying {
 	.gifit-progress {
 		display: flex;
 	}
@@ -292,6 +307,19 @@ body.gifit-active {
 	fieldset {
 		clear: both;
 		margin-bottom: 10px;
+	}
+
+	progress {
+		&::-webkit-progress-bar {
+			overflow: hidden;
+			border-radius: 3px;
+			background: @color_input_border;
+			box-shadow: inset 0 1px 1px @color_subtle_shadow;
+		}
+
+		&::-webkit-progress-value {
+			background: rgb( 25, 25, 25 );
+		}
 	}
 
 	.gifit-input-container {
