@@ -14471,7 +14471,7 @@ $gifit_options_form.on( 'submit', function( e ){
 	generateGIF( options );
 });
 
-$gifit_options.on( 'keydown keypress click', function( e ){
+$gifit_options.on( 'keydown keypress click contextmenu', function( e ){
 	e.stopImmediatePropagation();
 });
 
