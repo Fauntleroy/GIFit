@@ -53,7 +53,7 @@ $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	calls: [ 
 		[{
 			scaleX: [ 1, 0.8 ],
-			translateY: [ 0, 400 ],
+			translateY: [ 0, 350 ],
 			translateZ: 0
 		}, 1, {
 			easing: [0.165, 0.84, 0.44, 1]
@@ -66,7 +66,7 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 	calls: [ 
 		[{
 			scaleX: [ 0.8, 1 ],
-			translateY: 400,
+			translateY: 350,
 			translateZ: 0
 		}, 1, {
 			easing: [0.895, 0.03, 0.685, 0.22]
