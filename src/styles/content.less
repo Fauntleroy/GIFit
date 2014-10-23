@@ -12,7 +12,8 @@
 @color_panel_background: rgba( 255, 255, 255, 0.9 );
 @color_input_text: rgb( 25, 25, 25 );
 @color_input_border: rgb( 215, 215, 215 );
-@color_button_background: rgb( 235, 15, 15 );
+@color_button_background: rgb( 25, 25, 25 );
+@color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
 
 @youtube_controls_height: 27px;
@@ -97,29 +98,9 @@ body.gifit-active {
 }
 
 #gifit-submit {
-	cursor: pointer;
 	display: block;
 	width: 130px;
 	margin: 25px auto 0 auto;
-	padding: 0 10px;
-	font-size: 24px;
-	line-height: 35px;
-	background: @color_button_background;
-	border-radius: @button_border_radius;
-	outline: none;
-	transition: transform 150ms, background 100ms, box-shadow 150ms;
-
-	&:hover,
-	&:focus {
-		transform: scale( 1.025 );
-		background: lighten( @color_button_background, 10% );
-		box-shadow: 0 2px 5px @color_subtle_shadow;
-	}
-
-	&:active {
-		transform: scale( 0.95 );
-		transition: transform 25ms;
-	}
 
 	.gifit-gif {
 		font-family: 'robotobold', sans-serif;
@@ -153,10 +134,11 @@ body.gifit-active {
 		position: absolute;
 		top: 10px;
 		right: 10px;
+		font-size: 24px;
+		text-decoration: none;
 
 		&:after {
 			content: '×';
-			text-decoration: none;
 		}
 	}
 
@@ -209,6 +191,22 @@ body.gifit-active {
 }
 
 .gifit {
+
+	a {
+		color: @color_button_primary_background;
+		transition: transform 150ms, color 100ms;
+
+		&:hover,
+		&:focus {
+			transform: scale( 1.05 );
+			color: lighten( @color_button_primary_background, 20% );
+		}
+
+		&:active {
+			transform: scale( 0.95 );
+			transition: transform 25ms;
+		}
+	}
 
 	fieldset {
 		line-height: 35px;
@@ -319,6 +317,39 @@ body.gifit-active {
 
 		&::-webkit-progress-value {
 			background: rgb( 25, 25, 25 );
+		}
+	}
+
+	.gifit-button {
+		cursor: pointer;
+		display: inline-block;
+		padding: 0 10px;
+		font-size: 24px;
+		line-height: 35px;
+		background: @color_button_background;
+		border-radius: @button_border_radius;
+		outline: none;
+		transition: transform 150ms, background 100ms, box-shadow 150ms;
+
+		&:hover,
+		&:focus {
+			transform: scale( 1.025 );
+			background: lighten( @color_button_background, 10% );
+			box-shadow: 0 2px 5px @color_subtle_shadow;
+		}
+
+		&:active {
+			transform: scale( 0.95 );
+			transition: transform 25ms;
+		}
+
+		&.gifit-button__primary {
+			background: @color_button_primary_background;
+
+			&:hover,
+			&:focus {
+				background: lighten( @color_button_primary_background, 10% );
+			}
 		}
 	}
 
