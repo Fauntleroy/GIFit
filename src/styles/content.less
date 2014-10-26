@@ -23,18 +23,6 @@
 @input_border_radius: 3px;
 @button_border_radius: 3px;
 
-@-webkit-keyframes glow {
-	0% {
-		background: lighten( @color_button_background, 10% );
-	}
-	50% {
-		background: lighten( @color_button_background, 20% );
-	}
-	100% {
-		background: lighten( @color_button_background, 10% );
-	}
-}
-
 #gifit-start {
 	float: right;
 	height: @youtube_controls_height;
@@ -80,12 +68,6 @@ body.gifit-active {
 
 	form {
 		transition: -webkit-filter 300ms, opacity 300ms;
-	}
-
-	&.gifit-processing {
-		#gifit-submit {
-			-webkit-animation: glow 2000ms infinite;
-		}
 	}
 
 	&.gifit-processing,
