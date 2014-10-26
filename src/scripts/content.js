@@ -8,6 +8,7 @@ var velocity = require('velocity-animate');
 require('velocity-animate/velocity.ui.js');
 var getFormData = require('./vendor/getFormData.js');
 var toSeconds = require('./vendor/toSeconds.js');
+var asyncSeek = require('./utils/asyncSeek.js');
 
 // templates
 var gifit_button_template = require('../templates/button.hbs');
@@ -88,6 +89,7 @@ var generateGIF = function( options ){
 	options.frame_interval = 1000 / options.framerate;
 	options.start = toSeconds( options.start );
 	options.end = toSeconds( options.end );
+	if( options.end > youtube_video.duration ) options.end = youtube_video.duration;
 	options.height = Math.ceil( ( options.width * $youtube_video.height() ) / $youtube_video.width() );
 	// create GIF encoder
 	gif = new gifjs.GIF({
@@ -119,22 +121,23 @@ var generateGIF = function( options ){
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
 	// play the part of the video we want to convert
-	youtube_video.currentTime = options.start;
-	youtube_video.play();
-	var addFrameInterval = setInterval( function(){
-		if( youtube_video.currentTime >= options.end ){
-			// render the GIF
-			gif.render();
-			youtube_video.pause();
-			clearInterval( addFrameInterval );
-			return;
-		}
-		gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
-		gif.addFrame( $gifit_canvas.get(0), {
-			delay: options.frame_interval,
-			copy: true
-		});
-	}, options.frame_interval );
+	asyncSeek( youtube_video, options.start, function(){
+		var addFrame = function(){
+			if( youtube_video.currentTime >= options.end ){
+				// render the GIF
+				gif.render();
+				return;
+			}
+			gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
+			gif.addFrame( $gifit_canvas.get(0), {
+				delay: options.frame_interval,
+				copy: true
+			});
+			var next_frame_time = youtube_video.currentTime + ( 1 / options.framerate );
+			asyncSeek( youtube_video, next_frame_time, addFrame );
+		};
+		addFrame();
+	});
 };
 
 var progressState = function(){
