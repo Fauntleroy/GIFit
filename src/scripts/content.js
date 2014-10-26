@@ -77,6 +77,7 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 });
 
 var generateGIF = function( options ){
+	var frame_gathering_progress = 0;
 	progressState();
 	// generate GIF options
 	var defaults = {
@@ -91,6 +92,7 @@ var generateGIF = function( options ){
 	options.end = toSeconds( options.end );
 	if( options.end > youtube_video.duration ) options.end = youtube_video.duration;
 	options.height = Math.ceil( ( options.width * $youtube_video.height() ) / $youtube_video.width() );
+	var gif_duration = options.end - options.start;
 	// create GIF encoder
 	gif = new gifjs.GIF({
 		workers: 8,
@@ -110,7 +112,7 @@ var generateGIF = function( options ){
 		});
 	});
 	gif.on( 'progress', function( progress_ratio ){
-		$gifit_progress_progress.attr( 'value', progress_ratio );
+		setProgress( frame_gathering_progress, progress_ratio );
 	});
 	// make sure the video is paused before we jump frames
 	if( !youtube_video.paused ){
@@ -123,7 +125,8 @@ var generateGIF = function( options ){
 	// play the part of the video we want to convert
 	asyncSeek( youtube_video, options.start, function(){
 		var addFrame = function(){
-			if( youtube_video.currentTime >= options.end ){
+			var current_time = youtube_video.currentTime;
+			if( current_time >= options.end ){
 				// render the GIF
 				gif.render();
 				return;
@@ -133,7 +136,9 @@ var generateGIF = function( options ){
 				delay: options.frame_interval,
 				copy: true
 			});
-			var next_frame_time = youtube_video.currentTime + ( 1 / options.framerate );
+			frame_gathering_progress = ( current_time - options.start ) / gif_duration;
+			setProgress( frame_gathering_progress, 0 );
+			var next_frame_time = current_time + ( 1 / options.framerate );
 			asyncSeek( youtube_video, next_frame_time, addFrame );
 		};
 		addFrame();
@@ -143,6 +148,13 @@ var generateGIF = function( options ){
 var progressState = function(){
 	$gifit_options_form.find('input, button').prop( 'disabled', true );
 	$gifit_options.addClass('gifit-processing');
+};
+
+var setProgress = function( frame_gathering_progress, frame_rendering_progress ){
+	frame_gathering_progress = frame_gathering_progress || 0;
+	frame_rendering_progress = frame_rendering_progress || 0;
+	var overall_progress = ( frame_gathering_progress * 0.7 ) + ( frame_rendering_progress * 0.3 );
+	$gifit_progress_progress.attr( 'value', overall_progress );
 };
 
 var displayState = function(){
