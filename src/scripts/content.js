@@ -168,7 +168,7 @@ var displayState = function(){
 
 var normalState = function(){
 	$gifit_options.removeClass('gifit-displaying');
-	$gifit_options.removeClass('gifit-loaded');
+	$gifit_progress.removeClass('gifit-loaded');
 	$gifit_progress_image.attr('src', '');
 	$gifit_progress_container.css('height', '');
 };

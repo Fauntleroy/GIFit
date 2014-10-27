@@ -126,7 +126,7 @@ body.gifit-active {
 
 	.gifit-progress-container {
 		position: relative;
-		width: 70%;
+		width: 80%;
 		height: 5px;
 		overflow: hidden;
 		transition: width 350ms, height 350ms;
@@ -148,15 +148,13 @@ body.gifit-active {
 			top: 0;
 			left: 0;
 			width: 100%;
-			transition: opacity 250ms, -webkit-filter 750ms;
+			transition: -webkit-filter 1000ms;
 			-webkit-filter: brightness( 0% );
 		}
 	}
 
 	&.gifit-loaded {
 		.gifit-progress-container {
-			width: 80%;
-
 			img {
 				opacity: 1;
 				-webkit-filter: brightness( 100% );
