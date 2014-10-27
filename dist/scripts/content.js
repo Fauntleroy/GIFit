@@ -14310,6 +14310,13 @@ Handlebars.registerPartial( 'progress', _gifit_progress_template );
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
+var gifit_defaults = {
+	width: 320,
+	colors: 128,
+	framerate: 10,
+	quality: 5
+};
+
 // get DOM selections sorted
 var $window = $(window);
 var $body = $('body');
@@ -14326,8 +14333,10 @@ var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
 $body.append( $gifit_canvas );
 
+
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
+var $gifit_options_form_height = $gifit_options_form.find('#gifit-option-height');
 $youtube_controls.append( $gifit_options );
 
 var $gifit_progress = $gifit_options.find('.gifit-progress');
@@ -14338,6 +14347,7 @@ var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
 
 var gif;
 var capture_interval;
+var initialized;
 
 $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	defaultDuration: 900,
@@ -14366,22 +14376,22 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 	reset: { translateY: 0 }
 });
 
+var initializeWidget = function(){
+	if( initialized ) return;
+	initialized = true;
+	var gifit_default_height = Math.ceil( ( $youtube_video.height() / $youtube_video.width() ) * gifit_defaults.width );
+	$gifit_options_form_height.val( gifit_default_height );
+};
+
 var generateGIF = function( options ){
-	var frame_gathering_progress = 0;
 	progressState();
+	var frame_gathering_progress = 0;
 	// generate GIF options
-	var defaults = {
-		width: 320,
-		colors: 128,
-		framerate: 10,
-		quality: 5
-	};
-	options = $.extend( defaults, options );
+	options = $.extend( gifit_defaults, options );
 	options.frame_interval = 1000 / options.framerate;
 	options.start = toSeconds( options.start );
 	options.end = toSeconds( options.end );
 	if( options.end > youtube_video.duration ) options.end = youtube_video.duration;
-	options.height = Math.ceil( ( options.width * $youtube_video.height() ) / $youtube_video.width() );
 	var gif_duration = options.end - options.start;
 	// create GIF encoder
 	gif = new gifjs.GIF({
@@ -14413,6 +14423,7 @@ var generateGIF = function( options ){
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
 	// play the part of the video we want to convert
+	youtube_video.pause();
 	asyncSeek( youtube_video, options.start, function(){
 		var addFrame = function(){
 			var current_time = youtube_video.currentTime;
@@ -14464,6 +14475,7 @@ var normalState = function(){
 };
 
 $gifit_button.on( 'click', function( e ){
+	initializeWidget();
 	$body.toggleClass('gifit-active');
 	if( $gifit_options.is(':visible') ){
 		$gifit_options.velocity( 'gifit.slideDownOut', 250, {
