@@ -102,6 +102,8 @@ var generateGIF = function( options ){
 	options.start = toSeconds( options.start );
 	options.end = toSeconds( options.end );
 	if( options.end > youtube_video.duration ) options.end = youtube_video.duration;
+	// try to avoid playlist advancement
+	if( options.end === youtube_video.duration ) options.end = youtube_video.duration - 0.1;
 	var gif_duration = options.end - options.start;
 	// create GIF encoder
 	gif = new gifjs.GIF({
