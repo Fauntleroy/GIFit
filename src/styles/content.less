@@ -12,7 +12,8 @@
 @color_panel_background: rgba( 255, 255, 255, 0.9 );
 @color_input_text: rgb( 25, 25, 25 );
 @color_input_border: rgb( 215, 215, 215 );
-@color_button_background: rgb( 235, 15, 15 );
+@color_button_background: rgb( 25, 25, 25 );
+@color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
 
 @youtube_controls_height: 27px;
@@ -21,18 +22,6 @@
 @input_horizontal_padding: 7px;
 @input_border_radius: 3px;
 @button_border_radius: 3px;
-
-@-webkit-keyframes glow {
-	0% {
-		background: lighten( @color_button_background, 10% );
-	}
-	50% {
-		background: lighten( @color_button_background, 20% );
-	}
-	100% {
-		background: lighten( @color_button_background, 10% );
-	}
-}
 
 #gifit-start {
 	float: right;
@@ -67,7 +56,7 @@ body.gifit-active {
 	right: 0;
 	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
-	width: 225px;
+	width: 300px;
 	padding: 25px;
 	color: @color_panel_text;
 	background: @color_panel_background;
@@ -77,37 +66,23 @@ body.gifit-active {
 		opacity: 0;
 	}
 
-	&.processing {
-		#gifit-submit {
-			-webkit-animation: glow 2000ms infinite;
+	form {
+		transition: -webkit-filter 300ms, opacity 300ms;
+	}
+
+	&.gifit-processing,
+	&.gifit-displaying {
+		form {
+			-webkit-filter: blur( 2px );
+			opacity: 0.25;
 		}
 	}
 }
 
 #gifit-submit {
-	cursor: pointer;
 	display: block;
 	width: 130px;
 	margin: 25px auto 0 auto;
-	padding: 0 10px;
-	font-size: 24px;
-	line-height: 35px;
-	background: @color_button_background;
-	border-radius: @button_border_radius;
-	outline: none;
-	transition: transform 150ms, background 100ms, box-shadow 150ms;
-
-	&:hover,
-	&:focus {
-		transform: scale( 1.025 );
-		background: lighten( @color_button_background, 10% );
-		box-shadow: 0 2px 5px @color_subtle_shadow;
-	}
-
-	&:active {
-		transform: scale( 0.95 );
-		transition: transform 25ms;
-	}
 
 	.gifit-gif {
 		font-family: 'robotobold', sans-serif;
@@ -127,7 +102,91 @@ body.gifit-active {
 	left: -9999px;
 }
 
+.gifit-progress {
+	display: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	align-items: center;
+	justify-content: center;
+
+	.gifit-progress-close {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		font-size: 24px;
+		text-decoration: none;
+
+		&:after {
+			content: '×';
+		}
+	}
+
+	.gifit-progress-container {
+		position: relative;
+		width: 80%;
+		height: 5px;
+		overflow: hidden;
+		transition: width 350ms, height 350ms 250ms;
+
+		progress,
+		img {
+			display: block;
+		}
+
+		progress {
+			-webkit-appearance: none;
+			width: 100%;
+			height: 100%;
+		}
+
+		img {
+			opacity: 0;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			transition: -webkit-filter 1000ms 250ms;
+			-webkit-filter: brightness( 0% );
+		}
+	}
+
+	&.gifit-loaded {
+		.gifit-progress-container {
+			img {
+				opacity: 1;
+				-webkit-filter: brightness( 100% );
+			}
+		}
+	}
+}
+
+#gifit-options.gifit-processing,
+#gifit-options.gifit-displaying {
+	.gifit-progress {
+		display: flex;
+	}
+}
+
 .gifit {
+
+	a {
+		color: @color_button_primary_background;
+		transition: transform 150ms, color 100ms;
+
+		&:hover,
+		&:focus {
+			transform: scale( 1.05 );
+			color: lighten( @color_button_primary_background, 20% );
+		}
+
+		&:active {
+			transform: scale( 0.95 );
+			transition: transform 25ms;
+		}
+	}
 
 	fieldset {
 		line-height: 35px;
@@ -226,6 +285,52 @@ body.gifit-active {
 	fieldset {
 		clear: both;
 		margin-bottom: 10px;
+	}
+
+	progress {
+		&::-webkit-progress-bar {
+			overflow: hidden;
+			border-radius: 3px;
+			background: @color_input_border;
+			box-shadow: inset 0 1px 1px @color_subtle_shadow;
+		}
+
+		&::-webkit-progress-value {
+			background: rgb( 25, 25, 25 );
+		}
+	}
+
+	.gifit-button {
+		cursor: pointer;
+		display: inline-block;
+		padding: 0 10px;
+		font-size: 24px;
+		line-height: 35px;
+		background: @color_button_background;
+		border-radius: @button_border_radius;
+		outline: none;
+		transition: transform 150ms, background 100ms, box-shadow 150ms;
+
+		&:hover,
+		&:focus {
+			transform: scale( 1.025 );
+			background: lighten( @color_button_background, 10% );
+			box-shadow: 0 2px 5px @color_subtle_shadow;
+		}
+
+		&:active {
+			transform: scale( 0.95 );
+			transition: transform 25ms;
+		}
+
+		&.gifit-button__primary {
+			background: @color_button_primary_background;
+
+			&:hover,
+			&:focus {
+				background: lighten( @color_button_primary_background, 10% );
+			}
+		}
 	}
 
 	.gifit-input-container {

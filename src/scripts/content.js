@@ -8,10 +8,15 @@ var velocity = require('velocity-animate');
 require('velocity-animate/velocity.ui.js');
 var getFormData = require('./vendor/getFormData.js');
 var toSeconds = require('./vendor/toSeconds.js');
+var asyncSeek = require('./utils/asyncSeek.js');
 
 // templates
 var gifit_button_template = require('../templates/button.hbs');
 var gifit_options_template = require('../templates/options.hbs');
+var _gifit_progress_template = require('../templates/progress.hbs');
+
+var Handlebars = require('hbsfy/runtime');
+Handlebars.registerPartial( 'progress', _gifit_progress_template );
 
 const MAXIMUM_Z_INDEX = 2147483647;
 
@@ -25,15 +30,21 @@ var youtube_video = $youtube_video.get(0);
 var $youtube_controls = $youtube_player_api.find('.html5-video-controls');
 var $youtube_controls_chrome = $youtube_controls.find('.html5-player-chrome');
 var $gifit_button = $( gifit_button_template() );
-var $gifit_button_it = $gifit_button.find('.it');
+$youtube_controls_chrome.append( $gifit_button );
+
 var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
+$body.append( $gifit_canvas );
+
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
-
 $youtube_controls.append( $gifit_options );
-$youtube_controls_chrome.append( $gifit_button );
-$body.append( $gifit_canvas );
+
+var $gifit_progress = $gifit_options.find('.gifit-progress');
+var $gifit_progress_container = $gifit_progress.find('.gifit-progress-container');
+var $gifit_progress_progress = $gifit_progress.find('progress');
+var $gifit_progress_image = $gifit_progress.find('img');
+var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
 
 var gif;
 var capture_interval;
@@ -43,7 +54,7 @@ $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	calls: [ 
 		[{
 			scaleX: [ 1, 0.8 ],
-			translateY: [ 0, 400 ],
+			translateY: [ 0, 350 ],
 			translateZ: 0
 		}, 1, {
 			easing: [0.165, 0.84, 0.44, 1]
@@ -56,7 +67,7 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 	calls: [ 
 		[{
 			scaleX: [ 0.8, 1 ],
-			translateY: 400,
+			translateY: 350,
 			translateZ: 0
 		}, 1, {
 			easing: [0.895, 0.03, 0.685, 0.22]
@@ -66,8 +77,8 @@ $.Velocity.RegisterEffect('gifit.slideDownOut', {
 });
 
 var generateGIF = function( options ){
-	$gifit_options_form.find('input, button').prop( 'disabled', true );
-	$gifit_options.addClass('processing');
+	var frame_gathering_progress = 0;
+	progressState();
 	// generate GIF options
 	var defaults = {
 		width: 320,
@@ -79,7 +90,9 @@ var generateGIF = function( options ){
 	options.frame_interval = 1000 / options.framerate;
 	options.start = toSeconds( options.start );
 	options.end = toSeconds( options.end );
+	if( options.end > youtube_video.duration ) options.end = youtube_video.duration;
 	options.height = Math.ceil( ( options.width * $youtube_video.height() ) / $youtube_video.width() );
+	var gif_duration = options.end - options.start;
 	// create GIF encoder
 	gif = new gifjs.GIF({
 		workers: 8,
@@ -90,9 +103,16 @@ var generateGIF = function( options ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( blob ){
-		$gifit_options_form.find('input, button').prop( 'disabled', false );
-		$gifit_options.removeClass('processing');
-		window.open( URL.createObjectURL( blob ) );
+		$gifit_progress_image.attr( 'src', URL.createObjectURL( blob ) );
+		// you have to wait for the image to load in order to measure it
+		// even though it's just a blob image
+		$gifit_progress_image.on('load', function(){
+			$gifit_progress_progress.attr( 'value', 0 );
+			displayState();
+		});
+	});
+	gif.on( 'progress', function( progress_ratio ){
+		setProgress( frame_gathering_progress, progress_ratio );
 	});
 	// make sure the video is paused before we jump frames
 	if( !youtube_video.paused ){
@@ -103,22 +123,54 @@ var generateGIF = function( options ){
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
 	// play the part of the video we want to convert
-	youtube_video.currentTime = options.start;
-	youtube_video.play();
-	var addFrameInterval = setInterval( function(){
-		if( youtube_video.currentTime >= options.end ){
-			// render the GIF
-			gif.render();
-			youtube_video.pause();
-			clearInterval( addFrameInterval );
-			return;
-		}
-		gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
-		gif.addFrame( $gifit_canvas.get(0), {
-			delay: options.frame_interval,
-			copy: true
-		});
-	}, options.frame_interval );
+	asyncSeek( youtube_video, options.start, function(){
+		var addFrame = function(){
+			var current_time = youtube_video.currentTime;
+			if( current_time >= options.end ){
+				// render the GIF
+				gif.render();
+				return;
+			}
+			gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
+			gif.addFrame( $gifit_canvas.get(0), {
+				delay: options.frame_interval,
+				copy: true
+			});
+			frame_gathering_progress = ( current_time - options.start ) / gif_duration;
+			setProgress( frame_gathering_progress, 0 );
+			var next_frame_time = current_time + ( 1 / options.framerate );
+			asyncSeek( youtube_video, next_frame_time, addFrame );
+		};
+		addFrame();
+	});
+};
+
+var progressState = function(){
+	$gifit_options_form.find('input, button').prop( 'disabled', true );
+	$gifit_options.addClass('gifit-processing');
+};
+
+var setProgress = function( frame_gathering_progress, frame_rendering_progress ){
+	frame_gathering_progress = frame_gathering_progress || 0;
+	frame_rendering_progress = frame_rendering_progress || 0;
+	var overall_progress = ( frame_gathering_progress * 0.7 ) + ( frame_rendering_progress * 0.3 );
+	$gifit_progress_progress.attr( 'value', overall_progress );
+};
+
+var displayState = function(){
+	var image_height = $gifit_progress_image.height();
+	$gifit_progress.addClass('gifit-loaded');
+	$gifit_progress_container.css('height', image_height);
+	$gifit_options_form.find('input, button').prop( 'disabled', false );
+	$gifit_options.removeClass('gifit-processing');
+	$gifit_options.addClass('gifit-displaying');
+};
+
+var normalState = function(){
+	$gifit_options.removeClass('gifit-displaying');
+	$gifit_progress.removeClass('gifit-loaded');
+	$gifit_progress_image.attr('src', '');
+	$gifit_progress_container.css('height', '');
 };
 
 $gifit_button.on( 'click', function( e ){
@@ -142,4 +194,13 @@ $gifit_options_form.on( 'submit', function( e ){
 	e.preventDefault();
 	var options = getFormData( $gifit_options_form.get(0) );
 	generateGIF( options );
+});
+
+$gifit_options.on( 'keydown keypress click contextmenu', function( e ){
+	e.stopImmediatePropagation();
+});
+
+$gifit_progress_close.on( 'click', function( e ){
+	e.preventDefault();
+	normalState();
 });
