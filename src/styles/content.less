@@ -124,9 +124,19 @@ body.gifit-active {
 		}
 	}
 
+	.gifit-progress-information-container {
+		width: 80%;
+
+		.gifit-progress-information {
+			padding-bottom: 10px;
+			font-family: 'robotobold', sans-serif;
+			text-align: center;
+		}
+	}
+
 	.gifit-progress-container {
 		position: relative;
-		width: 80%;
+		width: 100%;
 		height: 5px;
 		overflow: hidden;
 		transition: width 350ms, height 350ms 250ms;
@@ -171,6 +181,7 @@ body.gifit-active {
 }
 
 .gifit {
+	font-family: 'robotoregular', sans-serif;
 
 	a {
 		color: @color_button_primary_background;
