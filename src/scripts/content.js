@@ -19,6 +19,8 @@ var Handlebars = require('hbsfy/runtime');
 Handlebars.registerPartial( 'progress', _gifit_progress_template );
 
 const MAXIMUM_Z_INDEX = 2147483647;
+const EN_GATHERING_FRAMES = 'Gathering frames…';
+const EN_RENDERING_GIF = 'Rendering GIF…';
 
 var gifit_defaults = {
 	width: 320,
@@ -50,6 +52,7 @@ var $gifit_options_form_height = $gifit_options_form.find('#gifit-option-height'
 $youtube_controls.append( $gifit_options );
 
 var $gifit_progress = $gifit_options.find('.gifit-progress');
+var $gifit_progress_information = $gifit_progress.find('.gifit-progress-information');
 var $gifit_progress_container = $gifit_progress.find('.gifit-progress-container');
 var $gifit_progress_progress = $gifit_progress.find('progress');
 var $gifit_progress_image = $gifit_progress.find('img');
@@ -95,6 +98,8 @@ var initializeWidget = function(){
 
 var generateGIF = function( options ){
 	progressState();
+	// tell the user what we're doing
+	$gifit_progress_information.text( EN_GATHERING_FRAMES ).show();
 	var frame_gathering_progress = 0;
 	// generate GIF options
 	options = $.extend( gifit_defaults, options );
@@ -115,6 +120,7 @@ var generateGIF = function( options ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( blob ){
+		$gifit_progress_information.text(' ').hide( 250 );
 		$gifit_progress_image.attr( 'src', URL.createObjectURL( blob ) );
 		// you have to wait for the image to load in order to measure it
 		// even though it's just a blob image
@@ -142,6 +148,9 @@ var generateGIF = function( options ){
 			if( current_time >= options.end ){
 				// render the GIF
 				gif.render();
+				// tell the user what we're doing
+				// TODO move this somewhere more sane
+				$gifit_progress_information.text( EN_RENDERING_GIF );
 				return;
 			}
 			gifit_canvas_context.drawImage( youtube_video, 0, 0, options.width, options.height );
