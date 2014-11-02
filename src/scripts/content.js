@@ -132,16 +132,14 @@ var generateGIF = function( options ){
 	gif.on( 'progress', function( progress_ratio ){
 		setProgress( frame_gathering_progress, progress_ratio );
 	});
-	// make sure the video is paused before we jump frames
-	if( !youtube_video.paused ){
-		youtube_video.pause();
-	}
 	// prepare canvas for receiving frames
 	$gifit_canvas
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
-	// play the part of the video we want to convert
-	youtube_video.pause();
+	// make sure the video is paused before we jump frames
+	if( !youtube_video.paused ){
+		youtube_video.pause();
+	}
 	asyncSeek( youtube_video, options.start, function(){
 		var addFrame = function(){
 			var current_time = youtube_video.currentTime;
