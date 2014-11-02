@@ -24,7 +24,6 @@ const EN_RENDERING_GIF = 'Rendering GIF…';
 
 var gifit_defaults = {
 	width: 320,
-	colors: 128,
 	framerate: 10,
 	quality: 5
 };
