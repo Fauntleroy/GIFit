@@ -1,14 +1,16 @@
 {
   "name": "GIFit-extension",
-  "version": "0.0.0",
-  "description": "Make a GIF from a YouTube video in Chrome",
+  "version": "0.0.1",
+  "description": "Make GIFs from YouTube videos in Chrome",
   "repository": {
     "type": "git",
     "url": "https://github.com/Fauntleroy/GIFit.git"
   },
   "keywords": [
     "GIF",
-    "youtube"
+    "youtube",
+    "Chrome",
+    "extension"
   ],
   "author": "Timothy Kempf",
   "license": "MIT",
