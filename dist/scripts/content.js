@@ -14350,6 +14350,7 @@ var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
 var gif;
 var capture_interval;
 var initialized;
+var canceled;
 
 $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	defaultDuration: 900,
@@ -14386,6 +14387,7 @@ var initializeWidget = function(){
 };
 
 var generateGIF = function( options ){
+	canceled = false;
 	progressState();
 	// tell the user what we're doing
 	$gifit_progress_information.text( EN_GATHERING_FRAMES ).show();
@@ -14422,18 +14424,17 @@ var generateGIF = function( options ){
 	gif.on( 'progress', function( progress_ratio ){
 		setProgress( frame_gathering_progress, progress_ratio );
 	});
-	// make sure the video is paused before we jump frames
-	if( !youtube_video.paused ){
-		youtube_video.pause();
-	}
 	// prepare canvas for receiving frames
 	$gifit_canvas
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
-	// play the part of the video we want to convert
-	youtube_video.pause();
+	// make sure the video is paused before we jump frames
+	if( !youtube_video.paused ){
+		youtube_video.pause();
+	}
 	asyncSeek( youtube_video, options.start, function(){
 		var addFrame = function(){
+			if( canceled ) return;
 			var current_time = youtube_video.currentTime;
 			if( current_time >= options.end ){
 				// render the GIF
@@ -14479,6 +14480,10 @@ var displayState = function(){
 };
 
 var normalState = function(){
+	// from progressState to normalState
+	$gifit_options_form.find('input, button').prop( 'disabled', false );
+	$gifit_options.removeClass('gifit-processing');
+	// from displayState to normalState
 	$gifit_options.removeClass('gifit-displaying');
 	$gifit_progress.removeClass('gifit-loaded');
 	$gifit_progress_image.attr('src', '');
@@ -14514,6 +14519,10 @@ $gifit_options.on( 'keydown keypress click contextmenu', function( e ){
 });
 
 $gifit_progress_close.on( 'click', function( e ){
+	if( gif ){
+		gif.abort();
+		canceled = true;
+	}
 	e.preventDefault();
 	normalState();
 });
@@ -14582,7 +14591,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div id=\"gifit-start\" class=\"ytp-button ytp-button-gif gifit\" role=\"button\">\n	<span class=\"gifit-gif\">GIF</span><span class=\"gifit-it\">it!</span>\n</div>";
+  return "<div id=\"gifit-start\" class=\"ytp-button ytp-button-gif gifit\" role=\"button\">\r\n	<span class=\"gifit-gif\">GIF</span><span class=\"gifit-it\">it!</span>\r\n</div>";
   });
 
 },{"hbsfy/runtime":9}],21:[function(require,module,exports){
@@ -14594,10 +14603,10 @@ helpers = this.merge(helpers, Handlebars.helpers); partials = this.merge(partial
   var buffer = "", stack1, self=this;
 
 
-  buffer += "<div id=\"gifit-options\" class=\"gifit\">\n	<form>\n		<fieldset class=\"gifit-inputs-linked__horizontal\">\n			<div class=\"gifit-input-container\">\n				<label for=\"gifit-option-start\">Start</label>\n				<input id=\"gifit-option-start\" name=\"start\" type=\"text\" value=\"0:00\" />\n			</div>\n			<div class=\"gifit-input-container\">\n				<label for=\"gifit-option-end\">End</label>\n				<input id=\"gifit-option-end\" name=\"end\" type=\"text\" value=\"0:01\" />\n			</div>\n		</fieldset>\n		<fieldset class=\"gifit-inputs-linked__horizontal\">\n			<div class=\"gifit-input-container\">\n				<label for=\"gifit-option-width\">Width</label>\n				<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"1920\" value=\"320\" />\n			</div>\n			<div class=\"gifit-input-container\">\n				<label for=\"gifit-option-height\">Height</label>\n				<input id=\"gifit-option-height\" name=\"height\" type=\"number\" min=\"10\" max=\"1080\" value=\"240\" />\n			</div>\n		</fieldset>\n		<fieldset>\n			<div class=\"gifit-input-container\">\n				<label for=\"gifit-option-framerate\">Frame Rate</label>\n				<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\n			</div>\n		</fieldset>\n		<fieldset>\n			<div class=\"gifit-input-container gifit-input-container__range\">\n				<label for=\"gifit-option-quality\">Quality</label>\n				<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\n			</div>\n		</fieldset>\n		<div class=\"gifit-actions\">\n			<button id=\"gifit-submit\" class=\"gifit-button gifit-button__primary\" type=\"submit\">\n				<span class=\"gifit-gif\">GIF</span><span class=\"gifit-it\">it!</span>\n			</button>\n		</div>\n	</form>\n	";
+  buffer += "<div id=\"gifit-options\" class=\"gifit\">\r\n	<form>\r\n		<fieldset class=\"gifit-inputs-linked__horizontal\">\r\n			<div class=\"gifit-input-container\">\r\n				<label for=\"gifit-option-start\">Start</label>\r\n				<input id=\"gifit-option-start\" name=\"start\" type=\"text\" value=\"0:00\" />\r\n			</div>\r\n			<div class=\"gifit-input-container\">\r\n				<label for=\"gifit-option-end\">End</label>\r\n				<input id=\"gifit-option-end\" name=\"end\" type=\"text\" value=\"0:01\" />\r\n			</div>\r\n		</fieldset>\r\n		<fieldset class=\"gifit-inputs-linked__horizontal\">\r\n			<div class=\"gifit-input-container\">\r\n				<label for=\"gifit-option-width\">Width</label>\r\n				<input id=\"gifit-option-width\" name=\"width\" type=\"number\" min=\"10\" max=\"1920\" value=\"320\" />\r\n			</div>\r\n			<div class=\"gifit-input-container\">\r\n				<label for=\"gifit-option-height\">Height</label>\r\n				<input id=\"gifit-option-height\" name=\"height\" type=\"number\" min=\"10\" max=\"1080\" value=\"240\" />\r\n			</div>\r\n		</fieldset>\r\n		<fieldset>\r\n			<div class=\"gifit-input-container\">\r\n				<label for=\"gifit-option-framerate\">Frame Rate</label>\r\n				<input id=\"gifit-option-framerate\" name=\"framerate\" type=\"number\" min=\"1\" max=\"60\" value=\"10\" />\r\n			</div>\r\n		</fieldset>\r\n		<fieldset>\r\n			<div class=\"gifit-input-container gifit-input-container__range\">\r\n				<label for=\"gifit-option-quality\">Quality</label>\r\n				<input id=\"gifit-option-quality\" name=\"quality\" type=\"range\" min=\"0\" max=\"10\" value=\"5\" />\r\n			</div>\r\n		</fieldset>\r\n		<div class=\"gifit-actions\">\r\n			<button id=\"gifit-submit\" class=\"gifit-button gifit-button__primary\" type=\"submit\">\r\n				<span class=\"gifit-gif\">GIF</span><span class=\"gifit-it\">it!</span>\r\n			</button>\r\n		</div>\r\n	</form>\r\n	";
   stack1 = self.invokePartial(partials.progress, 'progress', depth0, helpers, partials, data);
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</div>\n";
+  buffer += "\r\n</div>\r\n";
   return buffer;
   });
 
@@ -14610,7 +14619,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<div class=\"gifit-progress\">\n	<a class=\"gifit-progress-close\" href=\"#close\"></a>\n	<div class=\"gifit-progress-information-container\">\n		<div class=\"gifit-progress-information\"></div>\n		<div class=\"gifit-progress-container\">\n			<progress max=\"1\"></progress>\n			<img />\n		</div>\n	</div>\n</div>";
+  return "<div class=\"gifit-progress\">\r\n	<a class=\"gifit-progress-close\" href=\"#close\"></a>\r\n	<div class=\"gifit-progress-information-container\">\r\n		<div class=\"gifit-progress-information\"></div>\r\n		<div class=\"gifit-progress-container\">\r\n			<progress max=\"1\"></progress>\r\n			<img />\r\n		</div>\r\n	</div>\r\n</div>";
   });
 
 },{"hbsfy/runtime":9}]},{},[15])

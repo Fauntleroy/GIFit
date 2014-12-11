@@ -60,6 +60,7 @@ var $gifit_progress_close = $gifit_progress.find('.gifit-progress-close');
 var gif;
 var capture_interval;
 var initialized;
+var canceled;
 
 $.Velocity.RegisterEffect('gifit.slideUpIn', {
 	defaultDuration: 900,
@@ -96,6 +97,7 @@ var initializeWidget = function(){
 };
 
 var generateGIF = function( options ){
+	canceled = false;
 	progressState();
 	// tell the user what we're doing
 	$gifit_progress_information.text( EN_GATHERING_FRAMES ).show();
@@ -132,18 +134,17 @@ var generateGIF = function( options ){
 	gif.on( 'progress', function( progress_ratio ){
 		setProgress( frame_gathering_progress, progress_ratio );
 	});
-	// make sure the video is paused before we jump frames
-	if( !youtube_video.paused ){
-		youtube_video.pause();
-	}
 	// prepare canvas for receiving frames
 	$gifit_canvas
 		.attr( 'width', options.width )
 		.attr( 'height', options.height );
-	// play the part of the video we want to convert
-	youtube_video.pause();
+	// make sure the video is paused before we jump frames
+	if( !youtube_video.paused ){
+		youtube_video.pause();
+	}
 	asyncSeek( youtube_video, options.start, function(){
 		var addFrame = function(){
+			if( canceled ) return;
 			var current_time = youtube_video.currentTime;
 			if( current_time >= options.end ){
 				// render the GIF
@@ -189,6 +190,10 @@ var displayState = function(){
 };
 
 var normalState = function(){
+	// from progressState to normalState
+	$gifit_options_form.find('input, button').prop( 'disabled', false );
+	$gifit_options.removeClass('gifit-processing');
+	// from displayState to normalState
 	$gifit_options.removeClass('gifit-displaying');
 	$gifit_progress.removeClass('gifit-loaded');
 	$gifit_progress_image.attr('src', '');
@@ -224,6 +229,10 @@ $gifit_options.on( 'keydown keypress click contextmenu', function( e ){
 });
 
 $gifit_progress_close.on( 'click', function( e ){
+	if( gif ){
+		gif.abort();
+		canceled = true;
+	}
 	e.preventDefault();
 	normalState();
 });
