@@ -6,9 +6,15 @@ If you've ever seen a YouTube video and thought "Damn, I wish I had a GIF of tha
 
 ##Installing
 
-Since GIFit hasn't yet been released to the Chrome Web Store, you'll need to install it manually. Here are some quick and easy steps for success:
+###Chrome Web Store (Easy Way)
 
-1. [Download this repository](https://github.com/Fauntleroy/GIFit/archive/master.zip) and unzip it.
+You can install the latest production version of GIFit! from the [Chrome Web Store](https://chrome.google.com/webstore/detail/gifit/khoojcphcmgcplkpckkjpdlloooifgec).
+
+###Compile GIFit from Source (Hard Way)
+
+Here are some quick and easy steps for compilation success:
+
+1. [Download](https://github.com/Fauntleroy/GIFit/archive/master.zip) or clone this repository and unzip it.
 2. Navigate to [chrome://extensions/](chrome://extensions/) (or find it in Chrome's settings panel) and enable "developer mode" (it should be a small checkbox at the top right).
 3. Click "Load unpacked extension..." and select the `GIFit/dist` folder.
 4. Navigate to [YouTube](http://youtube.com). You should now see a "GIFit!" button in video toolbars.
