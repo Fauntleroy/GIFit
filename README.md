@@ -1,16 +1,16 @@
-#GIFit!
+![GIFit Rudd Dancing](https://raw.github.com/fauntleroy/GIFit/master/gifit_rudd_dance.gif)
 
-If you've ever seen a YouTube video and thought "Damn, I wish I had a GIF of that" then started researching how to make GIFs and got horribly discouraged THIS IS THE EXTENSION FOR YOU. Install GIFit! and inherit the power of the GIF gods.
+Making a GIF can be intimidating. With GIFit, it isn't so intimidating anymore. Just install GIFit and you can make GIFs out of pieces of any YouTube video. Inherit the power of the GIF gods!
 
 ![GIFit in action](https://raw.github.com/fauntleroy/GIFit/master/screenshot.jpg)
 
 ##Installing
 
-###Chrome Web Store (Easy Way)
+###Chrome Web Store (Easy Mode)
 
 You can install the latest production version of GIFit! from the [Chrome Web Store](https://chrome.google.com/webstore/detail/gifit/khoojcphcmgcplkpckkjpdlloooifgec).
 
-###Compile GIFit from Source (Hard Way)
+###Compile GIFit from Source (Hard Mode)
 
 Here are some quick and easy steps for compilation success:
 
@@ -25,4 +25,4 @@ If you have any problems with the extension, be sure to speak up and [file issue
 
 Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project. To start developing, just run `gulp` and it'll run the default task (build/watch everything). Source files are in `src`, and the distributable extension files are in `dist`.
 
-When fixing bugs/adding features please make NEW BRANCHES and submit pull reqs. Please follow the existing code style as well as you're able.
+When fixing bugs/adding features please make **NEW BRANCHES** and submit pull reqs. Please follow the existing code style as well as you're able.
