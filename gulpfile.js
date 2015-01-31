@@ -1,4 +1,3 @@
-var spawn = require('child_process').spawn;
 var path = require('path');
 var vinyl_source = require('vinyl-source-stream');
 var watchify = require('watchify');
@@ -15,7 +14,13 @@ gulp.task( 'compile content.js', function(){
 			.pipe( vinyl_source('content.js') )
 			.pipe( gulp.dest('./dist/scripts') );
 	};
-	w.on( 'update', bundle );
+	w.on( 'update', function(){
+		console.log('[watchify] rebundling content.js');
+		bundle();
+	});
+	w.on( 'time', function( time ){
+		console.log('[watchify] bundled content.js in '+ time +'ms');
+	});
 	w.on( 'error', function(){
 		console.log('error', arguments);
 	})
@@ -35,10 +40,6 @@ gulp.task( 'copy static files', function(){
 		.pipe( gulp.dest('dist') );
 });
 
-gulp.task( 'watch css', function(){
-	gulp.watch( './src/styles/**/*.{less,css}', ['recompile content.js'] );
-});
-
 gulp.task( 'watch static files', function(){
 	gulp.watch([
 		'./src/manifest.json',
@@ -50,6 +51,5 @@ gulp.task( 'watch static files', function(){
 gulp.task( 'default', [
 	'compile content.js',
 	'copy static files',
-	'watch css',
 	'watch static files'
 ]);
