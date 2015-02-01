@@ -1,34 +1,43 @@
-var path = require('path');
 var vinyl_source = require('vinyl-source-stream');
+var browserify = require('browserify');
 var watchify = require('watchify');
 var gulp = require('gulp');
-var w;
-var bundle;
+var gulp_util = require('gulp-util');
+
+var generateBrowserifyBundler = function(){
+	var bundler = browserify( './src/scripts/content.js', watchify.args );
+	bundler.transform('hbsfy');
+	bundler.transform('lessify');
+	return bundler;
+};
 
 gulp.task( 'compile content.js', function(){
-	w = watchify('./src/scripts/content.js');
-	w.transform('hbsfy');
-	w.transform('lessify');
-	bundle = function(){
-		return w.bundle()
+	var bundler = generateBrowserifyBundler();
+	return bundler.bundle()
+		.pipe( vinyl_source('content.js') )
+		.pipe( gulp.dest('./dist/scripts') );
+});
+
+gulp.task( 'compile and watch content.js', function(){
+	var bundler = watchify( generateBrowserifyBundler() );
+	var bundle = function(){
+		return bundler.bundle()
+			.on( 'error', function( error ){
+				gulp_util.log( '[watchify]', error.toString() );
+				gulp_util.beep();
+				this.emit('end');
+			})
 			.pipe( vinyl_source('content.js') )
 			.pipe( gulp.dest('./dist/scripts') );
 	};
-	w.on( 'update', function(){
-		console.log('[watchify] rebundling content.js');
+	bundler.on( 'update', function(){
+		gulp_util.log( '[watchify]', 'Bundling content.js...');
 		bundle();
 	});
-	w.on( 'time', function( time ){
-		console.log('[watchify] bundled content.js in '+ time +'ms');
+	bundler.on( 'time', function( time ){
+		gulp_util.log( '[watchify]', 'Bundled content.js in '+ time +'ms');
 	});
-	w.on( 'error', function(){
-		console.log('error', arguments);
-	})
 	return bundle();
-});
-
-gulp.task( 'recompile content.js', function(){
-	bundle();
 });
 
 gulp.task( 'copy static files', function(){
@@ -48,8 +57,15 @@ gulp.task( 'watch static files', function(){
 	], ['copy static files']);
 });
 
-gulp.task( 'default', [
+gulp.task( 'build', [
 	'compile content.js',
+	'copy static files'
+]);
+
+gulp.task( 'dev', [
+	'compile and watch content.js',
 	'copy static files',
 	'watch static files'
 ]);
+
+gulp.task( 'default', ['dev'] );

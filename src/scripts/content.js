@@ -44,7 +44,6 @@ var $gifit_canvas = $('<canvas id="gifit-canvas"></canvas>');
 var gifit_canvas_context = $gifit_canvas.get(0).getContext('2d');
 $body.append( $gifit_canvas );
 
-
 var $gifit_options = $( gifit_options_template() );
 var $gifit_options_form = $gifit_options.children('form');
 var $gifit_options_form_height = $gifit_options_form.find('#gifit-option-height');
