@@ -6,14 +6,6 @@ var React = require('react');
 var GifitButton = require('./components/GifitButton.jsx');
 var GifitApp = require('./components/GifitApp.jsx');
 
-var toggleApp = function(){
-	if( app_shown ){
-		GifitApp.hide();
-	} else {
-		GifitApp.show();
-	}
-};
-
 var youtube_player_chrome_element = document.querySelector('#player-api .html5-player-chrome');
 var youtube_player_controls_element = document.querySelector('#player-api .html5-video-controls');
 
@@ -33,5 +25,6 @@ gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagati
 gifit_app_container_element.addEventListener( 'click', stopImmediatePropagation );
 gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
 
-React.render( <GifitButton onClick={toggleApp} />, gifit_button_container_element );
+// Emgage party mode
+React.render( <GifitButton />, gifit_button_container_element );
 React.render( <GifitApp />, gifit_app_container_element );

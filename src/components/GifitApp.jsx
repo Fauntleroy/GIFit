@@ -1,5 +1,7 @@
 var React = require('react');
+var cx = require('classnames');
 
+var gifit_events = require('../utils/gifit_events.js');
 var GifService = require('../services/GifService.js');
 var ConfigurationPanel = require('./ConfigurationPanel.jsx');
 var Progress = require('./Progress.jsx');
@@ -19,7 +21,8 @@ var GifitApp = React.createClass({
 				status: null,
 				percent: 0
 			},
-			image: null
+			image: null,
+			active: false
 		}
 	},
 	componentWillMount: function(){
@@ -28,13 +31,21 @@ var GifitApp = React.createClass({
 		});
 		this._GifService.on( 'progress', this._onGifProgress );
 		this._GifService.on( 'complete', this._onGifComplete );
+		gifit_events.on( 'toggle', this._onToggle );
 	},
 	componentWillUnmount: function(){
+		gifit_events.off( 'toggle', this._onToggle );
 		this._GifService.remove();
 	},
 	render: function(){
+		var gifit_app_classes = cx({
+			'gifit-app': true,
+			'gifit': true,
+			'gifit-app--active': this.state.active,
+			'gifit-app--inactive': !this.state.active
+		});
 		return (
-			<div className="gifit-app gifit">
+			<div className={gifit_app_classes}>
 				<ConfigurationPanel
 					configuration={this.state.configuration}
 					onSubmit={this._onConfigurationSubmit}
@@ -46,12 +57,6 @@ var GifitApp = React.createClass({
 				/>
 			</div>
 		);
-	},
-	show: function(){
-
-	},
-	hide: function(){
-
 	},
 	_onConfigurationSubmit: function( configuration ){
 		this.setState({
@@ -70,6 +75,11 @@ var GifitApp = React.createClass({
 	_onGifComplete: function( image_blob ){
 		this.setState({
 			image: image_blob
+		});
+	},
+	_onToggle: function(){
+		this.setState({
+			active: !this.state.active
 		});
 	}
 });

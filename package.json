@@ -38,6 +38,7 @@
     "watchify": "^2.3.0"
   },
   "dependencies": {
+    "classnames": "^1.1.2",
     "react": "^0.12.2"
   }
 }
