@@ -7,7 +7,7 @@
         "matches": ["*://www.youtube.com/*"],
         "js": [
             "scripts/vendor/patch-worker.js",
-            "scripts/content.js"
+            "content.js"
         ],
         "run_at": "document_end"
     }],
