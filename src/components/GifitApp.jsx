@@ -34,7 +34,7 @@ var GifitApp = React.createClass({
 	},
 	render: function(){
 		return (
-			<div className="gifit-app">
+			<div className="gifit-app gifit">
 				<ConfigurationPanel
 					configuration={this.state.configuration}
 					onSubmit={this._onConfigurationSubmit}

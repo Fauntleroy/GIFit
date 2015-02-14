@@ -81,8 +81,16 @@ var ConfigurationPanel = React.createClass({
 						</div>
 					</fieldset>
 					<div className="gifit-configuration__actions">
-						<button id="gifit-submit" className="gifit__button gifit__button--primary" type="submit">
-							<span className="gifit-logo__gif">GIF</span><span className="gifit-logo__it">it!</span>
+						<button
+							id="gifit-submit"
+							className="gifit-configuration__submit gifit__button gifit__button--primary"
+							type="submit"
+						>
+							<span
+								className="gifit-logo__gif gifit-logo__gif--primary"
+							>GIF</span><span
+								className="gifit-logo__it gifit-logo__it--primary"
+							>it!</span>
 						</button>
 					</div>
 				</form>

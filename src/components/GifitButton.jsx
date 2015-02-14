@@ -4,8 +4,7 @@ var GifitButton = React.createClass({
 	render: function(){
 		return (
 			<div
-				id="gifit-start"
-				className="gifit-button gifit-logo ytp-button ytp-button-gif"
+				className="gifit-button gifit-logo"
 				role="button"
 				onClick={this._onclick}
 			>
