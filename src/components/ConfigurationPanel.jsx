@@ -7,7 +7,7 @@ var ConfigurationPanel = React.createClass({
 				<form onSubmit={this._onSubmit}>
 					<fieldset className="gifit__fieldset--horizontal">
 						<div className="gifit__inputs">
-							<label className="gifit__label" for="gifit-option-start">Start</label>
+							<label className="gifit__label" htmlFor="gifit-option-start">Start</label>
 							<input
 								id="gifit-option-start"
 								className="gifit__input"
@@ -16,19 +16,19 @@ var ConfigurationPanel = React.createClass({
 							/>
 						</div>
 						<div className="gifit__inputs">
-							<label className="gifit__label" for="gifit-option-end">End</label>
+							<label className="gifit__label" htmlFor="gifit-option-end">End</label>
 							<input
 								id="gifit-option-end"
 								className="gifit__input"
 								name="end"
 								type="text"
-								value={this.props.configuration.end}
+								defaultValue={this.props.configuration.end}
 							/>
 						</div>
 					</fieldset>
 					<fieldset className="gifit__fieldset--horizontal">
 						<div className="gifit__inputs">
-							<label className="gifit__label" for="gifit-option-width">Width</label>
+							<label className="gifit__label" htmlFor="gifit-option-width">Width</label>
 							<input
 								id="gifit-option-width"
 								className="gifit__input"
@@ -40,7 +40,7 @@ var ConfigurationPanel = React.createClass({
 							/>
 						</div>
 						<div className="gifit__inputs">
-							<label className="gifit__label" for="gifit-option-height">Height</label>
+							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
 							<input 
 								id="gifit-option-height"
 								className="gifit__input"
@@ -54,7 +54,7 @@ var ConfigurationPanel = React.createClass({
 					</fieldset>
 					<fieldset>
 						<div className="gifit__inputs">
-							<label className="gifit__label" for="gifit-option-framerate">Frame Rate</label>
+							<label className="gifit__label" htmlFor="gifit-option-framerate">Frame Rate</label>
 							<input
 								id="gifit-option-framerate"
 								className="gifit__input"
@@ -68,7 +68,7 @@ var ConfigurationPanel = React.createClass({
 					</fieldset>
 					<fieldset>
 						<div className="gifit__inputs gifit__inputs--range">
-							<label className="gifit__label" for="gifit-option-quality">Quality</label>
+							<label className="gifit__label" htmlFor="gifit-option-quality">Quality</label>
 							<input
 								id="gifit-option-quality"
 								className="gifit__input"
