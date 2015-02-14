@@ -25,6 +25,15 @@ var gifit_app_container_element = document.createElement('div');
 youtube_player_chrome_element.appendChild( gifit_button_container_element );
 youtube_player_controls_element.appendChild( gifit_app_container_element );
 
+// Prevent YouTube's events from firing in Gifit's interface
+var stopImmediatePropagation = function( event ){
+	event.stopImmediatePropagation();
+};
+gifit_app_container_element.addEventListener( 'keydown', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'click', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
+
 React.render( React.createElement(GifitButton, {onClick: toggleApp}), gifit_button_container_element );
 React.render( React.createElement(GifitApp, null), gifit_app_container_element );
 
@@ -19283,7 +19292,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 								id: "gifit-option-start", 
 								className: "gifit__input", 
 								name: "start", type: "text", 
-								value: this.props.configuration.start}
+								defaultValue: this.props.configuration.start}
 							)
 						), 
 						React.createElement("div", {className: "gifit__inputs"}, 
@@ -19307,7 +19316,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 								type: "number", 
 								min: "10", 
 								max: "1920", 
-								value: this.props.configuration.width}
+								defaultValue: this.props.configuration.width}
 							)
 						), 
 						React.createElement("div", {className: "gifit__inputs"}, 
@@ -19319,7 +19328,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 								type: "number", 
 								min: "10", 
 								max: "1080", 
-								value: this.props.configuration.height}
+								defaultValue: this.props.configuration.height}
 							)
 						)
 					), 
@@ -19333,7 +19342,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 								type: "number", 
 								min: "1", 
 								max: "60", 
-								value: this.props.configuration.framerate}
+								defaultValue: this.props.configuration.framerate}
 							)
 						)
 					), 
@@ -19347,7 +19356,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 								type: "range", 
 								min: "0", 
 								max: "10", 
-								value: this.props.configuration.quality}
+								defaultValue: this.props.configuration.quality}
 							)
 						)
 					), 

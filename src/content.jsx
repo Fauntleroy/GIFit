@@ -24,5 +24,14 @@ var gifit_app_container_element = document.createElement('div');
 youtube_player_chrome_element.appendChild( gifit_button_container_element );
 youtube_player_controls_element.appendChild( gifit_app_container_element );
 
+// Prevent YouTube's events from firing in Gifit's interface
+var stopImmediatePropagation = function( event ){
+	event.stopImmediatePropagation();
+};
+gifit_app_container_element.addEventListener( 'keydown', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'click', stopImmediatePropagation );
+gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
+
 React.render( <GifitButton onClick={toggleApp} />, gifit_button_container_element );
 React.render( <GifitApp />, gifit_app_container_element );

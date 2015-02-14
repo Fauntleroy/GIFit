@@ -12,7 +12,7 @@ var ConfigurationPanel = React.createClass({
 								id="gifit-option-start"
 								className="gifit__input"
 								name="start" type="text"
-								value={this.props.configuration.start}
+								defaultValue={this.props.configuration.start}
 							/>
 						</div>
 						<div className="gifit__inputs">
@@ -36,7 +36,7 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="10"
 								max="1920"
-								value={this.props.configuration.width}
+								defaultValue={this.props.configuration.width}
 							/>
 						</div>
 						<div className="gifit__inputs">
@@ -48,7 +48,7 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="10"
 								max="1080"
-								value={this.props.configuration.height}
+								defaultValue={this.props.configuration.height}
 							/>
 						</div>
 					</fieldset>
@@ -62,7 +62,7 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="1"
 								max="60"
-								value={this.props.configuration.framerate}
+								defaultValue={this.props.configuration.framerate}
 							/>
 						</div>
 					</fieldset>
@@ -76,7 +76,7 @@ var ConfigurationPanel = React.createClass({
 								type="range"
 								min="0"
 								max="10"
-								value={this.props.configuration.quality}
+								defaultValue={this.props.configuration.quality}
 							/>
 						</div>
 					</fieldset>
