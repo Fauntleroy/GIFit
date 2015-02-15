@@ -14,7 +14,7 @@
     "web_accessible_resources": [
         "vendor/gif.worker.js",
         "vendor/gif.worker.js.map",
-        "scripts/gif.js.map"
+        "gif.js.map"
     ],
     "manifest_version": 2
 }
