@@ -256,13 +256,6 @@
 	}
 }
 
-// App
-.gifit-app {
-	&.gifit-app--inactive {
-		display: none;
-	}
-}
-
 // Logo
 .gifit-logo__gif {
 	font-family: 'robotobold', sans-serif;
@@ -292,9 +285,8 @@
 	}
 }
 
-// Configuration Panel
-.gifit-configuration {
-	//display: none;
+// App
+.gifit-app {
 	box-sizing: border-box;
 	position: absolute;
 	right: 0;
@@ -304,6 +296,34 @@
 	padding: 25px;
 	color: @color_panel_text;
 	background: @color_panel_background;
+
+	&.gifit-app--inactive {
+		display: none;
+	}
+
+	&.gifit-app--status-generating,
+	&.gifit-app--status-generated {
+		.gifit-configuration {
+			filter: blur( 2px );
+			opacity: 0.25;
+		}
+
+		.gifit-progress {
+			display: flex;
+		}
+	}
+
+	&.gifit-app--status-generated {
+		.gifit-progress__result {
+			opacity: 1;
+		}
+	}
+}
+
+// Configuration Panel
+.gifit-configuration {
+	opacity: 1;
+	transition: filter 300ms, opacity: 300ms;
 }
 
 .gifit-configuration__submit {
@@ -314,7 +334,7 @@
 
 // Progress
 .gifit-progress {
-	//display: none;
+	display: none;
 	position: absolute;
 	top: 0;
 	right: 0;
