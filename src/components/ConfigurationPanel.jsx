@@ -114,6 +114,7 @@ var ConfigurationPanel = React.createClass({
 			</div>
 		);
 	},
+	// Update state according to change of input value
 	_onChange: function( event ){
 		var target_element = event.target;
 		var new_props_object = {};

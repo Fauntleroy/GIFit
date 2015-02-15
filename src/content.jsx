@@ -6,6 +6,7 @@ var React = require('react');
 var GifitButton = require('./components/GifitButton.jsx');
 var GifitApp = require('./components/GifitApp.jsx');
 
+// Find YouTube elements we'll be injecting into
 var youtube_player_chrome_element = document.querySelector('#player-api .html5-player-chrome');
 var youtube_player_controls_element = document.querySelector('#player-api .html5-video-controls');
 
@@ -24,6 +25,6 @@ gifit_app_container_element.addEventListener( 'keydown', stopImmediatePropagatio
 gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagation );
 gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
 
-// Emgage party mode
+// Engage party mode
 React.render( <GifitButton />, gifit_button_container_element );
 React.render( <GifitApp />, gifit_app_container_element );

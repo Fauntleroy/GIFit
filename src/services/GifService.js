@@ -5,10 +5,12 @@ var gifjs = require('gif.js');
 var GATHERING_FRAMES_STATUS = 'Gathering frames…';
 var RENDERING_STATUS = 'Rendering GIF…';
 
+// Return combined progress of frame gathering and GIF rendering as percent
 var calculateProgress = function( frame_gathering_progress, rendering_progress ){
 	return (( frame_gathering_progress * 0.7 ) + ( rendering_progress * 0.3 )) * 100;
 };
 
+// Determine which state string is current
 var getStatus = function( frame_gathering_progress ){
 	var status = '';
 	if( frame_gathering_progress < 1 ){
@@ -19,6 +21,7 @@ var getStatus = function( frame_gathering_progress ){
 	return status;
 };
 
+// Seek through <video> frames asynchronously
 var asyncSeek = function( video, time, callback ){
 	var doneSeeking = function(){
 		video.removeEventListener( 'seeked', doneSeeking );
@@ -105,6 +108,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 				gif.render();
 				return;
 			}
+			// Draw current frame on canvas, then transfer that to gif.js
 			context.drawImage( video_element, 0, 0, width, height );
 			gif.addFrame( canvas_element, {
 				delay: frame_interval,
@@ -121,6 +125,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	});
 };
 
+// Stop gathering frames / rendering GIF
 GifService.prototype.abort = function(){
 	if( !this._gif ){
 		return;

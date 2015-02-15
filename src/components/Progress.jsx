@@ -5,6 +5,8 @@ var DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
 var Progress = React.createClass({
 	render: function(){
 		if( this.props.image ){
+			// Prepare a height proportional to the width the image will be displayed at
+			// nasty but necessary for the effect at the end of GIF creation
 			var image_display_height = DEFAULT_IMAGE_DISPLAY_WIDTH * ( this.props.image.height / this.props.image.width );
 			var image_url = URL.createObjectURL( this.props.image.blob );
 			var progress_elements_style = {

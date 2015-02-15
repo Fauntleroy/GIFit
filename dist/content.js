@@ -7,6 +7,7 @@ var React = require('react');
 var GifitButton = require('./components/GifitButton.jsx');
 var GifitApp = require('./components/GifitApp.jsx');
 
+// Find YouTube elements we'll be injecting into
 var youtube_player_chrome_element = document.querySelector('#player-api .html5-player-chrome');
 var youtube_player_controls_element = document.querySelector('#player-api .html5-video-controls');
 
@@ -25,7 +26,7 @@ gifit_app_container_element.addEventListener( 'keydown', stopImmediatePropagatio
 gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagation );
 gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
 
-// Emgage party mode
+// Engage party mode
 React.render( React.createElement(GifitButton, null), gifit_button_container_element );
 React.render( React.createElement(GifitApp, null), gifit_app_container_element );
 
@@ -20181,6 +20182,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 			)
 		);
 	},
+	// Update state according to change of input value
 	_onChange: function( event ){
 		var target_element = event.target;
 		var new_props_object = {};
@@ -20332,6 +20334,8 @@ var DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
 var Progress = React.createClass({displayName: "Progress",
 	render: function(){
 		if( this.props.image ){
+			// Prepare a height proportional to the width the image will be displayed at
+			// nasty but necessary for the effect at the end of GIF creation
 			var image_display_height = DEFAULT_IMAGE_DISPLAY_WIDTH * ( this.props.image.height / this.props.image.width );
 			var image_url = URL.createObjectURL( this.props.image.blob );
 			var progress_elements_style = {
@@ -20374,10 +20378,12 @@ var gifjs = require('gif.js');
 var GATHERING_FRAMES_STATUS = 'Gathering frames…';
 var RENDERING_STATUS = 'Rendering GIF…';
 
+// Return combined progress of frame gathering and GIF rendering as percent
 var calculateProgress = function( frame_gathering_progress, rendering_progress ){
 	return (( frame_gathering_progress * 0.7 ) + ( rendering_progress * 0.3 )) * 100;
 };
 
+// Determine which state string is current
 var getStatus = function( frame_gathering_progress ){
 	var status = '';
 	if( frame_gathering_progress < 1 ){
@@ -20388,6 +20394,7 @@ var getStatus = function( frame_gathering_progress ){
 	return status;
 };
 
+// Seek through <video> frames asynchronously
 var asyncSeek = function( video, time, callback ){
 	var doneSeeking = function(){
 		video.removeEventListener( 'seeked', doneSeeking );
@@ -20474,6 +20481,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 				gif.render();
 				return;
 			}
+			// Draw current frame on canvas, then transfer that to gif.js
 			context.drawImage( video_element, 0, 0, width, height );
 			gif.addFrame( canvas_element, {
 				delay: frame_interval,
@@ -20490,6 +20498,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	});
 };
 
+// Stop gathering frames / rendering GIF
 GifService.prototype.abort = function(){
 	if( !this._gif ){
 		return;
@@ -20511,9 +20520,11 @@ var css = "@font-face {\n  font-family: 'robotoregular';\n  src: url(data:applic
 },{"lessify":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\lessify\\transform.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\utils\\gifit_events.js":[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 
+// EventEmitter used to communicate between the toolbar button and app
 module.exports = new EventEmitter();
 
 },{"events":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\browserify\\node_modules\\events\\events.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\utils\\toSeconds.js":[function(require,module,exports){
+// Convert a timecode string, like 1:30, to a seconds number
 var toSeconds = function( time_string ){
 	var seconds = 0;
 	var time_array = time_string.split(':').reverse();
