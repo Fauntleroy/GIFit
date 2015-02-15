@@ -3,8 +3,8 @@ var React = require('react');
 var ConfigurationPanel = React.createClass({
 	getInitialState: function(){
 		return {
-			start: 0,
-			end: 1,
+			start: '0:00',
+			end: '0:01',
 			width: 320,
 			height: 240,
 			framerate: 10,

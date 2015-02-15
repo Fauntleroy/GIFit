@@ -2,6 +2,7 @@ var React = require('react');
 var cx = require('classnames');
 var assign = require('lodash/object/assign');
 
+var toSeconds = require('../utils/toSeconds.js');
 var gifit_events = require('../utils/gifit_events.js');
 var GifService = require('../services/GifService.js');
 var ConfigurationPanel = require('./ConfigurationPanel.jsx');
@@ -66,8 +67,8 @@ var GifitApp = React.createClass({
 	_onConfigurationSubmit: function( configuration ){
 		// Copy, preprocess, and submit configuration object
 		var gif_configuration = assign( {}, configuration, {
-			start: parseInt( ( parseFloat( configuration.start ) || 0 ) * 1000 ),
-			end: parseInt( ( parseFloat( configuration.end ) || 0 ) * 1000 )
+			start: parseInt( ( toSeconds( configuration.start ) ) * 1000 ),
+			end: parseInt( ( toSeconds( configuration.end ) ) * 1000 )
 		});
 		this._gif_service.createGif( gif_configuration, this._video_element );
 	},
