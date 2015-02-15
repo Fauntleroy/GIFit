@@ -23,6 +23,9 @@
 @input_border_radius: 3px;
 @button_border_radius: 3px;
 
+@ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
+@ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
+
 // Integration styles
 .ytp-button-gif {
 	float: right;
@@ -296,9 +299,12 @@
 	padding: 25px;
 	color: @color_panel_text;
 	background: @color_panel_background;
+	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
 
 	&.gifit-app--inactive {
-		display: none;
+		opacity: 0.75;
+		transform: translateY( 325px ) scaleX( 0.8 );
+		transition: transform 250ms @ease_in_expo, opacity 250ms @ease_in_expo;
 	}
 
 	&.gifit-app--status-generating,
