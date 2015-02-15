@@ -78,7 +78,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 		repeat: 0,
 		width: width,
 		height: height,
-		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
+		workerScript: chrome.runtime.getURL('vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( image_blob ){
 		var image_attributes = {

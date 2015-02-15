@@ -44,7 +44,7 @@ gulp.task( 'copy static files', function(){
 	gulp.src([
 		'./src/manifest.json',
 		'./src/popup.html',
-		'./src/scripts/vendor/**/*'
+		'./src/vendor/**/*'
 	], { base: './src' })
 		.pipe( gulp.dest('dist') );
 });
@@ -53,7 +53,7 @@ gulp.task( 'watch static files', function(){
 	gulp.watch([
 		'./src/manifest.json',
 		'./src/popup.html',
-		'./src/scripts/vendor/**/*'
+		'./src/vendor/**/*'
 	], ['copy static files']);
 });
 
