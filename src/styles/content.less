@@ -304,8 +304,8 @@
 	&.gifit-app--status-generating,
 	&.gifit-app--status-generated {
 		.gifit-configuration {
-			filter: blur( 2px );
-			opacity: 0.25;
+			-webkit-filter: blur( 1px );
+			opacity: 0.5;
 		}
 
 		.gifit-progress {
@@ -327,7 +327,7 @@
 // Configuration Panel
 .gifit-configuration {
 	opacity: 1;
-	transition: filter 300ms, opacity: 300ms;
+	transition: -webkit-filter 300ms, opacity 300ms;
 }
 
 .gifit-configuration__submit {

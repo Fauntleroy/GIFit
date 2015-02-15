@@ -53,19 +53,14 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	// Process configuration data
 	var framerate = configuration.framerate;
 	var frame_interval = 1000 / framerate;
-	var start = configuration.start >= 0
-		? configuration.start
-		: 0;
-	var end = configuration.end <= video_element.duration
-		? configuration.end
-		: video_element.duration;
+	var start = configuration.start;
+	var end = configuration.end;
 	var width = configuration.width;
 	var height = configuration.height;
 	var quality = 31 - ( configuration.quality * 3 );
 	var gif_duration = configuration.end - configuration.start;
 	// To properly indicate progress we need a point of comparison locked to the frame rate
-	var gif_duration_ms = Math.round( gif_duration * 1000 );
-	var true_gif_duration = ( gif_duration_ms - ( gif_duration_ms % frame_interval ) ) / 1000;
+	var true_gif_duration = ( gif_duration - ( gif_duration % frame_interval ) );
 
 	// Prepare canvas
 	canvas_element.setAttribute( 'width', width );
@@ -96,10 +91,10 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	});
 
 	// Run frames through GIF maker
-	asyncSeek( video_element, start, function(){
+	asyncSeek( video_element, ( start / 1000 ), function(){
 		var addFrame = function(){
 			if( gif_service._aborted ) return;
-			var current_time = video_element.currentTime;
+			var current_time = video_element.currentTime * 1000;
 			if( current_time > end ){
 				// render the GIF
 				gif.render();
@@ -114,8 +109,8 @@ GifService.prototype.createGif = function( configuration, video_element ){
 			var overall_progress = calculateProgress( frame_gathering_progress, 0 );
 			var status = getStatus( frame_gathering_progress );
 			gif_service.emit( 'progress', status, overall_progress );
-			var next_frame_time = current_time + ( 1 / framerate );
-			asyncSeek( video_element, next_frame_time, addFrame );
+			var next_frame_time = current_time + ( 1000 / framerate );
+			asyncSeek( video_element, ( next_frame_time / 1000 ), addFrame );
 		};
 		addFrame();
 	});
