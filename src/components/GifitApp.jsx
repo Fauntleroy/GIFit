@@ -7,9 +7,6 @@ var GifService = require('../services/GifService.js');
 var ConfigurationPanel = require('./ConfigurationPanel.jsx');
 var Progress = require('./Progress.jsx');
 
-var DEFAULT_IMAGE_WIDTH = 240;
-var DEFAULT_IMAGE_HEIGHT = 160;
-
 var GifitApp = React.createClass({
 	getInitialState: function(){
 		return {
@@ -18,7 +15,6 @@ var GifitApp = React.createClass({
 				percent: 0
 			},
 			image: null,
-			image_height: DEFAULT_IMAGE_HEIGHT,
 			active: false
 		}
 	},
@@ -74,9 +70,6 @@ var GifitApp = React.createClass({
 			end: parseInt( ( parseFloat( configuration.end ) || 0 ) * 1000 )
 		});
 		this._gif_service.createGif( gif_configuration, this._video_element );
-		this.setState({
-			image_height: DEFAULT_IMAGE_WIDTH * ( configuration.height / configuration.width )
-		});
 	},
 	_onGifProgress: function( status, percent ){
 		this.setState({
@@ -86,9 +79,9 @@ var GifitApp = React.createClass({
 			}
 		});
 	},
-	_onGifComplete: function( image_blob ){
+	_onGifComplete: function( image_attributes ){
 		this.setState({
-			image: image_blob
+			image: image_attributes
 		});
 	},
 	_onGifAbort: function(){

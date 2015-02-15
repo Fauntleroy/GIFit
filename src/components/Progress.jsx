@@ -1,13 +1,16 @@
 var React = require('react');
 
+var DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
+
 var Progress = React.createClass({
 	render: function(){
-		var progress_elements_style = {
-			height: this.props.percent === 100 ? this.props.image_height : false
-		};
-		var image_url = this.props.image
-			? URL.createObjectURL( this.props.image )
-			: null;
+		if( this.props.image ){
+			var image_display_height = DEFAULT_IMAGE_DISPLAY_WIDTH * ( this.props.image.height / this.props.image.width );
+			var image_url = URL.createObjectURL( this.props.image.blob );
+			var progress_elements_style = {
+				height: image_display_height
+			};
+		}
 		return (
 			<div className="gifit-progress">
 				<a

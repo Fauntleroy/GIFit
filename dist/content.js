@@ -20205,9 +20205,6 @@ var GifService = require('../services/GifService.js');
 var ConfigurationPanel = require('./ConfigurationPanel.jsx');
 var Progress = require('./Progress.jsx');
 
-var DEFAULT_IMAGE_WIDTH = 240;
-var DEFAULT_IMAGE_HEIGHT = 160;
-
 var GifitApp = React.createClass({displayName: "GifitApp",
 	getInitialState: function(){
 		return {
@@ -20216,7 +20213,6 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 				percent: 0
 			},
 			image: null,
-			image_height: DEFAULT_IMAGE_HEIGHT,
 			active: false
 		}
 	},
@@ -20272,9 +20268,6 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 			end: parseInt( ( parseFloat( configuration.end ) || 0 ) * 1000 )
 		});
 		this._gif_service.createGif( gif_configuration, this._video_element );
-		this.setState({
-			image_height: DEFAULT_IMAGE_WIDTH * ( configuration.height / configuration.width )
-		});
 	},
 	_onGifProgress: function( status, percent ){
 		this.setState({
@@ -20284,9 +20277,9 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 			}
 		});
 	},
-	_onGifComplete: function( image_blob ){
+	_onGifComplete: function( image_attributes ){
 		this.setState({
-			image: image_blob
+			image: image_attributes
 		});
 	},
 	_onGifAbort: function(){
@@ -20333,14 +20326,17 @@ module.exports = GifitButton;
 },{"../utils/gifit_events.js":"c:\\Users\\Timothy\\repos\\gifit\\src\\utils\\gifit_events.js","react":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\react\\react.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\components\\Progress.jsx":[function(require,module,exports){
 var React = require('react');
 
+var DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
+
 var Progress = React.createClass({displayName: "Progress",
 	render: function(){
-		var progress_elements_style = {
-			height: this.props.percent === 100 ? this.props.image_height : false
-		};
-		var image_url = this.props.image
-			? URL.createObjectURL( this.props.image )
-			: null;
+		if( this.props.image ){
+			var image_display_height = DEFAULT_IMAGE_DISPLAY_WIDTH * ( this.props.image.height / this.props.image.width );
+			var image_url = URL.createObjectURL( this.props.image.blob );
+			var progress_elements_style = {
+				height: image_display_height
+			};
+		}
 		return (
 			React.createElement("div", {className: "gifit-progress"}, 
 				React.createElement("a", {
@@ -20453,7 +20449,12 @@ GifService.prototype.createGif = function( configuration, video_element ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( image_blob ){
-		gif_service.emit( 'complete', image_blob );
+		var image_attributes = {
+			blob: image_blob,
+			width: width,
+			height: height
+		};
+		gif_service.emit( 'complete', image_attributes );
 		gif_service._gif = null;
 	});
 	gif.on( 'progress', function( progress_ratio ){

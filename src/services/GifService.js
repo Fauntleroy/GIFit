@@ -81,7 +81,12 @@ GifService.prototype.createGif = function( configuration, video_element ){
 		workerScript: chrome.runtime.getURL('scripts/vendor/gif.worker.js')
 	});
 	gif.on( 'finished', function( image_blob ){
-		gif_service.emit( 'complete', image_blob );
+		var image_attributes = {
+			blob: image_blob,
+			width: width,
+			height: height
+		};
+		gif_service.emit( 'complete', image_attributes );
 		gif_service._gif = null;
 	});
 	gif.on( 'progress', function( progress_ratio ){
