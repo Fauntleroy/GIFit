@@ -6,63 +6,71 @@ var GifService = require('../services/GifService.js');
 var ConfigurationPanel = require('./ConfigurationPanel.jsx');
 var Progress = require('./Progress.jsx');
 
+var DEFAULT_IMAGE_WIDTH = 240;
+var DEFAULT_IMAGE_HEIGHT = 160;
+
 var GifitApp = React.createClass({
 	getInitialState: function(){
 		return {
-			configuration: {
-				start: 0,
-				end: 1,
-				width: 320,
-				height: 240,
-				framerate: 10,
-				quality: 5
-			},
 			progress: {
 				status: null,
 				percent: 0
 			},
 			image: null,
+			image_height: DEFAULT_IMAGE_HEIGHT,
 			active: false
 		}
 	},
 	componentWillMount: function(){
-		this._GifService = new GifService({
-			source_video: this.props.video_element
-		});
-		this._GifService.on( 'progress', this._onGifProgress );
-		this._GifService.on( 'complete', this._onGifComplete );
+		this._video_element = document.querySelector('#player-api video');
+		this._gif_service = new GifService();
+		this._gif_service.on( 'progress', this._onGifProgress );
+		this._gif_service.on( 'complete', this._onGifComplete );
+		this._gif_service.on( 'abort', this._onGifAbort );
 		gifit_events.on( 'toggle', this._onToggle );
 	},
 	componentWillUnmount: function(){
 		gifit_events.off( 'toggle', this._onToggle );
-		this._GifService.remove();
+		this._gif_service.destroy();
 	},
 	render: function(){
 		var gifit_app_classes = cx({
 			'gifit-app': true,
 			'gifit': true,
 			'gifit-app--active': this.state.active,
-			'gifit-app--inactive': !this.state.active
+			'gifit-app--inactive': !this.state.active,
+			'gifit-app--status-generating': ( this.state.progress.percent > 0 && this.state.progress.percent < 100 ),
+			'gifit-app--status-generated': !!this.state.image
 		});
 		return (
 			<div className={gifit_app_classes}>
 				<ConfigurationPanel
-					configuration={this.state.configuration}
 					onSubmit={this._onConfigurationSubmit}
 				/>
 				<Progress
 					status={this.state.progress.status}
 					percent={this.state.progress.percent}
 					image={this.state.image}
+					image_height={this.state.image_height}
+					onCloseClick={this._onProgressCloseClick}
 				/>
 			</div>
 		);
 	},
-	_onConfigurationSubmit: function( configuration ){
+	cleanProgressState: function(){
 		this.setState({
-			configuration: configuration
+			image: null,
+			progress: {
+				status: null,
+				percent: 0
+			}
 		});
-		this._GifService.createGif( configuration );
+	},
+	_onConfigurationSubmit: function( configuration ){
+		this._gif_service.createGif( configuration, this._video_element );
+		this.setState({
+			image_height: DEFAULT_IMAGE_WIDTH * ( configuration.height / configuration.width )
+		});
 	},
 	_onGifProgress: function( status, percent ){
 		this.setState({
@@ -76,6 +84,13 @@ var GifitApp = React.createClass({
 		this.setState({
 			image: image_blob
 		});
+	},
+	_onGifAbort: function(){
+		this.cleanProgressState();
+	},
+	_onProgressCloseClick: function(){
+		this._gif_service.abort();
+		this.cleanProgressState();
 	},
 	_onToggle: function(){
 		this.setState({

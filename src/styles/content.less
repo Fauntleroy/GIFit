@@ -314,8 +314,12 @@
 	}
 
 	&.gifit-app--status-generated {
+		.gifit-progress__status {
+			display: none;
+		}
 		.gifit-progress__result {
 			opacity: 1;
+			-webkit-filter: brightness( 100% );
 		}
 	}
 }
@@ -353,6 +357,10 @@
 
 	&:after {
 		content: '×';
+	}
+
+	&:hover {
+		text-decoration: none;
 	}
 }
 

@@ -1,6 +1,16 @@
 var React = require('react');
 
 var ConfigurationPanel = React.createClass({
+	getInitialState: function(){
+		return {
+			start: 0,
+			end: 1,
+			width: 320,
+			height: 240,
+			framerate: 10,
+			quality: 5
+		};
+	},
 	render: function(){
 		return (
 			<div className="gifit-configuration">
@@ -11,8 +21,10 @@ var ConfigurationPanel = React.createClass({
 							<input
 								id="gifit-option-start"
 								className="gifit__input"
-								name="start" type="text"
-								defaultValue={this.props.configuration.start}
+								name="start"
+								type="text"
+								value={this.state.start}
+								onChange={this._onChange}
 							/>
 						</div>
 						<div className="gifit__inputs">
@@ -22,7 +34,8 @@ var ConfigurationPanel = React.createClass({
 								className="gifit__input"
 								name="end"
 								type="text"
-								defaultValue={this.props.configuration.end}
+								value={this.state.end}
+								onChange={this._onChange}
 							/>
 						</div>
 					</fieldset>
@@ -36,7 +49,8 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="10"
 								max="1920"
-								defaultValue={this.props.configuration.width}
+								value={this.state.width}
+								onChange={this._onChange}
 							/>
 						</div>
 						<div className="gifit__inputs">
@@ -48,7 +62,8 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="10"
 								max="1080"
-								defaultValue={this.props.configuration.height}
+								value={this.state.height}
+								onChange={this._onChange}
 							/>
 						</div>
 					</fieldset>
@@ -62,7 +77,8 @@ var ConfigurationPanel = React.createClass({
 								type="number"
 								min="1"
 								max="60"
-								defaultValue={this.props.configuration.framerate}
+								value={this.state.framerate}
+								onChange={this._onChange}
 							/>
 						</div>
 					</fieldset>
@@ -76,7 +92,8 @@ var ConfigurationPanel = React.createClass({
 								type="range"
 								min="0"
 								max="10"
-								defaultValue={this.props.configuration.quality}
+								value={this.state.quality}
+								onChange={this._onChange}
 							/>
 						</div>
 					</fieldset>
@@ -96,6 +113,12 @@ var ConfigurationPanel = React.createClass({
 				</form>
 			</div>
 		);
+	},
+	_onChange: function( event ){
+		var target_element = event.target;
+		var new_props_object = {};
+		new_props_object[target_element.name] = target_element.value;
+		this.setState( new_props_object );
 	},
 	_onSubmit: function( event ){
 		event.preventDefault();

@@ -22,7 +22,6 @@ var stopImmediatePropagation = function( event ){
 };
 gifit_app_container_element.addEventListener( 'keydown', stopImmediatePropagation );
 gifit_app_container_element.addEventListener( 'keypress', stopImmediatePropagation );
-gifit_app_container_element.addEventListener( 'click', stopImmediatePropagation );
 gifit_app_container_element.addEventListener( 'contextmenu', stopImmediatePropagation );
 
 // Emgage party mode
