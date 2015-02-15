@@ -5,8 +5,8 @@ var gulp = require('gulp');
 var gulp_util = require('gulp-util');
 
 var generateBrowserifyBundler = function(){
-	var bundler = browserify( './src/scripts/content.js', watchify.args );
-	bundler.transform('hbsfy');
+	var bundler = browserify( './src/content.jsx', watchify.args );
+	bundler.transform('reactify');
 	bundler.transform('lessify');
 	return bundler;
 };
@@ -15,7 +15,7 @@ gulp.task( 'compile content.js', function(){
 	var bundler = generateBrowserifyBundler();
 	return bundler.bundle()
 		.pipe( vinyl_source('content.js') )
-		.pipe( gulp.dest('./dist/scripts') );
+		.pipe( gulp.dest('./dist') );
 });
 
 gulp.task( 'compile and watch content.js', function(){
@@ -28,7 +28,7 @@ gulp.task( 'compile and watch content.js', function(){
 				this.emit('end');
 			})
 			.pipe( vinyl_source('content.js') )
-			.pipe( gulp.dest('./dist/scripts') );
+			.pipe( gulp.dest('./dist') );
 	};
 	bundler.on( 'update', function(){
 		gulp_util.log( '[watchify]', 'Bundling content.js...');
@@ -44,7 +44,7 @@ gulp.task( 'copy static files', function(){
 	gulp.src([
 		'./src/manifest.json',
 		'./src/popup.html',
-		'./src/scripts/vendor/**/*'
+		'./src/vendor/**/*'
 	], { base: './src' })
 		.pipe( gulp.dest('dist') );
 });
@@ -53,7 +53,7 @@ gulp.task( 'watch static files', function(){
 	gulp.watch([
 		'./src/manifest.json',
 		'./src/popup.html',
-		'./src/scripts/vendor/**/*'
+		'./src/vendor/**/*'
 	], ['copy static files']);
 });
 

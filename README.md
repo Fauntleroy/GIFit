@@ -23,6 +23,11 @@ If you have any problems with the extension, be sure to speak up and [file issue
 
 ##Contributing
 
-Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project. To start developing, just run `gulp` and it'll run the default task (build/watch everything). Source files are in `src`, and the distributable extension files are in `dist`.
+Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [React](http://facebook.github.io/react/), [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project.
+
+The following build scripts are available for development:
+
+- `gulp build` or `npm run-script build`: Compiles the contents of the `src/` directory and saves the result to `dist/`.
+- `gulp dev` or `npm run-script dev`: Runs the build task, then rebuilds if any of the source files change.
 
 When fixing bugs/adding features please make **NEW BRANCHES** and submit pull reqs. Please follow the existing code style as well as you're able.

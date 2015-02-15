@@ -1,3 +1,4 @@
+// Convert a timecode string, like 1:30, to a seconds number
 var toSeconds = function( time_string ){
 	var seconds = 0;
 	var time_array = time_string.split(':').reverse();

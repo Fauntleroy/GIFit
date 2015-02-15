@@ -6,15 +6,15 @@
     "content_scripts": [{
         "matches": ["*://www.youtube.com/*"],
         "js": [
-            "scripts/vendor/patch-worker.js",
-            "scripts/content.js"
+            "vendor/patch-worker.js",
+            "content.js"
         ],
         "run_at": "document_end"
     }],
     "web_accessible_resources": [
-        "scripts/vendor/gif.worker.js",
-        "scripts/vendor/gif.worker.js.map",
-        "scripts/gif.js.map"
+        "vendor/gif.worker.js",
+        "vendor/gif.worker.js.map",
+        "gif.js.map"
     ],
     "manifest_version": 2
 }
