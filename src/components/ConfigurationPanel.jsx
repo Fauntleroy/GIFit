@@ -6,10 +6,17 @@ var ConfigurationPanel = React.createClass({
 			start: '0:00',
 			end: '0:01',
 			width: 320,
-			height: 240,
+			height: 180,
 			framerate: 10,
 			quality: 5
 		};
+	},
+	componentWillMount: function(){
+		this._video_element = this.props.video;
+		this._video_element.addEventListener( 'loadeddata', this._onVideoLoad );
+	},
+	componentWillUnmount: function(){
+		this._video_element.removeEventListener( 'loadeddata', this._onVideoLoad );
 	},
 	render: function(){
 		return (
@@ -113,6 +120,15 @@ var ConfigurationPanel = React.createClass({
 				</form>
 			</div>
 		);
+	},
+	// Automatically update the height according to the video's aspect ratio
+	_onVideoLoad: function(){
+		var video_width = this._video_element.videoWidth;
+		var video_height = this._video_element.videoHeight;
+		var gif_height = Math.round( this.state.width * ( video_height / video_width ) );
+		this.setState({
+			height: gif_height
+		});
 	},
 	// Update state according to change of input value
 	_onChange: function( event ){

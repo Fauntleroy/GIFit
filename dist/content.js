@@ -12,6 +12,7 @@ var initializeGifit = function( youtube_player_api_element ){
 	// Find YouTube elements we'll be injecting into
 	var youtube_player_chrome_element = youtube_player_api_element.querySelector(':scope .html5-player-chrome');
 	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls');
+	var youtube_player_video_element = youtube_player_api_element.querySelector(':scope video');
 
 	// If GIFit can't find the appropriate elements it does not start
 	if( !youtube_player_controls_element || !youtube_player_chrome_element ){
@@ -35,7 +36,7 @@ var initializeGifit = function( youtube_player_api_element ){
 
 	// Engage party mode
 	React.render( React.createElement(GifitButton, null), gifit_button_container_element );
-	React.render( React.createElement(GifitApp, null), gifit_app_container_element );
+	React.render( React.createElement(GifitApp, {video: youtube_player_video_element}), gifit_app_container_element );
 
 	// Mark territory
 	youtube_player_api_element.classList.add('gifit-initialized');
@@ -20098,10 +20099,17 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 			start: '0:00',
 			end: '0:01',
 			width: 320,
-			height: 240,
+			height: 180,
 			framerate: 10,
 			quality: 5
 		};
+	},
+	componentWillMount: function(){
+		this._video_element = this.props.video;
+		this._video_element.addEventListener( 'loadeddata', this._onVideoLoad );
+	},
+	componentWillUnmount: function(){
+		this._video_element.removeEventListener( 'loadeddata', this._onVideoLoad );
 	},
 	render: function(){
 		return (
@@ -20206,6 +20214,15 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 			)
 		);
 	},
+	// Automatically update the height according to the video's aspect ratio
+	_onVideoLoad: function(){
+		var video_width = this._video_element.videoWidth;
+		var video_height = this._video_element.videoHeight;
+		var gif_height = Math.round( this.state.width * ( video_height / video_width ) );
+		this.setState({
+			height: gif_height
+		});
+	},
 	// Update state according to change of input value
 	_onChange: function( event ){
 		var target_element = event.target;
@@ -20244,7 +20261,7 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 		}
 	},
 	componentWillMount: function(){
-		this._video_element = document.querySelector('#player-api video');
+		this._video_element = this.props.video;
 		this._gif_service = new GifService();
 		this._gif_service.on( 'progress', this._onGifProgress );
 		this._gif_service.on( 'complete', this._onGifComplete );
@@ -20252,8 +20269,8 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 		gifit_events.on( 'toggle', this._onToggle );
 	},
 	componentWillUnmount: function(){
-		gifit_events.off( 'toggle', this._onToggle );
 		this._gif_service.destroy();
+		gifit_events.off( 'toggle', this._onToggle );
 	},
 	render: function(){
 		var gifit_app_classes = cx({
@@ -20267,13 +20284,13 @@ var GifitApp = React.createClass({displayName: "GifitApp",
 		return (
 			React.createElement("div", {className: gifit_app_classes}, 
 				React.createElement(ConfigurationPanel, {
+					video: this._video_element, 
 					onSubmit: this._onConfigurationSubmit}
 				), 
 				React.createElement(Progress, {
 					status: this.state.progress.status, 
 					percent: this.state.progress.percent, 
 					image: this.state.image, 
-					image_height: this.state.image_height, 
 					onCloseClick: this._onProgressCloseClick}
 				)
 			)

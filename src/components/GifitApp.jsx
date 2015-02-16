@@ -20,7 +20,7 @@ var GifitApp = React.createClass({
 		}
 	},
 	componentWillMount: function(){
-		this._video_element = document.querySelector('#player-api video');
+		this._video_element = this.props.video;
 		this._gif_service = new GifService();
 		this._gif_service.on( 'progress', this._onGifProgress );
 		this._gif_service.on( 'complete', this._onGifComplete );
@@ -28,8 +28,8 @@ var GifitApp = React.createClass({
 		gifit_events.on( 'toggle', this._onToggle );
 	},
 	componentWillUnmount: function(){
-		gifit_events.off( 'toggle', this._onToggle );
 		this._gif_service.destroy();
+		gifit_events.off( 'toggle', this._onToggle );
 	},
 	render: function(){
 		var gifit_app_classes = cx({
@@ -43,13 +43,13 @@ var GifitApp = React.createClass({
 		return (
 			<div className={gifit_app_classes}>
 				<ConfigurationPanel
+					video={this._video_element}
 					onSubmit={this._onConfigurationSubmit}
 				/>
 				<Progress
 					status={this.state.progress.status}
 					percent={this.state.progress.percent}
 					image={this.state.image}
-					image_height={this.state.image_height}
 					onCloseClick={this._onProgressCloseClick}
 				/>
 			</div>
