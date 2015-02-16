@@ -11,6 +11,7 @@ var initializeGifit = function( youtube_player_api_element ){
 	// Find YouTube elements we'll be injecting into
 	var youtube_player_chrome_element = youtube_player_api_element.querySelector(':scope .html5-player-chrome');
 	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls');
+	var youtube_player_video_element = youtube_player_api_element.querySelector(':scope video');
 
 	// If GIFit can't find the appropriate elements it does not start
 	if( !youtube_player_controls_element || !youtube_player_chrome_element ){
@@ -34,7 +35,7 @@ var initializeGifit = function( youtube_player_api_element ){
 
 	// Engage party mode
 	React.render( <GifitButton />, gifit_button_container_element );
-	React.render( <GifitApp />, gifit_app_container_element );
+	React.render( <GifitApp video={youtube_player_video_element} />, gifit_app_container_element );
 
 	// Mark territory
 	youtube_player_api_element.classList.add('gifit-initialized');
