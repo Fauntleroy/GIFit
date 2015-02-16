@@ -9,7 +9,7 @@
             "vendor/patch-worker.js",
             "content.js"
         ],
-        "run_at": "document_end"
+        "run_at": "document_idle"
     }],
     "web_accessible_resources": [
         "vendor/gif.worker.js",
