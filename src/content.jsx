@@ -3,6 +3,7 @@ require('./styles/content.less');
 
 var React = require('react');
 
+var gifit_events = require('./utils/gifit_events.js');
 var GifitButton = require('./components/GifitButton.jsx');
 var GifitApp = require('./components/GifitApp.jsx');
 
@@ -13,17 +14,23 @@ var initializeGifit = function( youtube_player_api_element ){
 	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls');
 	var youtube_player_video_element = youtube_player_api_element.querySelector(':scope video');
 
-	// If GIFit can't find the appropriate elements it does not start
-	if( !youtube_player_controls_element || !youtube_player_chrome_element ){
-		return;
-	}
-
 	// GIFit needs containers since React.renderComponent annihilates the contents of its target
 	var gifit_button_container_element = document.createElement('div');
 	gifit_button_container_element.classList.add('ytp-button', 'ytp-button-gif');
 	var gifit_app_container_element = document.createElement('div');
 	youtube_player_chrome_element.appendChild( gifit_button_container_element );
 	youtube_player_controls_element.appendChild( gifit_app_container_element );
+
+	// Highlight GIFit toolbar button when active
+	var gifit_button_active = false;
+	gifit_events.on( 'toggle', function(){
+		gifit_button_active = !gifit_button_active;
+		if( gifit_button_active ){
+			youtube_player_api_element.classList.add('gifit-active');
+		} else {
+			youtube_player_api_element.classList.remove('gifit-active');
+		}
+	});
 
 	// Prevent YouTube's events from firing in GIFit's interface
 	var stopImmediatePropagation = function( event ){
