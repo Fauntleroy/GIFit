@@ -7,6 +7,7 @@ var ConfigurationPanel = React.createClass({
 			end: '0:01',
 			width: 320,
 			height: 180,
+			link_dimensions: true,
 			framerate: 10,
 			quality: 5
 		};
@@ -60,6 +61,13 @@ var ConfigurationPanel = React.createClass({
 								onChange={this._onChange}
 							/>
 						</div>
+						<input
+							className="gifit-configuration__link-dimensions"
+							name="link_dimensions"
+							type="checkbox"
+							checked={this.state.link_dimensions}
+							onChange={this._onChange}
+						/>
 						<div className="gifit__inputs">
 							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
 							<input 
@@ -134,7 +142,9 @@ var ConfigurationPanel = React.createClass({
 	_onChange: function( event ){
 		var target_element = event.target;
 		var new_props_object = {};
-		new_props_object[target_element.name] = target_element.value;
+		new_props_object[target_element.name] = target_element.type === 'checkbox'
+			? target_element.checked
+			: target_element.value;
 		this.setState( new_props_object );
 	},
 	_onSubmit: function( event ){

@@ -1,5 +1,6 @@
 @import 'roboto.less';
 @import 'arizonia.less';
+@import 'gifit_icons.less';
 
 @MAXIMUM_Z_INDEX: 2147483647;
 
@@ -58,6 +59,7 @@
 	}
 
 	fieldset {
+		position: relative;
 		line-height: 35px;
 	}
 
@@ -313,6 +315,29 @@
 .gifit-configuration {
 	opacity: 1;
 	transition: -webkit-filter 300ms, opacity 300ms;
+}
+
+.gifit-configuration__link-dimensions {
+	-webkit-appearance: none;
+	cursor: pointer;
+	opacity: 0.5;
+	position: absolute;
+	left: 50%;
+	margin: 11px 0 0 -10px;
+	padding: 4px;
+
+	&:after {
+		font-family: 'GIFit Icons';
+		content: '\e802';
+	}
+
+	&:hover {
+		opacity: 0.6;
+	}
+
+	&:checked {
+		opacity: 1;
+	}
 }
 
 .gifit-configuration__submit {
