@@ -101,7 +101,7 @@
 
 	input[type="range"] {
 		-webkit-appearance: none;
-		cursor: pointer;
+		cursor: -webkit-grab;
 		vertical-align: middle;
 		margin-top: 0;
 		background: transparent;
@@ -140,6 +140,8 @@
 		}
 
 		&:active {
+			cursor: -webkit-grabbing;
+
 			&::-webkit-slider-thumb {
 				border-width: 5px;
 			}
