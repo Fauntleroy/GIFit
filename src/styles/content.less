@@ -1,17 +1,24 @@
 @import 'roboto.less';
 @import 'arizonia.less';
+@import 'gifit_icons.less';
 
 @MAXIMUM_Z_INDEX: 2147483647;
 
 @color_gif: rgb( 255, 255, 255 );
 @color_it: rgb( 255, 255, 255 );
+
 @color_youtube_toolbar: rgb( 117, 117, 117 );
 @color_youtube_toolbar_hover: rgb( 164, 164, 164 );
 @color_youtube_toolbar_active: rgb( 255, 255, 255 );
+
 @color_panel_text: rgb( 175, 175, 175 );
-@color_panel_background: rgba( 255, 255, 255, 0.9 );
+@color_panel_background: rgba( 255, 255, 255, 0.95 );
 @color_input_text: rgb( 25, 25, 25 );
-@color_input_border: rgb( 215, 215, 215 );
+
+@color_slider_thumb: rgb( 235, 235, 235 );
+@color_slider_thumb_focus: rgb( 255, 255, 255 );
+@color_slider_background: rgba( 0, 0, 0, 0.06 );
+
 @color_button_background: rgb( 25, 25, 25 );
 @color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
@@ -52,13 +59,14 @@
 	}
 
 	fieldset {
+		position: relative;
 		line-height: 35px;
 	}
 
 	label {
 		text-transform: uppercase;
 		font-size: @label_font_size;
-		font-family: 'robotobold', sans-serif;
+		font-family: 'robotoregular', sans-serif;
 		line-height: @label_font_size;
 	}
 
@@ -70,18 +78,18 @@
 	input[type="number"] {
 		font-family: 'robotoregular', sans-serif;
 		font-size: 22px;
-		color: fadeout( @color_input_text, 20% );
-		background: none;
-		transition: background-color 550ms, border-color 550ms;
-		border: @color_input_border 1px solid;
+		color: fadeout( @color_input_text, 30% );
+		box-shadow: inset 0 1px 0 0 rgba( 0, 0, 0, 0.1 );
+		background: rgba( 0, 0, 0, 0.03 );
+		border: none;
 		border-radius: @input_border_radius;
 		padding: 13px @input_horizontal_padding 0 @input_horizontal_padding;
+		transition: background-color 550ms, border-color 550ms;
 
 		&:focus {
 			color: @color_input_text;
 			background-color: rgba( 255, 255, 255, 0.75 );
-			border-color: darken( @color_input_border, 10% );
-			transition: background-color 225ms, border-color 225ms;
+			transition: background-color 225ms;
 		}
 
 		&[type="number"]::-webkit-inner-spin-button,
@@ -105,7 +113,7 @@
 			height: 14px;
 			width: 14px;
 			border-radius: 50%;
-			background: rgb( 235, 235, 235 );
+			background: @color_slider_thumb;
 			border: rgb( 25, 25, 25 ) 2px solid;
 			box-shadow: 0 2px 1px 0 @color_subtle_shadow;
 			transition: border-width 125ms, background-color 125ms;
@@ -125,36 +133,35 @@
 				height: 5px;
 				width: 100%;
 				border-radius: 3px;
-				background: @color_input_border;
-				box-shadow: inset 0 1px 1px @color_subtle_shadow;
+				background: @color_slider_background;
+				box-shadow: inset 0 1px 0 0 @color_subtle_shadow;
 				transition: background-color 125ms;
 			}
 		}
 
-		&:active::-webkit-slider-thumb {
-			border-width: 5px;
+		&:active {
+			&::-webkit-slider-thumb {
+				border-width: 5px;
+			}
 		}
 
 		&:focus {
 			&::-webkit-slider-thumb {
-				background-color: rgb( 255, 255, 255 );
-			}
-			&::-webkit-slider-runnable-track:after {
-				background: darken( @color_input_border, 5% );
+				background-color: @color_slider_thumb_focus;
 			}
 		}
 	}
 
 	fieldset {
 		clear: both;
-		margin-bottom: 10px;
+		margin-bottom: 15px;
 	}
 
 	progress {
 		&::-webkit-progress-bar {
 			overflow: hidden;
 			border-radius: 3px;
-			background: @color_input_border;
+			background: @color_slider_background;
 			box-shadow: inset 0 1px 1px @color_subtle_shadow;
 		}
 
@@ -200,9 +207,10 @@
 
 .gifit__inputs {
 	position: relative;
-	width: 100%;
+	width: 45%;
 
 	&.gifit__inputs--range {
+		width: 100%;
 		box-sizing: border-box;
 		padding: 20px @input_horizontal_padding 0 @input_horizontal_padding;
 	}
@@ -220,41 +228,12 @@
 	}
 }
 
-.gifit__fieldset--vertical {
-	.gifit__inputs {
-		&:first-child input {
-			border-radius: @input_border_radius @input_border_radius 0 0;
-		}
-
-		&:last-child input {
-			margin-top: -1px;
-			border-radius: 0 0 @input_border_radius @input_border_radius;
-			border-top-color: transparent;
-
-			&:focus {
-				border-top-color: darken( @color_input_border, 10% );
-			}
-		}
-	}
-}
-
 .gifit__fieldset--horizontal {
 	.gifit__inputs {
-		width: 50%;
 		float: left;
 
-		&:first-child input {
-			border-radius: @input_border_radius 0 0 @input_border_radius;
-		}
-
-		&:last-child input {
-			margin-left: -1px;
-			border-radius: 0 @input_border_radius @input_border_radius 0;
-			border-left-color: transparent;
-
-			&:focus {
-				border-left-color: darken( @color_input_border, 10% );
-			}
+		&:first-child {
+			margin-right: 10%;
 		}
 	}
 }
@@ -292,13 +271,14 @@
 .gifit-app {
 	box-sizing: border-box;
 	position: absolute;
-	right: 0;
+	right: 5px;
 	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
 	width: 300px;
 	padding: 25px;
 	color: @color_panel_text;
 	background: @color_panel_background;
+	box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
 	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
 
 	&.gifit-app--inactive {
@@ -335,6 +315,29 @@
 .gifit-configuration {
 	opacity: 1;
 	transition: -webkit-filter 300ms, opacity 300ms;
+}
+
+.gifit-configuration__link-dimensions {
+	-webkit-appearance: none;
+	cursor: pointer;
+	opacity: 0.5;
+	position: absolute;
+	left: 50%;
+	margin: 11px 0 0 -10px;
+	padding: 4px;
+
+	&:after {
+		font-family: 'GIFit Icons';
+		content: '\e802';
+	}
+
+	&:hover {
+		opacity: 0.6;
+	}
+
+	&:checked {
+		opacity: 1;
+	}
 }
 
 .gifit-configuration__submit {

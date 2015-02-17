@@ -7,8 +7,10 @@ var ConfigurationPanel = React.createClass({
 			end: '0:01',
 			width: 320,
 			height: 180,
+			link_dimensions: true,
 			framerate: 10,
-			quality: 5
+			quality: 5,
+			aspect_ratio: ( 16 / 9 )
 		};
 	},
 	componentWillMount: function(){
@@ -60,6 +62,13 @@ var ConfigurationPanel = React.createClass({
 								onChange={this._onChange}
 							/>
 						</div>
+						<input
+							className="gifit-configuration__link-dimensions"
+							name="link_dimensions"
+							type="checkbox"
+							checked={this.state.link_dimensions}
+							onChange={this._onChange}
+						/>
 						<div className="gifit__inputs">
 							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
 							<input 
@@ -125,16 +134,30 @@ var ConfigurationPanel = React.createClass({
 	_onVideoLoad: function(){
 		var video_width = this._video_element.videoWidth;
 		var video_height = this._video_element.videoHeight;
-		var gif_height = Math.round( this.state.width * ( video_height / video_width ) );
+		var aspect_ratio = (  video_width / video_height );
+		var gif_height = Math.round( this.state.width / aspect_ratio );
 		this.setState({
-			height: gif_height
+			height: gif_height,
+			aspect_ratio: aspect_ratio
 		});
 	},
 	// Update state according to change of input value
 	_onChange: function( event ){
 		var target_element = event.target;
+		var value = target_element.value;
 		var new_props_object = {};
-		new_props_object[target_element.name] = target_element.value;
+		new_props_object[target_element.name] = target_element.type === 'checkbox'
+			? target_element.checked
+			: value;
+		// If we're changing width or height we might need to modify both
+		if( this.state.link_dimensions || new_props_object.link_dimensions ){
+			if( target_element.name === 'width' || new_props_object.link_dimensions ){
+				var width = new_props_object.width || this.state.width;
+				new_props_object.height = Math.round( width / this.state.aspect_ratio );
+			} else if( target_element.name === 'height' ){
+				new_props_object.width = Math.round( value * this.state.aspect_ratio );
+			}
+		}
 		this.setState( new_props_object );
 	},
 	_onSubmit: function( event ){
