@@ -20093,6 +20093,8 @@ module.exports = require('./lib/React');
 },{"./lib/React":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\react\\lib\\React.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\components\\ConfigurationPanel.jsx":[function(require,module,exports){
 var React = require('react');
 
+var toSeconds = require('../utils/toSeconds.js');
+
 var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 	getInitialState: function(){
 		return {
@@ -20251,6 +20253,16 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 				new_props_object.width = Math.round( value * this.state.aspect_ratio );
 			}
 		}
+		// If we're changing the start or end time, show that in the video
+		if( new_props_object.start || new_props_object.end ){
+			var current_time = toSeconds( new_props_object.start || new_props_object.end );
+			if( !this._video_element.paused ){
+				this._video_element.pause();
+			}
+			if( current_time >= 0 ){
+				this._video_element.currentTime = current_time;
+			}
+		}
 		this.setState( new_props_object );
 	},
 	_onSubmit: function( event ){
@@ -20261,7 +20273,7 @@ var ConfigurationPanel = React.createClass({displayName: "ConfigurationPanel",
 
 module.exports = ConfigurationPanel;
 
-},{"react":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\react\\react.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\components\\GifitApp.jsx":[function(require,module,exports){
+},{"../utils/toSeconds.js":"c:\\Users\\Timothy\\repos\\gifit\\src\\utils\\toSeconds.js","react":"c:\\Users\\Timothy\\repos\\gifit\\node_modules\\react\\react.js"}],"c:\\Users\\Timothy\\repos\\gifit\\src\\components\\GifitApp.jsx":[function(require,module,exports){
 var React = require('react');
 var cx = require('classnames');
 var assign = require('lodash/object/assign');

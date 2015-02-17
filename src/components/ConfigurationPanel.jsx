@@ -1,5 +1,7 @@
 var React = require('react');
 
+var toSeconds = require('../utils/toSeconds.js');
+
 var ConfigurationPanel = React.createClass({
 	getInitialState: function(){
 		return {
@@ -156,6 +158,16 @@ var ConfigurationPanel = React.createClass({
 				new_props_object.height = Math.round( width / this.state.aspect_ratio );
 			} else if( target_element.name === 'height' ){
 				new_props_object.width = Math.round( value * this.state.aspect_ratio );
+			}
+		}
+		// If we're changing the start or end time, show that in the video
+		if( new_props_object.start || new_props_object.end ){
+			var current_time = toSeconds( new_props_object.start || new_props_object.end );
+			if( !this._video_element.paused ){
+				this._video_element.pause();
+			}
+			if( current_time >= 0 ){
+				this._video_element.currentTime = current_time;
 			}
 		}
 		this.setState( new_props_object );
