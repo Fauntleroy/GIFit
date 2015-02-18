@@ -14,6 +14,11 @@ var initializeGifit = function( youtube_player_api_element ){
 	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls');
 	var youtube_player_video_element = youtube_player_api_element.querySelector(':scope video');
 
+	// If GIFit can't find the appropriate elements it does not start
+	if( !youtube_player_chrome_element || !youtube_player_controls_element || !youtube_player_video_element ){
+		return;
+	}
+
 	// GIFit needs containers since React.renderComponent annihilates the contents of its target
 	var gifit_button_container_element = document.createElement('div');
 	gifit_button_container_element.classList.add('ytp-button', 'ytp-button-gif');
