@@ -6,8 +6,7 @@ var gulp_util = require('gulp-util');
 
 var generateBrowserifyBundler = function(){
 	var bundler = browserify( './src/content.jsx', watchify.args );
-	bundler.transform('reactify');
-	bundler.transform('lessify');
+	/* transforms are configured in package.json */
 	return bundler;
 };
 
