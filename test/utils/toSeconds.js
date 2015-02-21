@@ -1,4 +1,3 @@
-var assert = require('assert');
 var test = require('tape');
 
 var toSeconds = require('../../src/utils/toSeconds.js');
