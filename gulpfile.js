@@ -3,9 +3,13 @@ var browserify = require('browserify');
 var watchify = require('watchify');
 var gulp = require('gulp');
 var gulp_util = require('gulp-util');
+var assign = require('lodash/object/assign');
 
 var generateBrowserifyBundler = function(){
-	var bundler = browserify( './src/content.jsx', watchify.args );
+	var browserify_config = assign( {}, watchify.args, {
+		debug: true
+	});
+	var bundler = browserify( './src/content.jsx', browserify_config );
 	/* transforms are configured in package.json */
 	return bundler;
 };
