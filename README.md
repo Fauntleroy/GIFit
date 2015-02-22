@@ -27,9 +27,11 @@ If you have any problems with the extension, be sure to speak up and [file issue
 
 Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [React](http://facebook.github.io/react/), [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project.
 
-The following build scripts are available for development:
+I use [npm scripts](https://docs.npmjs.com/misc/scripts) for various dev utilities, such as building, watching, and testing. You will need to use [npm run-script](https://docs.npmjs.com/cli/run-script) to run these:
 
-- `gulp build` or `npm run-script build`: Compiles the contents of the `src/` directory and saves the result to `dist/`.
-- `gulp dev` or `npm run-script dev`: Runs the build task, then rebuilds if any of the source files change.
+- `npm run-script build`: Compiles the contents of the `src/` directory and saves the result to `dist/`.
+- `npm run-script dev`: Runs the build task, then rebuilds if any of the source files change.
+- `npm run-script test`: Runs tests in a remote vm via [SauceLabs](https://saucelabs.com/). You will need to have a SauceLabs account and [properly configure zuul](https://github.com/defunctzombie/zuul/wiki/Cloud-testing) in order to use this command.
+- `npm run-script test:browser`: Runs tests on a local server, accessible by a browser.
 
-When fixing bugs/adding features please make **NEW BRANCHES** and submit pull reqs. Please follow the existing code style as well as you're able.
+When fixing bugs/adding features please make **NEW BRANCHES** and submit pull reqs. Please follow the existing code style as well as you're able. Make sure the tests are passing, and if you add any new features, you add tests for them.
