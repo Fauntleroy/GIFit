@@ -1,0 +1,10 @@
+ui: tape
+browsers:
+  - name: chrome
+    version: latest
+browserify:
+  - transform: reactify
+  - transform: lessify
+  - transform: brfs
+  - options:
+    debug: true

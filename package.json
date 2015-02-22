@@ -20,7 +20,7 @@
   "scripts": {
     "build": "gulp build",
     "dev": "gulp dev",
-    "test": "node test"
+    "test": "zuul --local 55555 -- test/**/*.js test/**/*.jsx"
   },
   "devDependencies": {
     "brfs": "^1.4.0",
@@ -34,7 +34,8 @@
     "simple-mock": "^0.2.8",
     "tape": "^3.5.0",
     "vinyl-source-stream": "~0.1.1",
-    "watchify": "^2.4.0"
+    "watchify": "^2.4.0",
+    "zuul": "^1.19.0"
   },
   "dependencies": {
     "classnames": "^1.1.2",
@@ -47,15 +48,6 @@
       "reactify",
       "lessify",
       "brfs"
-    ]
-  },
-  "testling": {
-    "files": [
-      "test/**/*.js",
-      "test/**/*.jsx"
-    ],
-    "browsers": [
-      "chrome/latest"
     ]
   }
 }
