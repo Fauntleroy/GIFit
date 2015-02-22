@@ -12,8 +12,6 @@
         "run_at": "document_idle"
     }],
     "web_accessible_resources": [
-        "vendor/gif.worker.js",
-        "vendor/gif.worker.js.map",
         "gif.js.map"
     ],
     "manifest_version": 2

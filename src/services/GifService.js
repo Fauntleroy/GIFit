@@ -1,6 +1,11 @@
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
+var fs = require('fs');
 var gifjs = require('gif.js');
+var gifjs_worker = fs.readFileSync( require.resolve('gif.js/dist/gif.worker.js'), 'utf8' );
+var gifjs_worker_blob = new Blob( [gifjs_worker], {
+	type: 'application/javascript'
+});
 
 var GATHERING_FRAMES_STATUS = 'Gathering frames…';
 var RENDERING_STATUS = 'Rendering GIF…';
@@ -81,7 +86,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 		repeat: 0,
 		width: width,
 		height: height,
-		workerScript: chrome.runtime.getURL('vendor/gif.worker.js')
+		workerScript: URL.createObjectURL( gifjs_worker_blob )
 	});
 	gif.on( 'finished', function( image_blob ){
 		var image_attributes = {

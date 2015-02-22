@@ -18,6 +18,7 @@ var ConfigurationPanel = React.createClass({
 	componentWillMount: function(){
 		this._video_element = this.props.video;
 		this._video_element.addEventListener( 'loadeddata', this._onVideoLoad );
+		this.setAspectRatio();
 	},
 	componentWillUnmount: function(){
 		this._video_element.removeEventListener( 'loadeddata', this._onVideoLoad );
@@ -134,47 +135,64 @@ var ConfigurationPanel = React.createClass({
 	},
 	// Automatically update the height according to the video's aspect ratio
 	_onVideoLoad: function(){
-		var video_width = this._video_element.videoWidth;
-		var video_height = this._video_element.videoHeight;
-		var aspect_ratio = (  video_width / video_height );
-		var gif_height = Math.round( this.state.width / aspect_ratio );
-		this.setState({
-			height: gif_height,
-			aspect_ratio: aspect_ratio
-		});
+		this.setAspectRatio();
+		this.setDimensionsByAspectRatio( 'width', this.state.width );
 	},
 	// Update state according to change of input value
 	_onChange: function( event ){
 		var target_element = event.target;
+		var prop = target_element.name;
 		var value = target_element.value;
 		var new_props_object = {};
-		new_props_object[target_element.name] = target_element.type === 'checkbox'
+		new_props_object[prop] = ( target_element.type === 'checkbox' )
 			? target_element.checked
 			: value;
-		// If we're changing width or height we might need to modify both
-		if( this.state.link_dimensions || new_props_object.link_dimensions ){
-			if( target_element.name === 'width' || new_props_object.link_dimensions ){
-				var width = new_props_object.width || this.state.width;
-				new_props_object.height = Math.round( width / this.state.aspect_ratio );
-			} else if( target_element.name === 'height' ){
-				new_props_object.width = Math.round( value * this.state.aspect_ratio );
-			}
+		this.setState( new_props_object );
+		// Update the width/height if necessary
+		if( ( prop === 'width' || prop === 'height' ) && this.state.link_dimensions ){
+			this.setDimensionsByAspectRatio( prop, value );
+		} else if( prop === 'link_dimensions' ){
+			this.setDimensionsByAspectRatio( 'width', this.state.width );
 		}
 		// If we're changing the start or end time, show that in the video
-		if( new_props_object.start || new_props_object.end ){
-			var current_time = toSeconds( new_props_object.start || new_props_object.end );
-			if( !this._video_element.paused ){
-				this._video_element.pause();
-			}
-			if( current_time >= 0 ){
-				this._video_element.currentTime = current_time;
-			}
+		if( prop === 'start' || prop === 'end' ){
+			this.seekTo( value );
 		}
-		this.setState( new_props_object );
 	},
 	_onSubmit: function( event ){
 		event.preventDefault();
 		this.props.onSubmit( this.state );
+	},
+	setAspectRatio: function(){
+		var video_width = this._video_element.videoWidth;
+		var video_height = this._video_element.videoHeight;
+		var aspect_ratio = ( video_width / video_height );
+		this.setState({
+			aspect_ratio: aspect_ratio
+		});
+	},
+	// Adjust width/height proportionally, based on the current video's aspect ratio
+	setDimensionsByAspectRatio: function( other_dimension, other_dimension_value ){
+		var dimension = ( other_dimension === 'width' )
+			? 'height'
+			: 'width';
+		var new_state = {};
+		if( dimension === 'width' ){
+			new_state.width = Math.round( other_dimension_value * this.state.aspect_ratio );
+		} else if( dimension === 'height' ){
+			new_state.height = Math.round( other_dimension_value / this.state.aspect_ratio );
+		}
+		this.setState( new_state );
+	},
+	// Seek to a specific position in the YouTube video
+	seekTo: function( timecode ){
+		var time = toSeconds( timecode );
+		if( !this._video_element.paused ){
+			this._video_element.pause();
+		}
+		if( time >= 0 ){
+			this._video_element.currentTime = time;
+		}
 	}
 });
 

@@ -1,3 +1,5 @@
+![GIFit build status](https://travis-ci.org/Fauntleroy/GIFit.svg?branch=master)
+
 ![GIFit Rudd Dancing](https://raw.github.com/fauntleroy/GIFit/master/gifit_rudd_dance.gif)
 
 Making a GIF can be intimidating. With GIFit, it isn't so intimidating anymore. Just install GIFit and you can make GIFs out of pieces of any YouTube video. Inherit the power of the GIF gods!
