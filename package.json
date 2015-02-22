@@ -1,6 +1,6 @@
 {
   "name": "GIFit-extension",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Make GIFs from YouTube videos in Chrome",
   "repository": {
     "type": "git",
