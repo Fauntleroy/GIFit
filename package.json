@@ -54,7 +54,7 @@
     ]
   },
   "testling": {
-    "files": "test/**/*.js",
+    "files": ["test/**/*.js", "test/**/*.jsx"],
     "browsers": [
       "chrome/latest"
     ]
