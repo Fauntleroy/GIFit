@@ -14,5 +14,8 @@
     "web_accessible_resources": [
         "gif.js.map"
     ],
+    "icons": {
+        "128": "icon_128.png"
+    },
     "manifest_version": 2
 }
