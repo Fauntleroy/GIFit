@@ -1,7 +1,7 @@
 {
     "name": "GIFit!",
     "description": "Make GIFs from YouTube videos",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permissions": ["activeTab"],
     "content_scripts": [{
         "matches": ["*://www.youtube.com/*"],
