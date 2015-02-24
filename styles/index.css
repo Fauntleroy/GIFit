@@ -1,4 +1,4 @@
-@import url('./normalize.css');
+@import url('./vendor/normalize.css');
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
 @import url(http://fonts.googleapis.com/css?family=Arizonia);
 
@@ -7,11 +7,6 @@ html {
 	text-align: center;
 	color: rgb( 135, 135, 136 );
 	background: rgb( 38, 38, 39 );
-}
-
-body {
-	margin: 0;
-	padding: 0;
 }
 
 h1 {
@@ -78,7 +73,7 @@ button {
 }
 
 #headline {
-	margin: 6.25rem 0;
+	margin: 6.5rem 0 5.5rem 0;
 	font-weight: normal;
 }
 
@@ -87,6 +82,7 @@ button {
 }
 
 #how-to {
+	margin: 0 0 6.5rem 0;
 	font-size: 1.5em;
 }
 
