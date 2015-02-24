@@ -19,9 +19,17 @@ h3 {
 	font-size: 1.5rem;
 }
 
+a,
+a:hover,
+a:focus,
+a:active {
+	outline: none;
+}
+
 button,
 .button {
 	cursor: pointer;
+	display: inline-block;
 	outline: none;
 	border: none;
 	border-radius: 3px;
@@ -110,8 +118,8 @@ button:active,
 
 #github-link {
 	position: fixed;
-	top: 2em;
-	right: 1.5em;
+	top: 2rem;
+	right: 1.5rem;
 }
 
 #how-to {
