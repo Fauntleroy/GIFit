@@ -1,0 +1,99 @@
+@import url('./normalize.css');
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
+@import url(http://fonts.googleapis.com/css?family=Arizonia);
+
+html {
+	font-family: Roboto, Helvetica, sans-serif;
+	text-align: center;
+	color: rgb( 135, 135, 136 );
+	background: rgb( 38, 38, 39 );
+}
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+h1 {
+	font-size: 2.25rem;
+}
+
+h3 {
+	margin: 0.5rem;
+	font-size: 1.5rem;
+}
+
+button {
+	cursor: pointer;
+	border: none;
+	border-radius: 3px;
+	padding: 0.75rem 1.25rem;
+	font-family: inherit;
+	box-shadow: 0 4px 10px rgba( 0, 0, 0, 0.25 );
+}
+
+.gifit-logo {
+	color: rgb( 255, 255, 255 );
+}
+
+.gifit-logo__gif {
+	font-weight: bold;
+}
+
+.gifit-logo__it {
+	font-family: Arizonia, serif;
+	font-size: 125%;
+	font-weight: normal;
+}
+
+.gifit-steps {
+	counter-reset: item;
+	list-style-type: none;
+	padding: 0;
+}
+
+.gifit-steps__step {
+	margin: 0 0 3.5rem 0;
+}
+
+.gifit-steps__step:before {
+	display: block;
+	content: "Step " counter(item);
+	counter-increment: item;
+	margin: 1.125rem 0;
+	font-size: 1.125rem;
+	font-weight: light;
+	text-transform: uppercase;
+}
+
+.gifit-steps__text {
+	color: rgb( 255, 255, 255 );
+}
+
+.gifit-install {
+	font-size: 1.5rem;
+	font-weight: bold;
+	color: rgb( 255, 255, 255 );
+	background: rgb( 222, 44, 44 );
+}
+
+#headline {
+	margin: 6.25rem 0;
+	font-weight: normal;
+}
+
+#headline__logo {
+	font-size: 125%;
+}
+
+#how-to {
+	font-size: 1.5em;
+}
+
+#step__do-youtube img {
+	width: 480px;
+}
+
+#step__gifit img {
+	width: 480px;
+}
