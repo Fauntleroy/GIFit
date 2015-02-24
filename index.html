@@ -25,7 +25,9 @@
 			</li>
 			<li id="step__do-youtube" class="gifit-steps__step">
 				<h3 class="gifit-steps__text">do YouTube</h3>
-				<img src="./images/youtube_video.jpg" />
+				<a href="https://www.youtube.com/watch?v=KIXTNumrDc4">
+					<img src="./images/youtube_video.jpg" />
+				</a>
 			</li>
 			<li id="step__gifit" class="gifit-steps__step">
 				<h3 class="gifit-steps__text">GIFit!</h3>
@@ -38,10 +40,10 @@
 		</ol>
 	</section>
 	<script>
-		if( chrome && chrome.webstore && chrome.webstore.install ){
+		if( window.chrome && window.chrome.webstore && window.chrome.webstore.install ){
 			var gifit_install_element = document.getElementById('gifit-install');
 			gifit_install_element.addEventListener( 'click', function(){
-				chrome.webstore.install();
+				window.chrome.webstore.install();
 			});
 		}
 	</script>
