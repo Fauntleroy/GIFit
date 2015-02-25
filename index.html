@@ -44,7 +44,8 @@
 	<script>
 		if( window.chrome && window.chrome.webstore && window.chrome.webstore.install ){
 			var gifit_install_element = document.getElementById('gifit-install');
-			gifit_install_element.addEventListener( 'click', function(){
+			gifit_install_element.addEventListener( 'click', function( event ){
+				event.preventDefault();
 				window.chrome.webstore.install();
 			});
 		}
