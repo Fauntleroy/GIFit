@@ -21,7 +21,8 @@
 		<ol class="gifit-steps">
 			<li class="gifit-steps__step">
 				<a id="gifit-install" class="gifit-install button" href="https://chrome.google.com/webstore/detail/gifit/khoojcphcmgcplkpckkjpdlloooifgec">
-					Install the Chrome Extension
+					<span class="gifit-install__text--pre-install">Install the Chrome Extension</span>
+					<span class="gifit-install__text--post-install">Chrome Extension Installed!</span>
 					<i class="icon-chrome"></i>
 				</a>
 			</li>
@@ -46,7 +47,9 @@
 			var gifit_install_element = document.getElementById('gifit-install');
 			gifit_install_element.addEventListener( 'click', function( event ){
 				event.preventDefault();
-				window.chrome.webstore.install();
+				window.chrome.webstore.install( undefined, function(){
+					gifit_install_element.classList.add('gifit-install--installed');
+				});
 			});
 		}
 	</script>

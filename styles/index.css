@@ -107,6 +107,23 @@ button:active,
 	background: rgb( 210, 40, 40 );
 }
 
+.gifit-install .gifit-install__text--post-install {
+	display: none;
+}
+
+.gifit-install--installed {
+	pointer-events: none;
+	background: rgb( 70, 184, 106 );
+}
+
+.gifit-install--installed .gifit-install__text--pre-install {
+	display: none;
+}
+
+.gifit-install--installed .gifit-install__text--post-install {
+	display: inline;
+}
+
 #headline {
 	margin: 6.5rem 0 5.5rem 0;
 	font-weight: normal;
