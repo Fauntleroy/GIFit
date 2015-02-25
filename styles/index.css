@@ -7,7 +7,9 @@ html {
 	font-family: Roboto, Helvetica, sans-serif;
 	text-align: center;
 	color: rgb( 135, 135, 136 );
-	background: rgb( 38, 38, 39 );
+	background-color: rgb( 38, 38, 39 );
+	background-image: url('../images/fuzz.gif');
+	background-size: 100%;
 }
 
 h1 {
