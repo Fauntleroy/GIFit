@@ -20,8 +20,8 @@
   "scripts": {
     "build": "gulp build",
     "dev": "gulp dev",
-    "test": "zuul -- test/**/*.js test/**/*.jsx",
-    "test:browser": "zuul --local 55555 -- test/**/*.js test/**/*.jsx"
+    "test": "zuul -- test/**/*{.js,.jsx}",
+    "test:browser": "zuul --local 55555 -- test/**/*{.js,.jsx}"
   },
   "devDependencies": {
     "brfs": "^1.4.0",
