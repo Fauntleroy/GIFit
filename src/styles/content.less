@@ -289,13 +289,14 @@
 	color: @color_panel_text;
 	background: @color_panel_background;
 	box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
+	transform: translate3d( 0, 0, 0 );
 	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
 
 	&.gifit-app--inactive {
 		visibility: hidden;
 		opacity: 0.75;
-		transform: translateY( 325px ) scaleX( 0.8 );
-		transition: transform 250ms @ease_in_expo, opacity 250ms @ease_in_expo, visibility 0 250ms;
+		transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
+		transition: transform 250ms @ease_in_expo, opacity 250ms @ease_in_expo, visibility 1ms 250ms;
 	}
 
 	&.gifit-app--status-generating,
