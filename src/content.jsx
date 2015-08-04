@@ -9,9 +9,11 @@ var GifitApp = require('./components/GifitApp.jsx');
 
 var initializeGifit = function( youtube_player_api_element ){
 
+	var is_2015_player = !!youtube_player_api_element.querySelector(':scope .ytp-chrome-controls');
+
 	// Find YouTube elements we'll be injecting into
-	var youtube_player_chrome_element = youtube_player_api_element.querySelector(':scope .html5-player-chrome');
-	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls');
+	var youtube_player_chrome_element = youtube_player_api_element.querySelector(':scope .html5-player-chrome, :scope .ytp-chrome-bottom');
+	var youtube_player_controls_element = youtube_player_api_element.querySelector(':scope .html5-video-controls, :scope .ytp-chrome-controls');
 	var youtube_player_video_element = youtube_player_api_element.querySelector(':scope video');
 
 	// If GIFit can't find the appropriate elements it does not start
@@ -23,7 +25,11 @@ var initializeGifit = function( youtube_player_api_element ){
 	var gifit_button_container_element = document.createElement('div');
 	gifit_button_container_element.classList.add('ytp-button', 'ytp-button-gif');
 	var gifit_app_container_element = document.createElement('div');
-	youtube_player_chrome_element.appendChild( gifit_button_container_element );
+	if( is_2015_player ){
+		youtube_player_controls_element.appendChild( gifit_button_container_element );
+	} else {
+		youtube_player_chrome_element.appendChild( gifit_button_container_element );
+	}
 	youtube_player_controls_element.appendChild( gifit_app_container_element );
 
 	// Highlight GIFit toolbar button when active
