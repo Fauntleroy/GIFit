@@ -20,8 +20,8 @@
   "scripts": {
     "build": "gulp build",
     "dev": "gulp dev",
-    "test": "zuul -- test/**/*.js test/**/*.jsx",
-    "test:browser": "zuul --local 55555 -- test/**/*.js test/**/*.jsx"
+    "test": "zuul -- test/**/*{.js,.jsx}",
+    "test:browser": "zuul --local 55555 -- test/**/*{.js,.jsx}"
   },
   "devDependencies": {
     "brfs": "^1.4.0",
@@ -36,7 +36,7 @@
     "tape": "^3.5.0",
     "vinyl-source-stream": "~0.1.1",
     "watchify": "^2.4.0",
-    "zuul": "^1.19.0"
+    "zuul": "^3.2.0"
   },
   "dependencies": {
     "classnames": "^1.1.2",
