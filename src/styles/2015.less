@@ -1,0 +1,36 @@
+@color_youtube_toolbar_2015: rgb( 238, 238, 238 );
+@color_youtube_toolbar_hover_2015: rgb( 255, 255, 255 );
+@color_youtube_toolbar_active_2015: @color_youtube_toolbar_hover_2015;
+
+.gifit-ytp-2015 {
+	.gifit-app {
+		bottom: 50px;
+		text-shadow: none;
+	}
+
+	.gifit-button {
+		height: inherit;
+		padding: 0 8px;
+		line-height: inherit;
+		color: @color_youtube_toolbar_2015;
+		font-size: 150%;
+
+		&:hover {
+			color: @color_youtube_toolbar_hover_2015;
+		}
+	}
+}
+
+.ytp-button-gif.ytp-button.gifit-ytp-2015 {
+	width: auto;
+}
+
+.player-api.gifit-active {
+	.ytp-button-gif.ytp-button.gifit-ytp-2015 {
+		opacity: 1;
+		
+		.gifit-button {
+			color: @color_youtube_toolbar_active_2015;
+		}
+	}
+}
