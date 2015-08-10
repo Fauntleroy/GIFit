@@ -58,10 +58,9 @@ var initializeGifit = function( youtube_player_api_element ){
 	// Mark territory
 	youtube_player_api_element.classList.add('gifit-initialized');
 
-	// If it's the 2015 player, add modifier classes
+	// If it's the 2015 player, add modifier class
 	if( is_2015_player ){
-		gifit_app_container_element.classList.add('gifit-ytp-2015');
-		gifit_button_container_element.classList.add('gifit-ytp-2015');
+		youtube_player_api_element.classList.add('gifit-ytp-2015');
 	}
 };
 

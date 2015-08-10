@@ -1,11 +1,18 @@
-@youtube_player_content_bottom: 49px;
+@youtube_chrome_height: 39px;
+@youtube_player_content_bottom: @youtube_chrome_height + 10px;
+@gifit_app_bottom: @youtube_chrome_height + 10px;
+
+@fullscreen_youtube_chrome_height: 58px;
+@fullscreen_youtube_player_content_bottom: @fullscreen_youtube_chrome_height + 10px;
+@fullscreen_gifit_app_bottom: @fullscreen_youtube_chrome_height + 10px;
+
 @color_youtube_toolbar_2015: rgb( 238, 238, 238 );
 @color_youtube_toolbar_hover_2015: rgb( 255, 255, 255 );
 @color_youtube_toolbar_active_2015: @color_youtube_toolbar_hover_2015;
 
 .gifit-ytp-2015 {
 	.gifit-app {
-		bottom: 50px;
+		bottom: @gifit_app_bottom;
 		text-shadow: none;
 	}
 
@@ -20,31 +27,44 @@
 			color: @color_youtube_toolbar_hover_2015;
 		}
 	}
-}
 
-.ytp-button-gif.ytp-button.gifit-ytp-2015 {
-	width: auto;
-}
+	.ytp-button-gif.ytp-button {
+		width: auto;
+	}
 
-.player-api.gifit-active {
-	.ytp-button-gif.ytp-button.gifit-ytp-2015 {
-		opacity: 1;
-		
-		.gifit-button {
-			color: @color_youtube_toolbar_active_2015;
+	&.player-api {
+		// Make sure branding icon is in the right place
+		.html5-video-player {
+			.ytp-player-content {
+				bottom: @youtube_player_content_bottom;
+			}
 		}
-	}
 
-	// Force the player chrome to remain visible
-	.ytp-gradient-bottom,
-	.ytp-chrome-bottom {
-		opacity: 1;
-	}
+		// "big mode" (fullscreen) overrides
+		.html5-video-player.ytp-big-mode {
+			.gifit-app {
+				bottom: @fullscreen_gifit_app_bottom;
+			}
 
-	// Make sure branding icon is in the right place
-	.html5-video-player {
-		.ytp-player-content {
-			bottom: @youtube_player_content_bottom;
+			.ytp-player-content {
+				bottom: @fullscreen_youtube_player_content_bottom;
+			}
+		}
+
+		&.gifit-active {
+			.ytp-button-gif.ytp-button {
+				opacity: 1;
+				
+				.gifit-button {
+					color: @color_youtube_toolbar_active_2015;
+				}
+			}
+
+			// Force the player chrome to remain visible
+			.ytp-gradient-bottom,
+			.ytp-chrome-bottom {
+				opacity: 1;
+			}
 		}
 	}
 }
