@@ -33,21 +33,11 @@
 	}
 
 	&.player-api {
-		// Make sure branding icon is in the right place
-		.html5-video-player {
-			.ytp-player-content {
-				bottom: @youtube_player_content_bottom;
-			}
-		}
 
 		// "big mode" (fullscreen) overrides
 		.html5-video-player.ytp-big-mode {
 			.gifit-app {
 				bottom: @fullscreen_gifit_app_bottom;
-			}
-
-			.ytp-player-content {
-				bottom: @fullscreen_youtube_player_content_bottom;
 			}
 		}
 
@@ -64,6 +54,19 @@
 			.ytp-gradient-bottom,
 			.ytp-chrome-bottom {
 				opacity: 1;
+			}
+
+			// Make sure branding icon is in the right place
+			.html5-video-player {
+				.ytp-player-content {
+					bottom: @youtube_player_content_bottom;
+				}
+
+				&.ytp-big-mode {
+					.ytp-player-content {
+						bottom: @fullscreen_youtube_player_content_bottom;
+					}
+				}
 			}
 		}
 	}
