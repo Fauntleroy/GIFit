@@ -1,3 +1,4 @@
+@youtube_player_content_bottom: 49px;
 @color_youtube_toolbar_2015: rgb( 238, 238, 238 );
 @color_youtube_toolbar_hover_2015: rgb( 255, 255, 255 );
 @color_youtube_toolbar_active_2015: @color_youtube_toolbar_hover_2015;
@@ -31,6 +32,19 @@
 		
 		.gifit-button {
 			color: @color_youtube_toolbar_active_2015;
+		}
+	}
+
+	// Force the player chrome to remain visible
+	.ytp-gradient-bottom,
+	.ytp-chrome-bottom {
+		opacity: 1;
+	}
+
+	// Make sure branding icon is in the right place
+	.html5-video-player {
+		.ytp-player-content {
+			bottom: @youtube_player_content_bottom;
 		}
 	}
 }

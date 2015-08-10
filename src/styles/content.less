@@ -1,8 +1,3 @@
-@import 'roboto.less';
-@import 'arizonia.less';
-@import 'gifit_icons.less';
-@import '2015.less';
-
 @MAXIMUM_Z_INDEX: 2147483647;
 
 @color_gif: rgb( 255, 255, 255 );
@@ -34,18 +29,11 @@
 @ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
 @ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
 
-// Integration styles
-.ytp-button-gif.ytp-button {
-	float: right;
-}
-
-.player-api.gifit-active {
-	.ytp-button-gif.ytp-button {
-		.gifit-button {
-			color: @color_youtube_toolbar_active;
-		}
-	}
-}
+@import 'roboto.less';
+@import 'arizonia.less';
+@import 'gifit_icons.less';
+@import 'youtube.less';
+@import '2015.less';
 
 // General Gifit
 .gifit {
