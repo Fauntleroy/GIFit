@@ -74,7 +74,7 @@ var ConfigurationPanel = React.createClass({
 						/>
 						<div className="gifit__inputs">
 							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
-							<input 
+							<input
 								id="gifit-option-height"
 								className="gifit__input"
 								name="height"
@@ -119,7 +119,7 @@ var ConfigurationPanel = React.createClass({
 					<div className="gifit-configuration__actions">
 						<button
 							id="gifit-submit"
-							className="gifit-configuration__submit gifit__button gifit__button--primary"
+							className="gifit-configuration__submit gifit__button gifit__button--primary gifit__button--large"
 							type="submit"
 						>
 							<span

@@ -29,6 +29,7 @@ var Progress = React.createClass({
 						></progress>
 						<img className="gifit-progress__result" src={image_url} />
 					</div>
+					<a className="gifit-progress__save gifit__button" href={image_url} download={'gifit_' + Date.now() + '.gif'}>Save GIF</a>
 				</div>
 			</div>
 		)

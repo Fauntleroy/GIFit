@@ -15,6 +15,7 @@
 @color_slider_thumb_focus: rgb( 255, 255, 255 );
 @color_slider_background: rgba( 0, 0, 0, 0.06 );
 
+@color_button: rgb( 235, 235, 235 );
 @color_button_background: rgb( 25, 25, 25 );
 @color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
@@ -171,19 +172,22 @@
 
 }
 
-.gifit__button {
+.gifit__button,
+a.gifit__button {
 	cursor: pointer;
 	display: inline-block;
-	padding: 0 10px;
-	font-size: 24px;
-	line-height: 35px;
+	padding: 0 25px;
+	font-size: 18px;
+	line-height: 30px;
 	background: @color_button_background;
+	color: @color_button;
 	border-radius: @button_border_radius;
 	outline: none;
-	transition: transform 150ms, background 100ms, box-shadow 150ms;
+	transition: transform 150ms, background 175ms, box-shadow 150ms;
 
 	&:hover,
 	&:focus {
+		color: @color_button;
 		transform: scale( 1.025 );
 		background: lighten( @color_button_background, 10% );
 		box-shadow: 0 2px 5px @color_subtle_shadow;
@@ -193,15 +197,21 @@
 		transform: scale( 0.95 );
 		transition: transform 25ms;
 	}
+}
 
-	&.gifit__button--primary {
-		background: @color_button_primary_background;
+.gifit__button--primary {
+	background: @color_button_primary_background;
 
-		&:hover,
-		&:focus {
-			background: lighten( @color_button_primary_background, 10% );
-		}
+	&:hover,
+	&:focus {
+		background: lighten( @color_button_primary_background, 10% );
 	}
+}
+
+.gifit__button--large {
+	padding: 0 15px;
+	font-size: 24px;
+	line-height: 35px;
 }
 
 .gifit__inputs {
@@ -304,9 +314,14 @@
 		.gifit-progress__status {
 			display: none;
 		}
+
 		.gifit-progress__result {
 			opacity: 1;
 			-webkit-filter: brightness( 100% );
+		}
+
+		.gifit-progress__save {
+			display: inline-block;
 		}
 	}
 }
@@ -376,11 +391,20 @@
 
 .gifit-progress__details {
 	width: 80%;
+	text-align: center;
+}
 
-	.gifit-progress__status {
-		padding-bottom: 10px;
-		font-family: 'robotobold', sans-serif;
-		text-align: center;
+.gifit-progress__status {
+	padding-bottom: 10px;
+	font-family: 'robotobold', sans-serif;
+	text-align: center;
+}
+
+.gifit-progress__save {
+	margin-top: 15px;
+
+	&.gifit__button {
+		display: none;
 	}
 }
 
