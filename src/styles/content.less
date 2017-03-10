@@ -101,8 +101,14 @@
 		-webkit-appearance: none;
 		cursor: -webkit-grab;
 		vertical-align: middle;
-		margin-top: 0;
 		background: transparent;
+
+		height: 5px;
+		width: 100%;
+		border-radius: 3px;
+		background: @color_slider_background;
+		box-shadow: inset 0 1px 0 0 @color_subtle_shadow;
+		transition: background-color 125ms;
 
 		&::-webkit-slider-thumb {
 			-webkit-appearance: none;
@@ -120,20 +126,9 @@
 		&::-webkit-slider-runnable-track {
 			position: relative;
 
-			/* the visible range bar */
-			&:after {
-				content: '';
+			&::before {
+				content: 'hello?';
 				display: block;
-				position: absolute;
-				top: 5px;
-				left: 0;
-				z-index: 1;
-				height: 5px;
-				width: 100%;
-				border-radius: 3px;
-				background: @color_slider_background;
-				box-shadow: inset 0 1px 0 0 @color_subtle_shadow;
-				transition: background-color 125ms;
 			}
 		}
 
