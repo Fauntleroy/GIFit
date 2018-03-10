@@ -93,6 +93,10 @@ var GifitApp = React.createClass({
 		this.cleanProgressState();
 	},
 	_onToggle: function(){
+		if (!this.state.active) {
+			debugger;
+			this._video_element.pause();
+		}
 		this.setState({
 			active: !this.state.active
 		});

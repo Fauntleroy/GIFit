@@ -7,7 +7,7 @@
 @color_youtube_toolbar_hover: rgb( 164, 164, 164 );
 @color_youtube_toolbar_active: rgb( 255, 255, 255 );
 
-@color_panel_text: rgb( 175, 175, 175 );
+@color_panel_text: rgb( 125, 125, 125 );
 @color_panel_background: rgba( 255, 255, 255, 0.95 );
 @color_input_text: rgb( 25, 25, 25 );
 
@@ -23,22 +23,21 @@
 @youtube_controls_height: 27px;
 @youtube_progress_bar_height: 8px;
 @label_font_size: 10px;
-@input_horizontal_padding: 7px;
+@input_horizontal_padding: 12px;
 @input_border_radius: 3px;
 @button_border_radius: 3px;
 
 @ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
 @ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
 
-@import 'roboto.less';
-@import 'arizonia.less';
+@import url('https://fonts.googleapis.com/css?family=Arizonia|Roboto|Roboto+Mono');
 @import 'gifit_icons.less';
 @import 'youtube.less';
 @import '2015.less';
 
 // General Gifit
 .gifit {
-	font-family: 'robotoregular', sans-serif;
+	font-family: 'Roboto', sans-serif;
 
 	a {
 		color: @color_button_primary_background;
@@ -51,7 +50,7 @@
 		}
 
 		&:active {
-			transform: scale( 0.95 );
+			transform: scale( 1 );
 			transition: transform 25ms;
 		}
 	}
@@ -66,8 +65,9 @@
 	label {
 		text-transform: uppercase;
 		font-size: @label_font_size;
-		font-family: 'robotoregular', sans-serif;
+		font-family: 'Roboto', sans-serif;
 		line-height: @label_font_size;
+		letter-spacing: 0.75px;
 	}
 
 	input {
@@ -76,20 +76,24 @@
 
 	input[type="text"],
 	input[type="number"] {
-		font-family: 'robotoregular', sans-serif;
+		font-family: 'Roboto Mono', sans-serif;
 		font-size: 22px;
-		color: fadeout( @color_input_text, 30% );
-		box-shadow: inset 0 1px 0 0 rgba( 0, 0, 0, 0.1 );
-		background: rgba( 0, 0, 0, 0.03 );
+		color: fadeout( @color_input_text, 15% );
+		background: rgba( 0, 0, 0, 0.015 );
 		border: none;
-		border-radius: @input_border_radius;
-		padding: 13px @input_horizontal_padding 0 @input_horizontal_padding;
-		transition: background-color 550ms, border-color 550ms;
+		padding: 20px @input_horizontal_padding 5px @input_horizontal_padding;
+		transition: background-color 550ms, border-color 550ms, box-shadow 550ms;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+			transition: background-color 0ms;
+		}
 
 		&:focus {
 			color: @color_input_text;
-			background-color: rgba( 255, 255, 255, 0.75 );
-			transition: background-color 225ms;
+			background-color: rgba( 255, 255, 255, 0.95 );
+			box-shadow: 0px 0px 7px 1px rgba(255, 255, 255, 0.75);
+			transition: background-color 225ms, box-shadow 225ms;
 		}
 
 		&[type="number"]::-webkit-inner-spin-button,
@@ -151,7 +155,6 @@
 
 	fieldset {
 		clear: both;
-		margin-bottom: 15px;
 	}
 
 	progress {
@@ -173,12 +176,12 @@
 a.gifit__button {
 	cursor: pointer;
 	display: inline-block;
+	border: none;
 	padding: 0 25px;
 	font-size: 18px;
 	line-height: 30px;
 	background: @color_button_background;
 	color: @color_button;
-	border-radius: @button_border_radius;
 	outline: none;
 	transition: transform 150ms, background 175ms, box-shadow 150ms;
 
@@ -190,9 +193,11 @@ a.gifit__button {
 		box-shadow: 0 2px 5px @color_subtle_shadow;
 	}
 
-	&:active {
-		transform: scale( 0.95 );
+	&:active, &:active:hover {
+		transform: scale( 1 );
 		transition: transform 25ms;
+		box-shadow: inset 0px 1px 2px 0px rgba(0,0,0,0.35);
+		background: @color_button_background;
 	}
 }
 
@@ -202,6 +207,11 @@ a.gifit__button {
 	&:hover,
 	&:focus {
 		background: lighten( @color_button_primary_background, 10% );
+	}
+
+	&:active,
+	&:active:focus {
+		background: darken( @color_button_primary_background, 5% );
 	}
 }
 
@@ -213,18 +223,11 @@ a.gifit__button {
 
 .gifit__inputs {
 	position: relative;
-	width: 45%;
+	width: 50%;
 
 	&.gifit__inputs--range {
-		width: 100%;
 		box-sizing: border-box;
-		padding: 20px @input_horizontal_padding 0 @input_horizontal_padding;
-	}
-
-	label {
-		position: absolute;
-		top: 5px;
-		left: @input_horizontal_padding;
+		padding: 26px @input_horizontal_padding 5px @input_horizontal_padding;
 	}
 
 	input {
@@ -234,19 +237,22 @@ a.gifit__button {
 	}
 }
 
+.gifit__label {
+	position: absolute;
+	top: 8px;
+	left: @input_horizontal_padding;
+}
+
 .gifit__fieldset--horizontal {
 	.gifit__inputs {
 		float: left;
-
-		&:first-child {
-			margin-right: 10%;
-		}
 	}
 }
 
 // Logo
 .gifit-logo__gif {
-	font-family: 'robotobold', sans-serif;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
 
 	&.gifit-logo__gif--primary {
 		color: @color_gif;
@@ -254,7 +260,7 @@ a.gifit__button {
 }
 
 .gifit-logo__it {
-	font-family: 'arizoniaregular', sans-serif;
+	font-family: 'Arizonia', sans-serif;
 	font-size: 125%;
 
 	&.gifit-logo__it--primary {
@@ -281,25 +287,25 @@ a.gifit__button {
 	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
 	width: 300px;
-	padding: 25px;
+	padding: 0;
 	color: @color_panel_text;
 	background: @color_panel_background;
 	box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
-	transform: translate3d( 0, 0, 0 );
+	transform: translate3d( 0, 0, 0 ) scaleX( 1 );
 	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
 
 	&.gifit-app--inactive {
 		visibility: hidden;
 		opacity: 0.75;
 		transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
-		transition: transform 250ms @ease_in_expo, opacity 250ms @ease_in_expo, visibility 1ms 250ms;
+		transition: transform 250ms @ease_out_expo, opacity 250ms @ease_out_expo, visibility 1ms 250ms;
 	}
 
 	&.gifit-app--status-generating,
 	&.gifit-app--status-generated {
 		.gifit-configuration {
 			-webkit-filter: blur( 1px ) grayscale( 100% );
-			opacity: 0.25;
+			opacity: 0.2;
 		}
 
 		.gifit-progress {
@@ -335,7 +341,7 @@ a.gifit__button {
 	opacity: 0.5;
 	position: absolute;
 	left: 50%;
-	margin: 11px 0 0 -10px;
+	margin: 16px 0 0 -9px;
 	padding: 4px;
 
 	&:after {
@@ -354,8 +360,9 @@ a.gifit__button {
 
 .gifit-configuration__submit {
 	display: block;
-	width: 130px;
-	margin: 25px auto 0 auto;
+	width: 100%;
+	margin: 0;
+	padding: 5px;
 }
 
 // Progress
@@ -374,8 +381,10 @@ a.gifit__button {
 	position: absolute;
 	top: 10px;
 	right: 10px;
+	line-height: 1;
 	font-size: 24px;
 	text-decoration: none;
+	cursor: pointer;
 
 	&:after {
 		content: '×';
@@ -393,7 +402,8 @@ a.gifit__button {
 
 .gifit-progress__status {
 	padding-bottom: 10px;
-	font-family: 'robotobold', sans-serif;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
 	text-align: center;
 }
 
