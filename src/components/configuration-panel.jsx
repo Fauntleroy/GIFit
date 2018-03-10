@@ -1,6 +1,6 @@
 var React = require('react');
 
-var toSeconds = require('../utils/toSeconds.js');
+var toSeconds = require('../utils/to-seconds.js');
 
 var ConfigurationPanel = React.createClass({
 	getInitialState: function(){

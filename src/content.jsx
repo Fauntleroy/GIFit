@@ -3,7 +3,7 @@ require('./styles/content.less');
 
 var React = require('react');
 
-var gifit_events = require('./utils/gifit_events.js');
+var gifit_events = require('./utils/gifit-events.js');
 var GifitButton = require('./components/gifit-button.jsx');
 var GifitApp = require('./components/gifit-app.jsx');
 

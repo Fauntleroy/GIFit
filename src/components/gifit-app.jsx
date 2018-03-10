@@ -2,9 +2,9 @@ var React = require('react');
 var cx = require('classnames');
 var assign = require('lodash/object/assign');
 
-var toSeconds = require('../utils/toSeconds.js');
-var gifit_events = require('../utils/gifit_events.js');
-var GifService = require('../services/GifService.js');
+var toSeconds = require('../utils/to-seconds.js');
+var gifit_events = require('../utils/gifit-events.js');
+var GifService = require('../services/gif-service.js');
 var ConfigurationPanel = require('./configuration-panel.jsx');
 var Progress = require('./progress.jsx');
 

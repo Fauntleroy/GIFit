@@ -6,6 +6,7 @@
     "content_scripts": [{
         "matches": ["*://www.youtube.com/*"],
         "js": [
+            "vendor/gif.js",
             "vendor/patch-worker.js",
             "content.js"
         ],
