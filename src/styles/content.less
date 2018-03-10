@@ -41,19 +41,21 @@
 .gifit {
 	font-family: 'Roboto', sans-serif;
 
-	a {
-		color: @color_button_primary_background;
-		transition: transform 150ms, color 100ms;
+	&.gifit-app {
+		a {
+			color: @color_button_primary_background;
+			transition: transform 150ms, color 100ms;
 
-		&:hover,
-		&:focus {
-			transform: scale( 1.05 );
-			color: lighten( @color_button_primary_background, 20% );
-		}
+			&:hover,
+			&:focus {
+				transform: scale( 1.05 );
+				color: lighten( @color_button_primary_background, 20% );
+			}
 
-		&:active {
-			transform: scale( 1 );
-			transition: transform 25ms;
+			&:active {
+				transform: scale( 1 );
+				transition: transform 25ms;
+			}
 		}
 	}
 
@@ -174,92 +176,255 @@
 		}
 	}
 
-}
-
-.gifit__button,
-a.gifit__button {
-	cursor: pointer;
-	display: inline-block;
-	border: none;
-	padding: 5px 25px;
-	font-size: 18px;
-	line-height: 30px;
-	background: @color_button_background;
-	color: @color_button;
-	outline: none;
-	transition: transform 150ms, background 175ms, box-shadow 150ms;
-
-	&:hover,
-	&:focus {
-		color: @color_button;
-		transform: scale( 1.025 );
-		background: lighten( @color_button_background, 10% );
-		box-shadow: 0 2px 5px @color_subtle_shadow;
-	}
-
-	&:active, &:active:hover {
-		transform: scale( 1 );
-		transition: transform 25ms;
-		box-shadow: inset 0px 1px 2px 0px rgba(0,0,0,0.35);
+	// buttons
+	.gifit__button,
+	a.gifit__button {
+		cursor: pointer;
+		display: inline-block;
+		border: none;
+		padding: 5px 25px;
+		font-size: 18px;
+		line-height: 30px;
 		background: @color_button_background;
-	}
-}
+		color: @color_button;
+		outline: none;
+		transition: transform 150ms, background 175ms, box-shadow 150ms;
 
-.gifit__button--primary {
-	background: @color_button_primary_background;
-
-	&:hover,
-	&:focus {
-		background: lighten( @color_button_primary_background, 10% );
-	}
-
-	&:active,
-	&:active:focus {
-		background: darken( @color_button_primary_background, 5% );
-	}
-}
-
-.gifit__button--large {
-	padding: 0 15px;
-	font-size: 24px;
-	line-height: 35px;
-}
-
-.gifit__inputs {
-	position: relative;
-	width: 50%;
-
-	&.gifit__inputs--range {
-		box-sizing: border-box;
-		padding: 26px @input_horizontal_padding 5px @input_horizontal_padding;
-	}
-
-	input {
-		display: block;
-		box-sizing: border-box;
-		width: 100%;
-	}
-}
-
-.gifit__label {
-	position: absolute;
-	top: 8px;
-	left: @input_horizontal_padding;
-}
-
-.gifit__fieldset--horizontal {
-	.gifit__inputs {
-		float: left;
-
-		.gifit__input {
-			border-bottom: rgba(0, 0, 0, 0.1) 1px dotted;
+		&:hover,
+		&:focus {
+			color: @color_button;
+			transform: scale( 1.025 );
+			background: lighten( @color_button_background, 10% );
+			box-shadow: 0 2px 5px @color_subtle_shadow;
 		}
 
-		&:first-child {
+		&:active, &:active:hover {
+			transform: scale( 1 );
+			transition: transform 25ms;
+			box-shadow: inset 0px 1px 2px 0px rgba(0,0,0,0.35);
+			background: @color_button_background;
+		}
+	}
+
+	.gifit__button--primary {
+		background: @color_button_primary_background;
+
+		&:hover,
+		&:focus {
+			background: lighten( @color_button_primary_background, 10% );
+		}
+
+		&:active,
+		&:active:focus {
+			background: darken( @color_button_primary_background, 5% );
+		}
+	}
+
+	.gifit__button--large {
+		padding: 0 15px;
+		font-size: 24px;
+		line-height: 35px;
+	}
+
+	// Inputs
+	.gifit__inputs {
+		position: relative;
+		width: 50%;
+
+		&.gifit__inputs--range {
+			box-sizing: border-box;
+			padding: 26px @input_horizontal_padding 5px @input_horizontal_padding;
+		}
+
+		input {
+			display: block;
+			box-sizing: border-box;
+			width: 100%;
+		}
+	}
+
+	.gifit__label {
+		position: absolute;
+		top: 8px;
+		left: @input_horizontal_padding;
+	}
+
+	.gifit__fieldset--horizontal {
+		.gifit__inputs {
+			float: left;
+
 			.gifit__input {
-				border-right: rgba(0, 0, 0, 0.1) 1px dotted;
+				border-bottom: rgba(0, 0, 0, 0.1) 1px dotted;
+			}
+
+			&:first-child {
+				.gifit__input {
+					border-right: rgba(0, 0, 0, 0.1) 1px dotted;
+				}
 			}
 		}
+	}
+
+	// App
+	&.gifit-app {
+		box-sizing: border-box;
+		position: absolute;
+		right: 5px;
+		bottom: @youtube_controls_height + @youtube_progress_bar_height;
+		z-index: 700;
+		width: 300px;
+		margin: 0 0 10px 0;
+		padding: 0;
+		color: @color_panel_text;
+		background: @color_panel_background;
+		box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
+		transform: translate3d( 0, 0, 0 ) scaleX( 1 );
+		transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
+
+		&.gifit-app--inactive {
+			visibility: hidden;
+			opacity: 0.75;
+			transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
+			transition: transform 250ms @ease_out_expo, opacity 250ms @ease_out_expo, visibility 1ms 250ms;
+		}
+
+		&.gifit-app--status-generating,
+		&.gifit-app--status-generated {
+			.gifit-configuration {
+				-webkit-filter: blur( 1px ) grayscale( 100% );
+				transform: scale(0.975);
+				opacity: 0.1;
+			}
+
+			.gifit-progress {
+				display: flex;
+			}
+		}
+
+		&.gifit-app--status-generated {
+			.gifit-progress__status {
+				display: none;
+			}
+
+			.gifit-progress__result {
+				opacity: 1;
+				-webkit-filter: brightness( 100% );
+			}
+
+			.gifit-progress__save {
+				display: block;
+			}
+		}
+	}
+
+	// Configuration Panel
+	.gifit-configuration {
+		opacity: 1;
+		transition: -webkit-filter 300ms, opacity 300ms, transform 300ms;
+	}
+
+	.gifit-configuration__link-dimensions {
+		-webkit-appearance: none;
+		cursor: pointer;
+		opacity: 0.5;
+		position: absolute;
+		left: 50%;
+		margin: 16px 0 0 -9px;
+		padding: 4px;
+
+		&:after {
+			font-family: 'GIFit Icons';
+			content: '\e802';
+		}
+
+		&:hover {
+			opacity: 0.6;
+		}
+
+		&:checked {
+			opacity: 1;
+		}
+	}
+
+	.gifit-configuration__submit {
+		display: block;
+		width: 100%;
+		margin: 0;
+		padding: 5px;
+	}
+
+	// Progress
+	.gifit-progress {
+		display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.gifit-progress__close {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		line-height: 1;
+		font-size: 24px;
+		text-decoration: none;
+		cursor: pointer;
+
+		&:after {
+			content: '×';
+		}
+
+		&:hover {
+			text-decoration: none;
+		}
+	}
+
+	.gifit-progress__details {
+		width: 80%;
+		text-align: center;
+	}
+
+	.gifit-progress__status {
+		padding-bottom: 10px;
+		font-family: 'Roboto', sans-serif;
+		font-style: italic;
+		text-transform: uppercase;
+		text-align: center;
+	}
+
+	.gifit-progress__save {
+		&.gifit__button {
+			display: none;
+		}
+	}
+
+	.gifit-progress__elements {
+		position: relative;
+		width: 100%;
+		height: 5px;
+		overflow: hidden;
+		transition: width 350ms, height 350ms 250ms;
+	}
+
+	.gifit-progress__progress {
+		-webkit-appearance: none;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.gifit-progress__result {
+		opacity: 0;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		transition: -webkit-filter 1000ms 250ms;
+		-webkit-filter: brightness( 0% );
 	}
 }
 
@@ -291,168 +456,6 @@ a.gifit__button {
 	&:hover {
 		color: @color_youtube_toolbar_hover;
 	}
-}
-
-// App
-.gifit-app {
-	box-sizing: border-box;
-	position: absolute;
-	right: 5px;
-	bottom: @youtube_controls_height + @youtube_progress_bar_height;
-	z-index: 700;
-	width: 300px;
-	margin: 0 0 10px 0;
-	padding: 0;
-	color: @color_panel_text;
-	background: @color_panel_background;
-	box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
-	transform: translate3d( 0, 0, 0 ) scaleX( 1 );
-	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
-
-	&.gifit-app--inactive {
-		visibility: hidden;
-		opacity: 0.75;
-		transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
-		transition: transform 250ms @ease_out_expo, opacity 250ms @ease_out_expo, visibility 1ms 250ms;
-	}
-
-	&.gifit-app--status-generating,
-	&.gifit-app--status-generated {
-		.gifit-configuration {
-			-webkit-filter: blur( 1px ) grayscale( 100% );
-			transform: scale(0.975);
-			opacity: 0.1;
-		}
-
-		.gifit-progress {
-			display: flex;
-		}
-	}
-
-	&.gifit-app--status-generated {
-		.gifit-progress__status {
-			display: none;
-		}
-
-		.gifit-progress__result {
-			opacity: 1;
-			-webkit-filter: brightness( 100% );
-		}
-
-		.gifit-progress__save {
-			display: block;
-		}
-	}
-}
-
-// Configuration Panel
-.gifit-configuration {
-	opacity: 1;
-	transition: -webkit-filter 300ms, opacity 300ms, transform 300ms;
-}
-
-.gifit-configuration__link-dimensions {
-	-webkit-appearance: none;
-	cursor: pointer;
-	opacity: 0.5;
-	position: absolute;
-	left: 50%;
-	margin: 16px 0 0 -9px;
-	padding: 4px;
-
-	&:after {
-		font-family: 'GIFit Icons';
-		content: '\e802';
-	}
-
-	&:hover {
-		opacity: 0.6;
-	}
-
-	&:checked {
-		opacity: 1;
-	}
-}
-
-.gifit-configuration__submit {
-	display: block;
-	width: 100%;
-	margin: 0;
-	padding: 5px;
-}
-
-// Progress
-.gifit-progress {
-	display: none;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	align-items: center;
-	justify-content: center;
-}
-
-.gifit-progress__close {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	line-height: 1;
-	font-size: 24px;
-	text-decoration: none;
-	cursor: pointer;
-
-	&:after {
-		content: '×';
-	}
-
-	&:hover {
-		text-decoration: none;
-	}
-}
-
-.gifit-progress__details {
-	width: 80%;
-	text-align: center;
-}
-
-.gifit-progress__status {
-	padding-bottom: 10px;
-	font-family: 'Roboto', sans-serif;
-	font-style: italic;
-	text-transform: uppercase;
-	text-align: center;
-}
-
-.gifit-progress__save {
-	&.gifit__button {
-		display: none;
-	}
-}
-
-.gifit-progress__elements {
-	position: relative;
-	width: 100%;
-	height: 5px;
-	overflow: hidden;
-	transition: width 350ms, height 350ms 250ms;
-}
-
-.gifit-progress__progress {
-	-webkit-appearance: none;
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-.gifit-progress__result {
-	opacity: 0;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	transition: -webkit-filter 1000ms 250ms;
-	-webkit-filter: brightness( 0% );
 }
 
 .ytp-fullscreen {
