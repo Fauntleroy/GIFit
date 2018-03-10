@@ -20,8 +20,10 @@
 @color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
 
-@youtube_controls_height: 27px;
-@youtube_progress_bar_height: 8px;
+@youtube_controls_height: 36px;
+@youtube_controls_height_fullscreen: 54px;
+@youtube_progress_bar_height: 5px;
+@youtube_progress_bar_height_fullscreen: 8px;
 @label_font_size: 10px;
 @input_horizontal_padding: 12px;
 @input_border_radius: 3px;
@@ -288,6 +290,7 @@ a.gifit__button {
 	bottom: @youtube_controls_height + @youtube_progress_bar_height;
 	z-index: 700;
 	width: 300px;
+	margin: 0 0 10px 0;
 	padding: 0;
 	color: @color_panel_text;
 	background: @color_panel_background;
@@ -437,4 +440,10 @@ a.gifit__button {
 	width: 100%;
 	transition: -webkit-filter 1000ms 250ms;
 	-webkit-filter: brightness( 0% );
+}
+
+.ytp-fullscreen {
+	.gifit-app {
+		bottom: @youtube_controls_height_fullscreen + @youtube_progress_bar_height_fullscreen;
+	}
 }
