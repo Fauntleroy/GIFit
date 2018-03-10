@@ -30,7 +30,7 @@
 @ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
 @ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
 
-@import url('https://fonts.googleapis.com/css?family=Arizonia|Roboto|Roboto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Arizonia|Roboto+Mono|Roboto:400,400i,700');
 @import 'gifit_icons.less';
 @import 'youtube.less';
 @import '2015.less';
@@ -66,6 +66,7 @@
 		text-transform: uppercase;
 		font-size: @label_font_size;
 		font-family: 'Roboto', sans-serif;
+		font-style: italic;
 		line-height: @label_font_size;
 		letter-spacing: 0.75px;
 	}
@@ -177,7 +178,7 @@ a.gifit__button {
 	cursor: pointer;
 	display: inline-block;
 	border: none;
-	padding: 0 25px;
+	padding: 5px 25px;
 	font-size: 18px;
 	line-height: 30px;
 	background: @color_button_background;
@@ -324,7 +325,7 @@ a.gifit__button {
 		}
 
 		.gifit-progress__save {
-			display: inline-block;
+			display: block;
 		}
 	}
 }
@@ -408,8 +409,6 @@ a.gifit__button {
 }
 
 .gifit-progress__save {
-	margin-top: 15px;
-
 	&.gifit__button {
 		display: none;
 	}
