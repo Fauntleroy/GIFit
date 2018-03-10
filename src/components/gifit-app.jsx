@@ -5,8 +5,8 @@ var assign = require('lodash/object/assign');
 var toSeconds = require('../utils/toSeconds.js');
 var gifit_events = require('../utils/gifit_events.js');
 var GifService = require('../services/GifService.js');
-var ConfigurationPanel = require('./ConfigurationPanel.jsx');
-var Progress = require('./Progress.jsx');
+var ConfigurationPanel = require('./configuration-panel.jsx');
+var Progress = require('./progress.jsx');
 
 var GifitApp = React.createClass({
 	getInitialState: function(){
