@@ -1,6 +1,6 @@
 var React = require('react');
 
-var toSeconds = require('../utils/toSeconds.js');
+var toSeconds = require('../utils/to-seconds.js');
 
 var ConfigurationPanel = React.createClass({
 	getInitialState: function(){
@@ -65,13 +65,6 @@ var ConfigurationPanel = React.createClass({
 								onChange={this._onChange}
 							/>
 						</div>
-						<input
-							className="gifit-configuration__link-dimensions"
-							name="link_dimensions"
-							type="checkbox"
-							checked={this.state.link_dimensions}
-							onChange={this._onChange}
-						/>
 						<div className="gifit__inputs">
 							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
 							<input
@@ -85,8 +78,15 @@ var ConfigurationPanel = React.createClass({
 								onChange={this._onChange}
 							/>
 						</div>
+						<input
+							className="gifit-configuration__link-dimensions"
+							name="link_dimensions"
+							type="checkbox"
+							checked={this.state.link_dimensions}
+							onChange={this._onChange}
+						/>
 					</fieldset>
-					<fieldset>
+					<fieldset className="gifit__fieldset--horizontal">
 						<div className="gifit__inputs">
 							<label className="gifit__label" htmlFor="gifit-option-framerate">Frame Rate</label>
 							<input
@@ -100,8 +100,6 @@ var ConfigurationPanel = React.createClass({
 								onChange={this._onChange}
 							/>
 						</div>
-					</fieldset>
-					<fieldset>
 						<div className="gifit__inputs gifit__inputs--range">
 							<label className="gifit__label" htmlFor="gifit-option-quality">Quality</label>
 							<input

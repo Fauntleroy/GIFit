@@ -2,11 +2,11 @@ var React = require('react');
 var cx = require('classnames');
 var assign = require('lodash/object/assign');
 
-var toSeconds = require('../utils/toSeconds.js');
-var gifit_events = require('../utils/gifit_events.js');
-var GifService = require('../services/GifService.js');
-var ConfigurationPanel = require('./ConfigurationPanel.jsx');
-var Progress = require('./Progress.jsx');
+var toSeconds = require('../utils/to-seconds.js');
+var gifit_events = require('../utils/gifit-events.js');
+var GifService = require('../services/gif-service.js');
+var ConfigurationPanel = require('./configuration-panel.jsx');
+var Progress = require('./progress.jsx');
 
 var GifitApp = React.createClass({
 	getInitialState: function(){
@@ -93,6 +93,10 @@ var GifitApp = React.createClass({
 		this.cleanProgressState();
 	},
 	_onToggle: function(){
+		if (!this.state.active) {
+			this._video_element.pause();
+		}
+
 		this.setState({
 			active: !this.state.active
 		});

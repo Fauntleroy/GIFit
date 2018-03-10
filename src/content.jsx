@@ -3,13 +3,14 @@ require('./styles/content.less');
 
 var React = require('react');
 
-var gifit_events = require('./utils/gifit_events.js');
-var GifitButton = require('./components/GifitButton.jsx');
-var GifitApp = require('./components/GifitApp.jsx');
+var gifit_events = require('./utils/gifit-events.js');
+var GifitButton = require('./components/gifit-button.jsx');
+var GifitApp = require('./components/gifit-app.jsx');
 
 var initializeGifit = function( youtube_player_api_element ){
 
 	var is_2015_player = !!youtube_player_api_element.querySelector(':scope .ytp-chrome-controls');
+	var is_2018_player = !!document.querySelector('#movie_player');
 
 	// Find YouTube elements we'll be injecting into
 	var youtube_player_chrome_element = youtube_player_api_element.querySelector(':scope .html5-player-chrome, :scope .ytp-chrome-bottom');
@@ -37,9 +38,9 @@ var initializeGifit = function( youtube_player_api_element ){
 	gifit_events.on( 'toggle', function(){
 		gifit_button_active = !gifit_button_active;
 		if( gifit_button_active ){
-			youtube_player_api_element.classList.add('gifit-active');
+			youtube_player_api_element.classList.add('gifit--active');
 		} else {
-			youtube_player_api_element.classList.remove('gifit-active');
+			youtube_player_api_element.classList.remove('gifit--active');
 		}
 	});
 
@@ -56,7 +57,7 @@ var initializeGifit = function( youtube_player_api_element ){
 	React.render( <GifitApp video={youtube_player_video_element} />, gifit_app_container_element );
 
 	// Mark territory
-	youtube_player_api_element.classList.add('gifit-initialized');
+	youtube_player_api_element.classList.add('gifit--initialized');
 
 	// If it's the 2015 player, add modifier class
 	if( is_2015_player ){
@@ -68,7 +69,7 @@ var initializeGifit = function( youtube_player_api_element ){
 // Inject GIFit into all players found
 // This is super nasty but it's the least brittle way to do things. C'est la vie.
 var scanPage = function(){
-	var youtube_player_api_elements = document.querySelectorAll('#player-api:not(.gifit-initialized)');
+	var youtube_player_api_elements = document.querySelectorAll('#player-api:not(.gifit--initialized):not(.off-screen-target), #movie_player:not(.gifit--initialized)');
 	for( var i = 0; i < youtube_player_api_elements.length; i ++ ){
 		initializeGifit( youtube_player_api_elements[i] );
 	}
@@ -76,3 +77,4 @@ var scanPage = function(){
 
 scanPage();
 setInterval( scanPage, 1000 );
+console.log('test 2');

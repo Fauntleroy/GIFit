@@ -1,7 +1,6 @@
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
 var fs = require('fs');
-var gifjs = require('gif.js');
 var gifjs_worker = fs.readFileSync( require.resolve('gif.js/dist/gif.worker.js'), 'utf8' );
 var gifjs_worker_blob = new Blob( [gifjs_worker], {
 	type: 'application/javascript'
@@ -41,10 +40,8 @@ var GifService = function(){
 	this._gif = null;
 	this._aborted = false;
 	var canvas_element = this._canvas_element = document.createElement('canvas');
-	canvas_element.style.position = 'fixed';
-	canvas_element.style.top = '-9001px';
-	canvas_element.style.left = '-9001px';
-	canvas_element.style.visibility = 'hidden';
+	canvas_element.style.imageRendering = 'crisp-edges';
+	var canvas_element_resized = this._canvas_element_resized = document.createElement('canvas');
 };
 
 inherits( GifService, EventEmitter );
@@ -52,7 +49,9 @@ inherits( GifService, EventEmitter );
 GifService.prototype.createGif = function( configuration, video_element ){
 	var gif_service = this;
 	var canvas_element = this._canvas_element;
+	var canvas_element_resized = this._canvas_element_resized;
 	var context = canvas_element.getContext('2d');
+	var context_resized = canvas_element_resized.getContext('2d');
 	var frame_gathering_progress = 0;
 
 	// Clear abort token
@@ -71,8 +70,13 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	var true_gif_duration = ( gif_duration - ( gif_duration % frame_interval ) );
 
 	// Prepare canvas
-	canvas_element.setAttribute( 'width', width );
-	canvas_element.setAttribute( 'height', height );
+	var video_width = video_element.getBoundingClientRect().width;
+	var video_height = video_element.getBoundingClientRect().height;
+	canvas_element.setAttribute( 'width', video_width );
+	canvas_element.setAttribute( 'height', video_height );
+	canvas_element.style.width = width + 'px';
+	canvas_element_resized.setAttribute( 'width', width );
+	canvas_element_resized.setAttribute( 'height', height );
 
 	// Pause video to prevent crazy audio artifacts
 	if( !video_element.paused ){
@@ -80,7 +84,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	}
 
 	// Initialize GIF maker
-	var gif = this._gif = new gifjs.GIF({
+	var gif = this._gif = new GIF({
 		workers: 8,
 		quality: quality,
 		repeat: 0,
@@ -99,8 +103,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	});
 	gif.on( 'progress', function( progress_ratio ){
 		var overall_progress = calculateProgress( frame_gathering_progress, progress_ratio );
-		var status = getStatus( frame_gathering_progress );
-		gif_service.emit( 'progress', status, overall_progress );
+		gif_service.emit( 'progress', RENDERING_STATUS, overall_progress );
 	});
 
 	// Run frames through GIF maker
@@ -114,15 +117,16 @@ GifService.prototype.createGif = function( configuration, video_element ){
 				return;
 			}
 			// Draw current frame on canvas, then transfer that to gif.js
-			context.drawImage( video_element, 0, 0, width, height );
-			gif.addFrame( canvas_element, {
+			context.drawImage( video_element, 0, 0, video_width, video_height );
+			context_resized.drawImage( canvas_element, 0, 0, width, height );
+			gif.addFrame( canvas_element_resized, {
 				delay: frame_interval,
+				dispose: 1,
 				copy: true
 			});
 			frame_gathering_progress = ( current_time - start ) / true_gif_duration;
 			var overall_progress = calculateProgress( frame_gathering_progress, 0 );
-			var status = getStatus( frame_gathering_progress );
-			gif_service.emit( 'progress', status, overall_progress );
+			gif_service.emit( 'progress', GATHERING_FRAMES_STATUS, overall_progress );
 			var next_frame_time = current_time + ( 1000 / framerate );
 			asyncSeek( video_element, ( next_frame_time / 1000 ), addFrame );
 		};

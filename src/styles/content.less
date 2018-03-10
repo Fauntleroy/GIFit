@@ -7,7 +7,7 @@
 @color_youtube_toolbar_hover: rgb( 164, 164, 164 );
 @color_youtube_toolbar_active: rgb( 255, 255, 255 );
 
-@color_panel_text: rgb( 175, 175, 175 );
+@color_panel_text: rgb( 125, 125, 125 );
 @color_panel_background: rgba( 255, 255, 255, 0.95 );
 @color_input_text: rgb( 25, 25, 25 );
 
@@ -20,52 +20,60 @@
 @color_button_primary_background: rgb( 235, 15, 15 );
 @color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
 
-@youtube_controls_height: 27px;
-@youtube_progress_bar_height: 8px;
+@youtube_controls_height: 36px;
+@youtube_controls_height_fullscreen: 54px;
+@youtube_progress_bar_height: 5px;
+@youtube_progress_bar_height_fullscreen: 8px;
 @label_font_size: 10px;
-@input_horizontal_padding: 7px;
+@input_horizontal_padding: 12px;
 @input_border_radius: 3px;
 @button_border_radius: 3px;
 
 @ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
 @ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
 
-@import 'roboto.less';
-@import 'arizonia.less';
+@import url('https://fonts.googleapis.com/css?family=Arizonia|Roboto+Mono|Roboto:400,400i,700');
 @import 'gifit_icons.less';
 @import 'youtube.less';
 @import '2015.less';
 
 // General Gifit
 .gifit {
-	font-family: 'robotoregular', sans-serif;
+	font-family: 'Roboto', sans-serif;
 
-	a {
-		color: @color_button_primary_background;
-		transition: transform 150ms, color 100ms;
+	&.gifit-app {
+		a {
+			color: @color_button_primary_background;
+			transition: transform 150ms, color 100ms;
 
-		&:hover,
-		&:focus {
-			transform: scale( 1.05 );
-			color: lighten( @color_button_primary_background, 20% );
-		}
+			&:hover,
+			&:focus {
+				transform: scale( 1.05 );
+				color: lighten( @color_button_primary_background, 20% );
+			}
 
-		&:active {
-			transform: scale( 0.95 );
-			transition: transform 25ms;
+			&:active {
+				transform: scale( 1 );
+				transition: transform 25ms;
+			}
 		}
 	}
 
 	fieldset {
 		position: relative;
+		border: none;
+		margin: 0;
+		padding: 0;
 		line-height: 35px;
 	}
 
 	label {
 		text-transform: uppercase;
 		font-size: @label_font_size;
-		font-family: 'robotoregular', sans-serif;
+		font-family: 'Roboto', sans-serif;
+		font-style: italic;
 		line-height: @label_font_size;
+		letter-spacing: 0.75px;
 	}
 
 	input {
@@ -74,20 +82,24 @@
 
 	input[type="text"],
 	input[type="number"] {
-		font-family: 'robotoregular', sans-serif;
+		font-family: 'Roboto Mono', sans-serif;
 		font-size: 22px;
-		color: fadeout( @color_input_text, 30% );
-		box-shadow: inset 0 1px 0 0 rgba( 0, 0, 0, 0.1 );
-		background: rgba( 0, 0, 0, 0.03 );
+		color: fadeout( @color_input_text, 15% );
+		background: none;
 		border: none;
-		border-radius: @input_border_radius;
-		padding: 13px @input_horizontal_padding 0 @input_horizontal_padding;
-		transition: background-color 550ms, border-color 550ms;
+		padding: 20px @input_horizontal_padding 5px @input_horizontal_padding;
+		transition: background-color 550ms, border-color 550ms, box-shadow 550ms;
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.05);
+			transition: background-color 0ms;
+		}
 
 		&:focus {
 			color: @color_input_text;
-			background-color: rgba( 255, 255, 255, 0.75 );
-			transition: background-color 225ms;
+			background-color: rgba( 255, 255, 255, 0.95 );
+			box-shadow: 0px 0px 7px 1px rgba(255, 255, 255, 0.75);
+			transition: background-color 225ms, box-shadow 225ms;
 		}
 
 		&[type="number"]::-webkit-inner-spin-button,
@@ -149,7 +161,6 @@
 
 	fieldset {
 		clear: both;
-		margin-bottom: 15px;
 	}
 
 	progress {
@@ -165,86 +176,262 @@
 		}
 	}
 
-}
-
-.gifit__button,
-a.gifit__button {
-	cursor: pointer;
-	display: inline-block;
-	padding: 0 25px;
-	font-size: 18px;
-	line-height: 30px;
-	background: @color_button_background;
-	color: @color_button;
-	border-radius: @button_border_radius;
-	outline: none;
-	transition: transform 150ms, background 175ms, box-shadow 150ms;
-
-	&:hover,
-	&:focus {
+	// buttons
+	.gifit__button,
+	a.gifit__button {
+		cursor: pointer;
+		display: inline-block;
+		border: none;
+		padding: 5px 25px;
+		font-size: 18px;
+		line-height: 30px;
+		background: @color_button_background;
 		color: @color_button;
-		transform: scale( 1.025 );
-		background: lighten( @color_button_background, 10% );
-		box-shadow: 0 2px 5px @color_subtle_shadow;
+		outline: none;
+		transition: transform 150ms, background 175ms, box-shadow 150ms;
+
+		&:hover,
+		&:focus {
+			color: @color_button;
+			transform: scale( 1.025 );
+			background: lighten( @color_button_background, 10% );
+			box-shadow: 0 2px 5px @color_subtle_shadow;
+		}
+
+		&:active, &:active:hover {
+			transform: scale( 1 );
+			transition: transform 25ms;
+			box-shadow: inset 0px 1px 2px 0px rgba(0,0,0,0.35);
+			background: @color_button_background;
+		}
 	}
 
-	&:active {
-		transform: scale( 0.95 );
-		transition: transform 25ms;
-	}
-}
+	.gifit__button--primary {
+		background: @color_button_primary_background;
 
-.gifit__button--primary {
-	background: @color_button_primary_background;
+		&:hover,
+		&:focus {
+			background: lighten( @color_button_primary_background, 10% );
+		}
 
-	&:hover,
-	&:focus {
-		background: lighten( @color_button_primary_background, 10% );
-	}
-}
-
-.gifit__button--large {
-	padding: 0 15px;
-	font-size: 24px;
-	line-height: 35px;
-}
-
-.gifit__inputs {
-	position: relative;
-	width: 45%;
-
-	&.gifit__inputs--range {
-		width: 100%;
-		box-sizing: border-box;
-		padding: 20px @input_horizontal_padding 0 @input_horizontal_padding;
+		&:active,
+		&:active:focus {
+			background: darken( @color_button_primary_background, 5% );
+		}
 	}
 
-	label {
+	.gifit__button--large {
+		padding: 0 15px;
+		font-size: 24px;
+		line-height: 35px;
+	}
+
+	// Inputs
+	.gifit__inputs {
+		position: relative;
+		width: 50%;
+
+		&.gifit__inputs--range {
+			box-sizing: border-box;
+			padding: 26px @input_horizontal_padding 5px @input_horizontal_padding;
+		}
+
+		input {
+			display: block;
+			box-sizing: border-box;
+			width: 100%;
+		}
+	}
+
+	.gifit__label {
 		position: absolute;
-		top: 5px;
+		top: 8px;
 		left: @input_horizontal_padding;
 	}
 
-	input {
-		display: block;
-		box-sizing: border-box;
-		width: 100%;
-	}
-}
+	.gifit__fieldset--horizontal {
+		.gifit__inputs {
+			float: left;
 
-.gifit__fieldset--horizontal {
-	.gifit__inputs {
-		float: left;
+			.gifit__input {
+				border-bottom: rgba(0, 0, 0, 0.1) 1px dotted;
+			}
 
-		&:first-child {
-			margin-right: 10%;
+			&:first-child {
+				.gifit__input {
+					border-right: rgba(0, 0, 0, 0.1) 1px dotted;
+				}
+			}
 		}
+	}
+
+	// App
+	&.gifit-app {
+		box-sizing: border-box;
+		position: absolute;
+		right: 5px;
+		bottom: @youtube_controls_height + @youtube_progress_bar_height;
+		z-index: 700;
+		width: 300px;
+		margin: 0 0 10px 0;
+		padding: 0;
+		color: @color_panel_text;
+		background: @color_panel_background;
+		box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
+		transform: translate3d( 0, 0, 0 ) scaleX( 1 );
+		transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
+
+		&.gifit-app--inactive {
+			visibility: hidden;
+			opacity: 0.75;
+			transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
+			transition: transform 250ms @ease_out_expo, opacity 250ms @ease_out_expo, visibility 1ms 250ms;
+		}
+
+		&.gifit-app--status-generating,
+		&.gifit-app--status-generated {
+			.gifit-configuration {
+				-webkit-filter: blur( 1px ) grayscale( 100% );
+				transform: scale(0.975);
+				opacity: 0.1;
+			}
+
+			.gifit-progress {
+				display: flex;
+			}
+		}
+
+		&.gifit-app--status-generated {
+			.gifit-progress__status {
+				display: none;
+			}
+
+			.gifit-progress__result {
+				opacity: 1;
+				-webkit-filter: brightness( 100% );
+			}
+
+			.gifit-progress__save {
+				display: block;
+			}
+		}
+	}
+
+	// Configuration Panel
+	.gifit-configuration {
+		opacity: 1;
+		transition: -webkit-filter 300ms, opacity 300ms, transform 300ms;
+	}
+
+	.gifit-configuration__link-dimensions {
+		-webkit-appearance: none;
+		cursor: pointer;
+		opacity: 0.5;
+		position: absolute;
+		left: 50%;
+		margin: 16px 0 0 -9px;
+		padding: 4px;
+
+		&:after {
+			font-family: 'GIFit Icons';
+			content: '\e802';
+		}
+
+		&:hover {
+			opacity: 0.6;
+		}
+
+		&:checked {
+			opacity: 1;
+		}
+	}
+
+	.gifit-configuration__submit {
+		display: block;
+		width: 100%;
+		margin: 0;
+		padding: 5px;
+	}
+
+	// Progress
+	.gifit-progress {
+		display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.gifit-progress__close {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		line-height: 1;
+		font-size: 24px;
+		text-decoration: none;
+		cursor: pointer;
+
+		&:after {
+			content: '×';
+		}
+
+		&:hover {
+			text-decoration: none;
+		}
+	}
+
+	.gifit-progress__details {
+		width: 80%;
+		text-align: center;
+	}
+
+	.gifit-progress__status {
+		padding-bottom: 10px;
+		font-family: 'Roboto', sans-serif;
+		font-style: italic;
+		text-transform: uppercase;
+		text-align: center;
+	}
+
+	.gifit-progress__save {
+		&.gifit__button {
+			display: none;
+		}
+	}
+
+	.gifit-progress__elements {
+		position: relative;
+		width: 100%;
+		height: 5px;
+		overflow: hidden;
+		transition: width 350ms, height 350ms 250ms;
+	}
+
+	.gifit-progress__progress {
+		-webkit-appearance: none;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.gifit-progress__result {
+		opacity: 0;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		transition: -webkit-filter 1000ms 250ms;
+		-webkit-filter: brightness( 0% );
 	}
 }
 
 // Logo
 .gifit-logo__gif {
-	font-family: 'robotobold', sans-serif;
+	font-family: 'Roboto', sans-serif;
+	font-weight: bold;
 
 	&.gifit-logo__gif--primary {
 		color: @color_gif;
@@ -252,7 +439,7 @@ a.gifit__button {
 }
 
 .gifit-logo__it {
-	font-family: 'arizoniaregular', sans-serif;
+	font-family: 'Arizonia', sans-serif;
 	font-size: 125%;
 
 	&.gifit-logo__it--primary {
@@ -271,159 +458,8 @@ a.gifit__button {
 	}
 }
 
-// App
-.gifit-app {
-	box-sizing: border-box;
-	position: absolute;
-	right: 5px;
-	bottom: @youtube_controls_height + @youtube_progress_bar_height;
-	z-index: 700;
-	width: 300px;
-	padding: 25px;
-	color: @color_panel_text;
-	background: @color_panel_background;
-	box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
-	transform: translate3d( 0, 0, 0 );
-	transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
-
-	&.gifit-app--inactive {
-		visibility: hidden;
-		opacity: 0.75;
-		transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
-		transition: transform 250ms @ease_in_expo, opacity 250ms @ease_in_expo, visibility 1ms 250ms;
+.ytp-fullscreen {
+	.gifit-app {
+		bottom: @youtube_controls_height_fullscreen + @youtube_progress_bar_height_fullscreen;
 	}
-
-	&.gifit-app--status-generating,
-	&.gifit-app--status-generated {
-		.gifit-configuration {
-			-webkit-filter: blur( 1px ) grayscale( 100% );
-			opacity: 0.25;
-		}
-
-		.gifit-progress {
-			display: flex;
-		}
-	}
-
-	&.gifit-app--status-generated {
-		.gifit-progress__status {
-			display: none;
-		}
-
-		.gifit-progress__result {
-			opacity: 1;
-			-webkit-filter: brightness( 100% );
-		}
-
-		.gifit-progress__save {
-			display: inline-block;
-		}
-	}
-}
-
-// Configuration Panel
-.gifit-configuration {
-	opacity: 1;
-	transition: -webkit-filter 300ms, opacity 300ms;
-}
-
-.gifit-configuration__link-dimensions {
-	-webkit-appearance: none;
-	cursor: pointer;
-	opacity: 0.5;
-	position: absolute;
-	left: 50%;
-	margin: 11px 0 0 -10px;
-	padding: 4px;
-
-	&:after {
-		font-family: 'GIFit Icons';
-		content: '\e802';
-	}
-
-	&:hover {
-		opacity: 0.6;
-	}
-
-	&:checked {
-		opacity: 1;
-	}
-}
-
-.gifit-configuration__submit {
-	display: block;
-	width: 130px;
-	margin: 25px auto 0 auto;
-}
-
-// Progress
-.gifit-progress {
-	display: none;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	align-items: center;
-	justify-content: center;
-}
-
-.gifit-progress__close {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	font-size: 24px;
-	text-decoration: none;
-
-	&:after {
-		content: '×';
-	}
-
-	&:hover {
-		text-decoration: none;
-	}
-}
-
-.gifit-progress__details {
-	width: 80%;
-	text-align: center;
-}
-
-.gifit-progress__status {
-	padding-bottom: 10px;
-	font-family: 'robotobold', sans-serif;
-	text-align: center;
-}
-
-.gifit-progress__save {
-	margin-top: 15px;
-
-	&.gifit__button {
-		display: none;
-	}
-}
-
-.gifit-progress__elements {
-	position: relative;
-	width: 100%;
-	height: 5px;
-	overflow: hidden;
-	transition: width 350ms, height 350ms 250ms;
-}
-
-.gifit-progress__progress {
-	-webkit-appearance: none;
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-.gifit-progress__result {
-	opacity: 0;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	transition: -webkit-filter 1000ms 250ms;
-	-webkit-filter: brightness( 0% );
 }
