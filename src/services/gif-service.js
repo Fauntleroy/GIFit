@@ -103,8 +103,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 	});
 	gif.on( 'progress', function( progress_ratio ){
 		var overall_progress = calculateProgress( frame_gathering_progress, progress_ratio );
-		var status = getStatus( frame_gathering_progress );
-		gif_service.emit( 'progress', status, overall_progress );
+		gif_service.emit( 'progress', RENDERING_STATUS, overall_progress );
 	});
 
 	// Run frames through GIF maker
@@ -127,8 +126,7 @@ GifService.prototype.createGif = function( configuration, video_element ){
 			});
 			frame_gathering_progress = ( current_time - start ) / true_gif_duration;
 			var overall_progress = calculateProgress( frame_gathering_progress, 0 );
-			var status = getStatus( frame_gathering_progress );
-			gif_service.emit( 'progress', status, overall_progress );
+			gif_service.emit( 'progress', GATHERING_FRAMES_STATUS, overall_progress );
 			var next_frame_time = current_time + ( 1000 / framerate );
 			asyncSeek( video_element, ( next_frame_time / 1000 ), addFrame );
 		};

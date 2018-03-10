@@ -60,6 +60,7 @@
 	fieldset {
 		position: relative;
 		border: none;
+		margin: 0;
 		padding: 0;
 		line-height: 35px;
 	}
@@ -249,6 +250,16 @@ a.gifit__button {
 .gifit__fieldset--horizontal {
 	.gifit__inputs {
 		float: left;
+
+		.gifit__input {
+			border-bottom: rgba(0, 0, 0, 0.1) 1px dotted;
+		}
+
+		&:first-child {
+			.gifit__input {
+				border-right: rgba(0, 0, 0, 0.1) 1px dotted;
+			}
+		}
 	}
 }
 
@@ -309,7 +320,8 @@ a.gifit__button {
 	&.gifit-app--status-generated {
 		.gifit-configuration {
 			-webkit-filter: blur( 1px ) grayscale( 100% );
-			opacity: 0.2;
+			transform: scale(0.975);
+			opacity: 0.1;
 		}
 
 		.gifit-progress {
@@ -336,7 +348,7 @@ a.gifit__button {
 // Configuration Panel
 .gifit-configuration {
 	opacity: 1;
-	transition: -webkit-filter 300ms, opacity 300ms;
+	transition: -webkit-filter 300ms, opacity 300ms, transform 300ms;
 }
 
 .gifit-configuration__link-dimensions {
@@ -407,7 +419,8 @@ a.gifit__button {
 .gifit-progress__status {
 	padding-bottom: 10px;
 	font-family: 'Roboto', sans-serif;
-	font-weight: bold;
+	font-style: italic;
+	text-transform: uppercase;
 	text-align: center;
 }
 
