@@ -4,13 +4,13 @@ Making a GIF can be intimidating. With GIFit, it isn't so intimidating anymore. 
 
 ![GIFit in action](https://raw.github.com/fauntleroy/GIFit/master/screenshot.jpg)
 
-##Installing
+## Installing
 
-###Chrome Web Store (Easy Mode)
+### Chrome Web Store (Easy Mode)
 
 You can install the latest production version of GIFit! from the [Chrome Web Store](https://chrome.google.com/webstore/detail/gifit/khoojcphcmgcplkpckkjpdlloooifgec).
 
-###Compile GIFit from Source (Hard Mode)
+### Compile GIFit from Source (Hard Mode)
 
 Here are some quick and easy steps for compilation success:
 
@@ -21,7 +21,7 @@ Here are some quick and easy steps for compilation success:
 
 If you have any problems with the extension, be sure to speak up and [file issues](https://github.com/Fauntleroy/GIFit/issues)!
 
-##Contributing
+## Contributing
 
 Contributing to this project is EASY, provided that you love GIFs and aren't afraid of JS. I've elected to use [React](http://facebook.github.io/react/), [Gulp](http://gulpjs.com/), [Browserify](http://browserify.org/), and [LESS](http://lesscss.org/) for this project.
 
