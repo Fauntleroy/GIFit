@@ -1,7 +1,7 @@
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
 var fs = require('fs');
-var gifjs_worker = fs.readFileSync( require.resolve('gif.js/dist/gif.worker.js'), 'utf8' );
+var gifjs_worker = fs.readFileSync( './src/vendor/gif.worker.js', 'utf8' );
 var gifjs_worker_blob = new Blob( [gifjs_worker], {
 	type: 'application/javascript'
 });
