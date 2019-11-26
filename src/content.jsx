@@ -1,6 +1,3 @@
-// automatically inject CSS
-require('./styles/content.less');
-
 var React = require('react');
 
 var gifit_events = require('./utils/gifit-events.js');

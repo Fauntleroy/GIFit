@@ -5,6 +5,7 @@
     "permissions": ["activeTab"],
     "content_scripts": [{
         "matches": ["*://www.youtube.com/*"],
+        "css": ["content.css"],
         "js": [
             "vendor/gif.js",
             "vendor/patch-worker.js",
@@ -14,7 +15,8 @@
     }],
     "content_security_policy": "script-src 'self'; object-src 'self'; child-src blob:",
     "web_accessible_resources": [
-        "gif.js.map"
+        "gif.js.map",
+        "content.css"
     ],
     "icons": {
         "128": "icon_128.png"
