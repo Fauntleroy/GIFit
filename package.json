@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "classnames": "^1.1.2",
-    "lodash": "^3.2.0",
+    "lodash": "^4.17.13",
     "react": "^0.12.2"
   }
 }
