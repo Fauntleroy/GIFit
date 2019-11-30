@@ -1,152 +1,149 @@
-var inherits = require('util').inherits;
-var EventEmitter = require('events').EventEmitter;
-var fs = require('fs');
-var gifjs_worker = fs.readFileSync( './src/vendor/gif.worker.js', 'utf8' );
-var gifjs_worker_blob = new Blob( [gifjs_worker], {
-	type: 'application/javascript'
+import { inherits } from 'util';
+import { EventEmitter } from 'events';
+
+const fs = require('fs');
+// eslint-disable-next-line no-sync
+const gifJsWorker = fs.readFileSync('./src/vendor/gif.worker.js', 'utf8');
+const gifJsWorkerBlob = new Blob([gifJsWorker], {
+  type: 'application/javascript'
 });
 
-var GATHERING_FRAMES_STATUS = 'Gathering frames…';
-var RENDERING_STATUS = 'Rendering GIF…';
+const GATHERING_FRAMES_STATUS = 'Gathering frames…';
+const RENDERING_STATUS = 'Rendering GIF…';
 
 // Return combined progress of frame gathering and GIF rendering as percent
-var calculateProgress = function( frame_gathering_progress, rendering_progress ){
-	return (( frame_gathering_progress * 0.7 ) + ( rendering_progress * 0.3 )) * 100;
-};
-
-// Determine which state string is current
-var getStatus = function( frame_gathering_progress ){
-	var status = '';
-	if( frame_gathering_progress < 1 ){
-		status = GATHERING_FRAMES_STATUS;
-	} else {
-		status = RENDERING_STATUS;
-	}
-	return status;
-};
+function calculateProgress (frameGatheringProgress, renderingProgress) {
+  return ((frameGatheringProgress * 0.7) + (renderingProgress * 0.3)) * 100;
+}
 
 // Seek through <video> frames asynchronously
-var asyncSeek = function( video, time, callback ){
-	var doneSeeking = function(){
-		video.removeEventListener( 'seeked', doneSeeking );
-		if( callback ) callback();
-	};
-	video.addEventListener( 'seeked', doneSeeking );
-	video.currentTime = time;
-};
+function asyncSeek (video, time, callback) {
+  function doneSeeking () {
+    video.removeEventListener('seeked', doneSeeking);
+    if (callback) {
+      return callback();
+    }
+  }
+  video.addEventListener('seeked', doneSeeking);
+  video.currentTime = time;
+}
 
-var GifService = function(){
-	EventEmitter.call( this );
-	this._gif = null;
-	this._aborted = false;
-	var canvas_element = this._canvas_element = document.createElement('canvas');
-	canvas_element.style.imageRendering = 'crisp-edges';
-	var canvas_element_resized = this._canvas_element_resized = document.createElement('canvas');
-};
+function GifService () {
+  EventEmitter.call(this);
+  this._gif = null;
+  this._aborted = false;
+  const canvasElement = this._canvasElement = document.createElement('canvas');
+  canvasElement.style.imageRendering = 'crisp-edges';
+  this._canvasElementResized = document.createElement('canvas');
+}
 
-inherits( GifService, EventEmitter );
+inherits(GifService, EventEmitter);
 
-GifService.prototype.createGif = function( configuration, video_element ){
-	var gif_service = this;
-	var canvas_element = this._canvas_element;
-	var canvas_element_resized = this._canvas_element_resized;
-	var context = canvas_element.getContext('2d');
-	var context_resized = canvas_element_resized.getContext('2d');
-	var frame_gathering_progress = 0;
+GifService.prototype.createGif = function (configuration, videoElement) {
+  const gifService = this;
+  const canvasElement = this._canvasElement;
+  const canvasElementResized = this._canvasElementResized;
+  const context = canvasElement.getContext('2d');
+  const contextResized = canvasElementResized.getContext('2d');
+  let frameGatheringProgress = 0;
 
-	// Clear abort token
-	this._aborted = false;
+  // Clear abort token
+  this._aborted = false;
 
-	// Process configuration data
-	var framerate = configuration.framerate;
-	var frame_interval = 1000 / framerate;
-	var start = configuration.start;
-	var end = configuration.end;
-	var width = configuration.width;
-	var height = configuration.height;
-	var quality = 31 - ( configuration.quality * 3 );
-	var gif_duration = configuration.end - configuration.start;
-	// To properly indicate progress we need a point of comparison locked to the frame rate
-	var true_gif_duration = ( gif_duration - ( gif_duration % frame_interval ) );
+  // Process configuration data
+  const framerate = configuration.framerate;
+  const frameInterval = 1000 / framerate;
+  const start = configuration.start;
+  const end = configuration.end;
+  const width = configuration.width;
+  const height = configuration.height;
+  const quality = 31 - (configuration.quality * 3);
+  const gifDuration = configuration.end - configuration.start;
+  // To properly indicate progress we need a point of comparison locked to the frame rate
+  const trueGifDuration = (gifDuration - (gifDuration % frameInterval));
 
-	// Prepare canvas
-	var video_width = video_element.getBoundingClientRect().width;
-	var video_height = video_element.getBoundingClientRect().height;
-	canvas_element.setAttribute( 'width', video_width );
-	canvas_element.setAttribute( 'height', video_height );
-	canvas_element.style.width = width + 'px';
-	canvas_element_resized.setAttribute( 'width', width );
-	canvas_element_resized.setAttribute( 'height', height );
+  // Prepare canvas
+  const videoWidth = videoElement.getBoundingClientRect().width;
+  const videoHeight = videoElement.getBoundingClientRect().height;
+  canvasElement.setAttribute('width', videoWidth);
+  canvasElement.setAttribute('height', videoHeight);
+  canvasElement.style.width = `${width}px`;
+  canvasElementResized.setAttribute('width', width);
+  canvasElementResized.setAttribute('height', height);
 
-	// Pause video to prevent crazy audio artifacts
-	if( !video_element.paused ){
-		video_element.pause();
-	}
+  // Pause video to prevent crazy audio artifacts
+  if (!videoElement.paused) {
+    videoElement.pause();
+  }
 
-	// Initialize GIF maker
-	var gif = this._gif = new GIF({
-		workers: 8,
-		quality: quality,
-		repeat: 0,
-		width: width,
-		height: height,
-		workerScript: URL.createObjectURL( gifjs_worker_blob )
-	});
-	gif.on( 'finished', function( image_blob ){
-		var image_attributes = {
-			blob: image_blob,
-			width: width,
-			height: height
-		};
-		gif_service.emit( 'complete', image_attributes );
-		gif_service._gif = null;
-	});
-	gif.on( 'progress', function( progress_ratio ){
-		var overall_progress = calculateProgress( frame_gathering_progress, progress_ratio );
-		gif_service.emit( 'progress', RENDERING_STATUS, overall_progress );
-	});
+  // Initialize GIF maker
+  const gif = this._gif = new window.GIF({
+    workers: 8,
+    quality,
+    repeat: 0,
+    width,
+    height,
+    workerScript: URL.createObjectURL(gifJsWorkerBlob)
+  });
 
-	// Run frames through GIF maker
-	asyncSeek( video_element, ( start / 1000 ), function(){
-		var addFrame = function(){
-			if( gif_service._aborted ) return;
-			var current_time = video_element.currentTime * 1000;
-			if( current_time > end ){
-				// render the GIF
-				gif.render();
-				return;
-			}
-			// Draw current frame on canvas, then transfer that to gif.js
-			context.drawImage( video_element, 0, 0, video_width, video_height );
-			context_resized.drawImage( canvas_element, 0, 0, width, height );
-			gif.addFrame( canvas_element_resized, {
-				delay: frame_interval,
-				dispose: 1,
-				copy: true
-			});
-			frame_gathering_progress = ( current_time - start ) / true_gif_duration;
-			var overall_progress = calculateProgress( frame_gathering_progress, 0 );
-			gif_service.emit( 'progress', GATHERING_FRAMES_STATUS, overall_progress );
-			var next_frame_time = current_time + ( 1000 / framerate );
-			asyncSeek( video_element, ( next_frame_time / 1000 ), addFrame );
-		};
-		addFrame();
-	});
+  gif.on('finished', function (imageBlob) {
+    const imageAttributes = {
+      blob: imageBlob,
+      width,
+      height
+    };
+    gifService.emit('complete', imageAttributes);
+    gifService._gif = null;
+  });
+
+  gif.on('progress', function (progressRatio) {
+    const overallProgress = calculateProgress(frameGatheringProgress, progressRatio);
+    gifService.emit('progress', RENDERING_STATUS, overallProgress);
+  });
+
+  // Run frames through GIF maker
+  asyncSeek(videoElement, (start / 1000), function () {
+    function addFrame () {
+      if (gifService._aborted) {
+        return;
+      }
+      const currentTime = videoElement.currentTime * 1000;
+      if (currentTime > end) {
+        // render the GIF
+        gif.render();
+        return;
+      }
+      // Draw current frame on canvas, then transfer that to gif.js
+      context.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
+      contextResized.drawImage(canvasElement, 0, 0, width, height);
+      gif.addFrame(canvasElementResized, {
+        delay: frameInterval,
+        dispose: 1,
+        copy: true
+      });
+      frameGatheringProgress = (currentTime - start) / trueGifDuration;
+      const overallProgress = calculateProgress(frameGatheringProgress, 0);
+      gifService.emit('progress', GATHERING_FRAMES_STATUS, overallProgress);
+      const nextFrameTime = currentTime + (1000 / framerate);
+      asyncSeek(videoElement, (nextFrameTime / 1000), addFrame);
+    }
+    addFrame();
+  });
 };
 
 // Stop gathering frames / rendering GIF
-GifService.prototype.abort = function(){
-	if( !this._gif ){
-		return;
-	}
-	this._aborted = true;
-	this._gif.abort();
-	this._gif = null;
-	this.emit('abort');
+GifService.prototype.abort = function () {
+  if (!this._gif) {
+    return;
+  }
+  this._aborted = true;
+  this._gif.abort();
+  this._gif = null;
+  this.emit('abort');
 };
 
-GifService.prototype.destroy = function(){
+GifService.prototype.destroy = function () {
 
 };
 
-module.exports = GifService;
+export default GifService;

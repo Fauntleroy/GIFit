@@ -1,22 +1,26 @@
 // Convert a timecode string, like 1:30, to a seconds number
-var toSeconds = function( time_string ){
-	var seconds = 0;
-	var time_array = time_string.split(':').reverse();
-	for( var i = 0; i < time_array.length; i++ ){
-		var time_segment = parseFloat( time_array[i] );
-		switch( i ){
-			case 0:
-				seconds += time_segment;
-			break;
-			case 1:
-				seconds += time_segment * 60;
-			break;
-			case 2:
-				seconds += time_segment * 60 * 60;
-			break;
-		}
-	}
-	return seconds;
-};
+function toSeconds (timeString) {
+  let seconds = 0;
+  const timeArray = timeString.split(':').reverse();
 
-module.exports = toSeconds;
+  for (let i = 0; i < timeArray.length; i++) {
+    const timeSegment = parseFloat(timeArray[i]);
+    switch (i) {
+      case 0:
+        seconds += timeSegment;
+        break;
+      case 1:
+        seconds += timeSegment * 60;
+        break;
+      case 2:
+        seconds += timeSegment * 60 * 60;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return seconds;
+}
+
+export default toSeconds;

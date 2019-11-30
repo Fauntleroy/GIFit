@@ -1,43 +1,66 @@
-var React = require('react');
+import PropTypes from 'prop-types';
+import React from 'react';
 
-var DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
+const DEFAULT_IMAGE_DISPLAY_WIDTH = 240;
 
-var Progress = React.createClass({
-	render: function(){
-		if( this.props.image ){
-			// Prepare a height proportional to the width the image will be displayed at
-			// nasty but necessary for the effect at the end of GIF creation
-			var image_display_height = DEFAULT_IMAGE_DISPLAY_WIDTH * ( this.props.image.height / this.props.image.width );
-			var image_url = URL.createObjectURL( this.props.image.blob );
-			var progress_elements_style = {
-				height: image_display_height
-			};
-		}
-		return (
-			<div className="gifit-progress">
-				<a
-					className="gifit-progress__close"
-					onClick={this._onCloseClick}
-				></a>
-				<div className="gifit-progress__details">
-					<div className="gifit-progress__status">{this.props.status}</div>
-					<div className="gifit-progress__elements" style={progress_elements_style}>
-						<progress
-							className="gifit-progress__progress"
-							value={this.props.percent}
-							max="100"
-						></progress>
-						<img className="gifit-progress__result" src={image_url} />
-					</div>
-					<a className="gifit-progress__save gifit__button" href={image_url} download={'gifit_' + Date.now() + '.gif'}>Save GIF</a>
-				</div>
-			</div>
-		)
-	},
-	_onCloseClick: function( event ){
-		event.preventDefault();
-		this.props.onCloseClick();
-	}
-});
+function Progress (props) {
+  let imageUrl, progressElementsStyle;
 
-module.exports = Progress;
+  if (props.image) {
+    // Prepare a height proportional to the width the image will be displayed at
+    // nasty but necessary for the effect at the end of GIF creation
+    const imageDisplayHeight = DEFAULT_IMAGE_DISPLAY_WIDTH * (props.image.height / props.image.width);
+    imageUrl = URL.createObjectURL(props.image.blob);
+    progressElementsStyle = {
+      height: imageDisplayHeight
+    };
+  }
+
+  function handleCloseClick (event) {
+    event.preventDefault();
+    props.onCloseClick();
+  }
+
+  return (
+    <div className="gifit-progress">
+      <a
+        className="gifit-progress__close"
+        onClick={handleCloseClick} />
+      <div className="gifit-progress__details">
+        <div className="gifit-progress__status">{props.status}</div>
+        <div className="gifit-progress__elements" style={progressElementsStyle}>
+          <progress
+            className="gifit-progress__progress"
+            value={props.percent}
+            max="100" />
+          <img className="gifit-progress__result" src={imageUrl} />
+        </div>
+        <a
+          className="gifit-progress__save gifit__button"
+          href={imageUrl}
+          download={`gifit_${Date.now()}.gif`}>
+          Save GIF
+        </a>
+      </div>
+    </div>
+  );
+}
+
+Progress.propTypes = {
+  image: PropTypes.shape({
+    blob: PropTypes.object,
+    height: PropTypes.number,
+    width: PropTypes.number
+  }),
+  onCloseClick: PropTypes.func.isRequired,
+  percent: PropTypes.number,
+  status: PropTypes.string
+};
+
+Progress.defaultProps = {
+  image: null,
+  percent: 0,
+  status: null
+};
+
+export default Progress;

@@ -1,106 +1,134 @@
-var React = require('react');
-var cx = require('classnames');
-var assign = require('lodash/object/assign');
+import cx from 'classnames';
+import PropTypes from 'prop-types';
+import React, { useEffect, useReducer, useRef } from 'react';
 
-var toSeconds = require('../utils/to-seconds.js');
-var gifit_events = require('../utils/gifit-events.js');
-var GifService = require('../services/gif-service.js');
-var ConfigurationPanel = require('./configuration-panel.jsx');
-var Progress = require('./progress.jsx');
+import toSeconds from '../utils/to-seconds.js';
+import gifitEvents from '../utils/gifit-events.js';
+import GifService from '../services/gif-service.js';
+import ConfigurationPanel from './configuration-panel.jsx';
+import Progress from './progress.jsx';
 
-var GifitApp = React.createClass({
-	getInitialState: function(){
-		return {
-			progress: {
-				status: null,
-				percent: 0
-			},
-			image: null,
-			active: false
-		}
-	},
-	componentWillMount: function(){
-		this._video_element = this.props.video;
-		this._gif_service = new GifService();
-		this._gif_service.on( 'progress', this._onGifProgress );
-		this._gif_service.on( 'complete', this._onGifComplete );
-		this._gif_service.on( 'abort', this._onGifAbort );
-		gifit_events.on( 'toggle', this._onToggle );
-	},
-	componentWillUnmount: function(){
-		this._gif_service.destroy();
-		gifit_events.off( 'toggle', this._onToggle );
-	},
-	render: function(){
-		var gifit_app_classes = cx({
-			'gifit-app': true,
-			'gifit': true,
-			'gifit-app--active': this.state.active,
-			'gifit-app--inactive': !this.state.active,
-			'gifit-app--status-generating': ( this.state.progress.percent > 0 && this.state.progress.percent < 100 ),
-			'gifit-app--status-generated': !!this.state.image
-		});
-		return (
-			<div className={gifit_app_classes}>
-				<ConfigurationPanel
-					video={this._video_element}
-					onSubmit={this._onConfigurationSubmit}
-				/>
-				<Progress
-					status={this.state.progress.status}
-					percent={this.state.progress.percent}
-					image={this.state.image}
-					onCloseClick={this._onProgressCloseClick}
-				/>
-			</div>
-		);
-	},
-	cleanProgressState: function(){
-		this.setState({
-			image: null,
-			progress: {
-				status: null,
-				percent: 0
-			}
-		});
-	},
-	_onConfigurationSubmit: function( configuration ){
-		// Copy, preprocess, and submit configuration object
-		var gif_configuration = assign( {}, configuration, {
-			start: parseInt( ( toSeconds( configuration.start ) ) * 1000 ),
-			end: parseInt( ( toSeconds( configuration.end ) ) * 1000 )
-		});
-		this._gif_service.createGif( gif_configuration, this._video_element );
-	},
-	_onGifProgress: function( status, percent ){
-		this.setState({
-			progress: {
-				status: status,
-				percent: percent
-			}
-		});
-	},
-	_onGifComplete: function( image_attributes ){
-		this.setState({
-			image: image_attributes
-		});
-	},
-	_onGifAbort: function(){
-		this.cleanProgressState();
-	},
-	_onProgressCloseClick: function(){
-		this._gif_service.abort();
-		this.cleanProgressState();
-	},
-	_onToggle: function(){
-		if (!this.state.active) {
-			this._video_element.pause();
-		}
+const DEFAULT_STATE = {
+  progress: {
+    status: null,
+    percent: 0
+  },
+  image: null,
+  active: false
+};
 
-		this.setState({
-			active: !this.state.active
-		});
-	}
-});
+function reducer (state, action) {
+  switch (action.type) {
+    case 'ABORT':
+      return {
+        ...state,
+        image: null,
+        progress: {
+          status: null,
+          percent: 0
+        }
+      };
+    case 'PROGRESS':
+      return {
+        ...state,
+        progress: {
+          status: action.payload.status,
+          percent: action.payload.percent
+        }
+      };
+    case 'COMPLETE':
+      return {
+        ...state,
+        image: action.payload
+      };
+    case 'TOGGLE':
+      return {
+        ...state,
+        active: !state.active
+      };
+    case 'RESET':
+      return {
+        ...DEFAULT_STATE,
+        active: true
+      };
+    default:
+      return {
+        ...state
+      };
+  }
+}
 
-module.exports = GifitApp;
+function GifitApp (props) {
+  const gifService = useRef();
+
+  const [state, dispatch] = useReducer(reducer, {
+    ...DEFAULT_STATE
+  });
+
+  function handleToggle () {
+    if (!state.active) {
+      props.video.pause();
+    }
+
+    dispatch({ type: 'TOGGLE' });
+  }
+
+  function handleConfigurationSubmit (configuration) {
+    const gifConfiguration = {
+      ...configuration,
+      start: parseInt(toSeconds(configuration.start) * 1000, 10),
+      end: parseInt(toSeconds(configuration.end) * 1000, 10)
+    };
+    gifService.current.createGif(gifConfiguration, props.video);
+  }
+
+  function handleProgressCloseClick () {
+    gifService.current.abort();
+    dispatch({ type: 'RESET' });
+  }
+
+  useEffect(() => {
+    const _gifService = gifService.current = new GifService();
+    _gifService.on('progress', (status, percent) => {
+      dispatch({ type: 'PROGRESS', payload: { status, percent }});
+    });
+    _gifService.on('complete', (image) => {
+      dispatch({ type: 'COMPLETE', payload: image });
+    });
+    _gifService.on('abort', () => dispatch({ type: 'ABORT' }));
+    gifitEvents.on('toggle', handleToggle);
+
+    return () => {
+      _gifService.destroy();
+      gifitEvents.off('toggle', handleToggle);
+    };
+  }, []);
+
+  const className = cx({
+    'gifit-app': true,
+    'gifit': true,
+    'gifit-app--active': state.active,
+    'gifit-app--inactive': !state.active,
+    'gifit-app--status-generating': (state.progress.percent > 0 && state.progress.percent < 100),
+    'gifit-app--status-generated': !!state.image
+  });
+
+  return (
+    <div className={className}>
+      <ConfigurationPanel
+        video={props.video}
+        onSubmit={handleConfigurationSubmit} />
+      <Progress
+        status={state.progress.status}
+        percent={state.progress.percent}
+        image={state.image}
+        onCloseClick={handleProgressCloseClick} />
+    </div>
+  );
+}
+
+GifitApp.propTypes = {
+  video: PropTypes.element.isRequired
+};
+
+export default GifitApp;

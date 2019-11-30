@@ -259,10 +259,10 @@
   float: left;
 }
 .gifit .gifit__fieldset--horizontal .gifit__inputs .gifit__input {
-  border-bottom: rgba(0, 0, 0, 0.1) 1px dotted;
+  border-bottom: rgba(0, 0, 0, 0.1) 1px solid;
 }
 .gifit .gifit__fieldset--horizontal .gifit__inputs:first-child .gifit__input {
-  border-right: rgba(0, 0, 0, 0.1) 1px dotted;
+  border-right: rgba(0, 0, 0, 0.1) 1px solid;
 }
 .gifit.gifit-app {
   box-sizing: border-box;

@@ -1,197 +1,226 @@
-var React = require('react');
+import _ from 'lodash';
+import PropTypes from 'prop-types';
+import React, { useEffect, useReducer } from 'react';
 
-var toSeconds = require('../utils/to-seconds.js');
+import toSeconds from '../utils/to-seconds.js';
 
-var ConfigurationPanel = React.createClass({
-	getInitialState: function(){
-		return {
-			start: '0:00',
-			end: '0:01',
-			width: 320,
-			height: 180,
-			link_dimensions: true,
-			framerate: 10,
-			quality: 5,
-			aspect_ratio: ( 16 / 9 )
-		};
-	},
-	componentWillMount: function(){
-		this._video_element = this.props.video;
-		this._video_element.addEventListener( 'loadeddata', this._onVideoLoad );
-		this.setAspectRatio();
-	},
-	componentWillUnmount: function(){
-		this._video_element.removeEventListener( 'loadeddata', this._onVideoLoad );
-	},
-	render: function(){
-		return (
-			<div className="gifit-configuration">
-				<form onSubmit={this._onSubmit}>
-					<fieldset className="gifit__fieldset--horizontal">
-						<div className="gifit__inputs">
-							<label className="gifit__label" htmlFor="gifit-option-start">Start</label>
-							<input
-								id="gifit-option-start"
-								className="gifit__input"
-								name="start"
-								type="text"
-								value={this.state.start}
-								onChange={this._onChange}
-							/>
-						</div>
-						<div className="gifit__inputs">
-							<label className="gifit__label" htmlFor="gifit-option-end">End</label>
-							<input
-								id="gifit-option-end"
-								className="gifit__input"
-								name="end"
-								type="text"
-								value={this.state.end}
-								onChange={this._onChange}
-							/>
-						</div>
-					</fieldset>
-					<fieldset className="gifit__fieldset--horizontal">
-						<div className="gifit__inputs">
-							<label className="gifit__label" htmlFor="gifit-option-width">Width</label>
-							<input
-								id="gifit-option-width"
-								className="gifit__input"
-								name="width"
-								type="number"
-								min="10"
-								max="1920"
-								value={this.state.width}
-								onChange={this._onChange}
-							/>
-						</div>
-						<div className="gifit__inputs">
-							<label className="gifit__label" htmlFor="gifit-option-height">Height</label>
-							<input
-								id="gifit-option-height"
-								className="gifit__input"
-								name="height"
-								type="number"
-								min="10"
-								max="1080"
-								value={this.state.height}
-								onChange={this._onChange}
-							/>
-						</div>
-						<input
-							className="gifit-configuration__link-dimensions"
-							name="link_dimensions"
-							type="checkbox"
-							checked={this.state.link_dimensions}
-							onChange={this._onChange}
-						/>
-					</fieldset>
-					<fieldset className="gifit__fieldset--horizontal">
-						<div className="gifit__inputs">
-							<label className="gifit__label" htmlFor="gifit-option-framerate">Frame Rate</label>
-							<input
-								id="gifit-option-framerate"
-								className="gifit__input"
-								name="framerate"
-								type="number"
-								min="1"
-								max="60"
-								value={this.state.framerate}
-								onChange={this._onChange}
-							/>
-						</div>
-						<div className="gifit__inputs gifit__inputs--range">
-							<label className="gifit__label" htmlFor="gifit-option-quality">Quality</label>
-							<input
-								id="gifit-option-quality"
-								className="gifit__input"
-								name="quality"
-								type="range"
-								min="0"
-								max="10"
-								value={this.state.quality}
-								onChange={this._onChange}
-							/>
-						</div>
-					</fieldset>
-					<div className="gifit-configuration__actions">
-						<button
-							id="gifit-submit"
-							className="gifit-configuration__submit gifit__button gifit__button--primary gifit__button--large"
-							type="submit"
-						>
-							<span
-								className="gifit-logo__gif gifit-logo__gif--primary"
-							>GIF</span><span
-								className="gifit-logo__it gifit-logo__it--primary"
-							>it!</span>
-						</button>
-					</div>
-				</form>
-			</div>
-		);
-	},
-	// Automatically update the height according to the video's aspect ratio
-	_onVideoLoad: function(){
-		this.setAspectRatio();
-		this.setDimensionsByAspectRatio( 'width', this.state.width );
-	},
-	// Update state according to change of input value
-	_onChange: function( event ){
-		var target_element = event.target;
-		var prop = target_element.name;
-		var value = target_element.value;
-		var new_props_object = {};
-		new_props_object[prop] = ( target_element.type === 'checkbox' )
-			? target_element.checked
-			: value;
-		this.setState( new_props_object );
-		// Update the width/height if necessary
-		if( ( prop === 'width' || prop === 'height' ) && this.state.link_dimensions ){
-			this.setDimensionsByAspectRatio( prop, value );
-		} else if( prop === 'link_dimensions' ){
-			this.setDimensionsByAspectRatio( 'width', this.state.width );
-		}
-		// If we're changing the start or end time, show that in the video
-		if( prop === 'start' || prop === 'end' ){
-			this.seekTo( value );
-		}
-	},
-	_onSubmit: function( event ){
-		event.preventDefault();
-		this.props.onSubmit( this.state );
-	},
-	setAspectRatio: function(){
-		var video_width = this._video_element.videoWidth;
-		var video_height = this._video_element.videoHeight;
-		var aspect_ratio = ( video_width / video_height );
-		this.setState({
-			aspect_ratio: aspect_ratio
-		});
-	},
-	// Adjust width/height proportionally, based on the current video's aspect ratio
-	setDimensionsByAspectRatio: function( other_dimension, other_dimension_value ){
-		var dimension = ( other_dimension === 'width' )
-			? 'height'
-			: 'width';
-		var new_state = {};
-		if( dimension === 'width' ){
-			new_state.width = Math.round( other_dimension_value * this.state.aspect_ratio );
-		} else if( dimension === 'height' ){
-			new_state.height = Math.round( other_dimension_value / this.state.aspect_ratio );
-		}
-		this.setState( new_state );
-	},
-	// Seek to a specific position in the YouTube video
-	seekTo: function( timecode ){
-		var time = toSeconds( timecode );
-		if( !this._video_element.paused ){
-			this._video_element.pause();
-		}
-		if( time >= 0 ){
-			this._video_element.currentTime = time;
-		}
-	}
-});
+const DEFAULT_WIDTH = 320;
+const DEFAULT_HEIGHT = 180;
 
-module.exports = ConfigurationPanel;
+function seekTo (videoElement, timecode) {
+  const time = toSeconds(timecode);
+
+  if (!videoElement.paused) {
+    videoElement.pause();
+  }
+
+  videoElement.currentTime = _.clamp(time, 0, videoElement.duration);
+}
+
+function getVideoAspectRatio (videoElement) {
+  return (videoElement.videoWidth / videoElement.videoHeight);
+}
+
+function reducer (state, action) {
+  switch (action.type) {
+    case 'INPUT_CHANGE': {
+      const newState = {
+        ...state,
+        [action.payload.name]: action.payload.value
+      };
+
+      // adjust other dimension if they are linked
+      if (state.linkDimensions) {
+        if (action.payload.name === 'width') {
+          newState.height = Math.round(action.payload.value / state.aspectRatio);
+        } else if (action.payload.name === 'height') {
+          newState.width = Math.round(action.payload.value * state.aspectRatio);
+        }
+      }
+
+      // adjust height if linkDimensions is turned on
+      if (action.payload.name === 'linkDimensions' && action.payload.value) {
+        newState.height = Math.round(state.width / state.aspectRatio);
+      }
+
+      return newState;
+    }
+    case 'VIDEO_LOADED_DATA':
+      return {
+        ...state
+      };
+    default:
+      return {
+        ...state
+      };
+  }
+}
+
+function ConfigurationPanel (props) {
+  const [state, dispatch] = useReducer(reducer, {
+    start: '0:00',
+    end: '0:01',
+    width: DEFAULT_WIDTH,
+    height: DEFAULT_HEIGHT,
+    linkDimensions: true,
+    framerate: 10,
+    quality: 5,
+    aspectRatio: DEFAULT_WIDTH / DEFAULT_HEIGHT
+  });
+
+  useEffect(() => {
+    function handleVideoLoadedData () {
+      // set some default values here
+      const aspectRatio = getVideoAspectRatio(props.video);
+
+      dispatch({
+        type: 'VIDEO_LOADED_DATA',
+        payload: {
+          aspectRatio
+        }
+      });
+    }
+
+    return () => {
+      if (!props.video) {
+        return;
+      }
+
+      props.video.addEventListener('loadeddata', handleVideoLoadedData);
+
+      return () => {
+        props.video.removeEventListener('loadeddata', handleVideoLoadedData);
+      };
+    };
+  }, [props.video]);
+
+  function handleInputChange (event) {
+    const fieldName = event.target.name;
+    const newValue = (event.target.type === 'checkbox')
+      ? event.target.checked
+      : event.target.value;
+
+    dispatch({
+      type: 'INPUT_CHANGE',
+      payload: {
+        name: fieldName,
+        value: newValue
+      }
+    });
+
+    // If we're changing the start or end time, show that in the video
+    if (fieldName === 'start' || fieldName === 'end') {
+      seekTo(props.video, newValue);
+    }
+
+    // TODO If start time is greater than end time, adjust
+  }
+
+  function handleSubmit (event) {
+    event.preventDefault();
+    props.onSubmit(state);
+  }
+
+  return (
+    <div className="gifit-configuration">
+      <form onSubmit={handleSubmit}>
+        <fieldset className="gifit__fieldset--horizontal">
+          <div className="gifit__inputs">
+            <label className="gifit__label" htmlFor="gifit-option-start">Start</label>
+            <input
+              id="gifit-option-start"
+              className="gifit__input"
+              name="start"
+              type="text"
+              value={state.start}
+              onChange={handleInputChange} />
+          </div>
+          <div className="gifit__inputs">
+            <label className="gifit__label" htmlFor="gifit-option-end">End</label>
+            <input
+              id="gifit-option-end"
+              className="gifit__input"
+              name="end"
+              type="text"
+              value={state.end}
+              onChange={handleInputChange} />
+          </div>
+        </fieldset>
+        <fieldset className="gifit__fieldset--horizontal">
+          <div className="gifit__inputs">
+            <label className="gifit__label" htmlFor="gifit-option-width">Width</label>
+            <input
+              id="gifit-option-width"
+              className="gifit__input"
+              name="width"
+              type="number"
+              min="10"
+              max="1920"
+              value={state.width}
+              onChange={handleInputChange} />
+          </div>
+          <div className="gifit__inputs">
+            <label className="gifit__label" htmlFor="gifit-option-height">Height</label>
+            <input
+              id="gifit-option-height"
+              className="gifit__input"
+              name="height"
+              type="number"
+              min="10"
+              max="1080"
+              value={state.height}
+              onChange={handleInputChange} />
+          </div>
+          <input
+            className="gifit-configuration__link-dimensions"
+            name="linkDimensions"
+            type="checkbox"
+            checked={state.linkDimensions}
+            onChange={handleInputChange} />
+        </fieldset>
+        <fieldset className="gifit__fieldset--horizontal">
+          <div className="gifit__inputs">
+            <label className="gifit__label" htmlFor="gifit-option-framerate">Frame Rate</label>
+            <input
+              id="gifit-option-framerate"
+              className="gifit__input"
+              name="framerate"
+              type="number"
+              min="1"
+              max="60"
+              value={state.framerate}
+              onChange={handleInputChange} />
+          </div>
+          <div className="gifit__inputs gifit__inputs--range">
+            <label className="gifit__label" htmlFor="gifit-option-quality">Quality</label>
+            <input
+              id="gifit-option-quality"
+              className="gifit__input"
+              name="quality"
+              type="range"
+              min="0"
+              max="10"
+              value={state.quality}
+              onChange={handleInputChange} />
+          </div>
+        </fieldset>
+        <div className="gifit-configuration__actions">
+          <button
+            id="gifit-submit"
+            className="gifit-configuration__submit gifit__button gifit__button--primary gifit__button--large"
+            type="submit">
+            <span className="gifit-logo__gif gifit-logo__gif--primary">GIF</span>
+            <span className="gifit-logo__it gifit-logo__it--primary">it!</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+ConfigurationPanel.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  video: PropTypes.element.isRequired
+};
+
+export default ConfigurationPanel;
