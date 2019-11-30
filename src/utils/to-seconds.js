@@ -4,7 +4,7 @@ function toSeconds (timeString) {
   const timeArray = timeString.split(':').reverse();
 
   for (let i = 0; i < timeArray.length; i++) {
-    const timeSegment = parseFloat(timeArray[i]);
+    const timeSegment = parseFloat(timeArray[i]) || 0;
     switch (i) {
       case 0:
         seconds += timeSegment;

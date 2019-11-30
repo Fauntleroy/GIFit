@@ -22432,7 +22432,687 @@ checkPropTypes.resetWarningCache = function() {
 
 module.exports = checkPropTypes;
 
-},{"./lib/ReactPropTypesSecret":137}],137:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":140}],137:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+
+function emptyFunction() {}
+function emptyFunctionWithReset() {}
+emptyFunctionWithReset.resetWarningCache = emptyFunction;
+
+module.exports = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret) {
+      // It is still safe when called from React.
+      return;
+    }
+    var err = new Error(
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+    err.name = 'Invariant Violation';
+    throw err;
+  };
+  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  };
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    elementType: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim,
+    exact: getShim,
+
+    checkPropTypes: emptyFunctionWithReset,
+    resetWarningCache: emptyFunction
+  };
+
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+},{"./lib/ReactPropTypesSecret":140}],138:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var ReactIs = require('react-is');
+var assign = require('object-assign');
+
+var ReactPropTypesSecret = require('./lib/ReactPropTypesSecret');
+var checkPropTypes = require('./checkPropTypes');
+
+var has = Function.call.bind(Object.prototype.hasOwnProperty);
+var printWarning = function() {};
+
+if ("development" !== 'production') {
+  printWarning = function(text) {
+    var message = 'Warning: ' + text;
+    if (typeof console !== 'undefined') {
+      console.error(message);
+    }
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+}
+
+function emptyFunctionThatReturnsNull() {
+  return null;
+}
+
+module.exports = function(isValidElement, throwOnDirectAccess) {
+  /* global Symbol */
+  var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
+  var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
+
+  /**
+   * Returns the iterator method function contained on the iterable object.
+   *
+   * Be sure to invoke the function with the iterable as context:
+   *
+   *     var iteratorFn = getIteratorFn(myIterable);
+   *     if (iteratorFn) {
+   *       var iterator = iteratorFn.call(myIterable);
+   *       ...
+   *     }
+   *
+   * @param {?object} maybeIterable
+   * @return {?function}
+   */
+  function getIteratorFn(maybeIterable) {
+    var iteratorFn = maybeIterable && (ITERATOR_SYMBOL && maybeIterable[ITERATOR_SYMBOL] || maybeIterable[FAUX_ITERATOR_SYMBOL]);
+    if (typeof iteratorFn === 'function') {
+      return iteratorFn;
+    }
+  }
+
+  /**
+   * Collection of methods that allow declaration and validation of props that are
+   * supplied to React components. Example usage:
+   *
+   *   var Props = require('ReactPropTypes');
+   *   var MyArticle = React.createClass({
+   *     propTypes: {
+   *       // An optional string prop named "description".
+   *       description: Props.string,
+   *
+   *       // A required enum prop named "category".
+   *       category: Props.oneOf(['News','Photos']).isRequired,
+   *
+   *       // A prop named "dialog" that requires an instance of Dialog.
+   *       dialog: Props.instanceOf(Dialog).isRequired
+   *     },
+   *     render: function() { ... }
+   *   });
+   *
+   * A more formal specification of how these methods are used:
+   *
+   *   type := array|bool|func|object|number|string|oneOf([...])|instanceOf(...)
+   *   decl := ReactPropTypes.{type}(.isRequired)?
+   *
+   * Each and every declaration produces a function with the same signature. This
+   * allows the creation of custom validation functions. For example:
+   *
+   *  var MyLink = React.createClass({
+   *    propTypes: {
+   *      // An optional string or URI prop named "href".
+   *      href: function(props, propName, componentName) {
+   *        var propValue = props[propName];
+   *        if (propValue != null && typeof propValue !== 'string' &&
+   *            !(propValue instanceof URI)) {
+   *          return new Error(
+   *            'Expected a string or an URI for ' + propName + ' in ' +
+   *            componentName
+   *          );
+   *        }
+   *      }
+   *    },
+   *    render: function() {...}
+   *  });
+   *
+   * @internal
+   */
+
+  var ANONYMOUS = '<<anonymous>>';
+
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithThrowingShims.js`.
+  var ReactPropTypes = {
+    array: createPrimitiveTypeChecker('array'),
+    bool: createPrimitiveTypeChecker('boolean'),
+    func: createPrimitiveTypeChecker('function'),
+    number: createPrimitiveTypeChecker('number'),
+    object: createPrimitiveTypeChecker('object'),
+    string: createPrimitiveTypeChecker('string'),
+    symbol: createPrimitiveTypeChecker('symbol'),
+
+    any: createAnyTypeChecker(),
+    arrayOf: createArrayOfTypeChecker,
+    element: createElementTypeChecker(),
+    elementType: createElementTypeTypeChecker(),
+    instanceOf: createInstanceTypeChecker,
+    node: createNodeChecker(),
+    objectOf: createObjectOfTypeChecker,
+    oneOf: createEnumTypeChecker,
+    oneOfType: createUnionTypeChecker,
+    shape: createShapeTypeChecker,
+    exact: createStrictShapeTypeChecker,
+  };
+
+  /**
+   * inlined Object.is polyfill to avoid requiring consumers ship their own
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+   */
+  /*eslint-disable no-self-compare*/
+  function is(x, y) {
+    // SameValue algorithm
+    if (x === y) {
+      // Steps 1-5, 7-10
+      // Steps 6.b-6.e: +0 != -0
+      return x !== 0 || 1 / x === 1 / y;
+    } else {
+      // Step 6.a: NaN == NaN
+      return x !== x && y !== y;
+    }
+  }
+  /*eslint-enable no-self-compare*/
+
+  /**
+   * We use an Error-like object for backward compatibility as people may call
+   * PropTypes directly and inspect their output. However, we don't use real
+   * Errors anymore. We don't inspect their stack anyway, and creating them
+   * is prohibitively expensive if they are created too often, such as what
+   * happens in oneOfType() for any type before the one that matched.
+   */
+  function PropTypeError(message) {
+    this.message = message;
+    this.stack = '';
+  }
+  // Make `instanceof Error` still work for returned errors.
+  PropTypeError.prototype = Error.prototype;
+
+  function createChainableTypeChecker(validate) {
+    if ("development" !== 'production') {
+      var manualPropTypeCallCache = {};
+      var manualPropTypeWarningCount = 0;
+    }
+    function checkType(isRequired, props, propName, componentName, location, propFullName, secret) {
+      componentName = componentName || ANONYMOUS;
+      propFullName = propFullName || propName;
+
+      if (secret !== ReactPropTypesSecret) {
+        if (throwOnDirectAccess) {
+          // New behavior only for users of `prop-types` package
+          var err = new Error(
+            'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+            'Use `PropTypes.checkPropTypes()` to call them. ' +
+            'Read more at http://fb.me/use-check-prop-types'
+          );
+          err.name = 'Invariant Violation';
+          throw err;
+        } else if ("development" !== 'production' && typeof console !== 'undefined') {
+          // Old behavior for people using React.PropTypes
+          var cacheKey = componentName + ':' + propName;
+          if (
+            !manualPropTypeCallCache[cacheKey] &&
+            // Avoid spamming the console because they are often not actionable except for lib authors
+            manualPropTypeWarningCount < 3
+          ) {
+            printWarning(
+              'You are manually calling a React.PropTypes validation ' +
+              'function for the `' + propFullName + '` prop on `' + componentName  + '`. This is deprecated ' +
+              'and will throw in the standalone `prop-types` package. ' +
+              'You may be seeing this warning due to a third-party PropTypes ' +
+              'library. See https://fb.me/react-warning-dont-call-proptypes ' + 'for details.'
+            );
+            manualPropTypeCallCache[cacheKey] = true;
+            manualPropTypeWarningCount++;
+          }
+        }
+      }
+      if (props[propName] == null) {
+        if (isRequired) {
+          if (props[propName] === null) {
+            return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required ' + ('in `' + componentName + '`, but its value is `null`.'));
+          }
+          return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required in ' + ('`' + componentName + '`, but its value is `undefined`.'));
+        }
+        return null;
+      } else {
+        return validate(props, propName, componentName, location, propFullName);
+      }
+    }
+
+    var chainedCheckType = checkType.bind(null, false);
+    chainedCheckType.isRequired = checkType.bind(null, true);
+
+    return chainedCheckType;
+  }
+
+  function createPrimitiveTypeChecker(expectedType) {
+    function validate(props, propName, componentName, location, propFullName, secret) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== expectedType) {
+        // `propValue` being instance of, say, date/regexp, pass the 'object'
+        // check, but we can offer a more precise error message here rather than
+        // 'of type `object`'.
+        var preciseType = getPreciseType(propValue);
+
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + preciseType + '` supplied to `' + componentName + '`, expected ') + ('`' + expectedType + '`.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createAnyTypeChecker() {
+    return createChainableTypeChecker(emptyFunctionThatReturnsNull);
+  }
+
+  function createArrayOfTypeChecker(typeChecker) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (typeof typeChecker !== 'function') {
+        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside arrayOf.');
+      }
+      var propValue = props[propName];
+      if (!Array.isArray(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
+      }
+      for (var i = 0; i < propValue.length; i++) {
+        var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', ReactPropTypesSecret);
+        if (error instanceof Error) {
+          return error;
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createElementTypeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      if (!isValidElement(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createElementTypeTypeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      if (!ReactIs.isValidElementType(propValue)) {
+        var propType = getPropType(propValue);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createInstanceTypeChecker(expectedClass) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (!(props[propName] instanceof expectedClass)) {
+        var expectedClassName = expectedClass.name || ANONYMOUS;
+        var actualClassName = getClassName(props[propName]);
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + actualClassName + '` supplied to `' + componentName + '`, expected ') + ('instance of `' + expectedClassName + '`.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createEnumTypeChecker(expectedValues) {
+    if (!Array.isArray(expectedValues)) {
+      if ("development" !== 'production') {
+        if (arguments.length > 1) {
+          printWarning(
+            'Invalid arguments supplied to oneOf, expected an array, got ' + arguments.length + ' arguments. ' +
+            'A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).'
+          );
+        } else {
+          printWarning('Invalid argument supplied to oneOf, expected an array.');
+        }
+      }
+      return emptyFunctionThatReturnsNull;
+    }
+
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      for (var i = 0; i < expectedValues.length; i++) {
+        if (is(propValue, expectedValues[i])) {
+          return null;
+        }
+      }
+
+      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
+        var type = getPreciseType(value);
+        if (type === 'symbol') {
+          return String(value);
+        }
+        return value;
+      });
+      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createObjectOfTypeChecker(typeChecker) {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (typeof typeChecker !== 'function') {
+        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside objectOf.');
+      }
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
+      }
+      for (var key in propValue) {
+        if (has(propValue, key)) {
+          var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+          if (error instanceof Error) {
+            return error;
+          }
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createUnionTypeChecker(arrayOfTypeCheckers) {
+    if (!Array.isArray(arrayOfTypeCheckers)) {
+      "development" !== 'production' ? printWarning('Invalid argument supplied to oneOfType, expected an instance of array.') : void 0;
+      return emptyFunctionThatReturnsNull;
+    }
+
+    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
+      var checker = arrayOfTypeCheckers[i];
+      if (typeof checker !== 'function') {
+        printWarning(
+          'Invalid argument supplied to oneOfType. Expected an array of check functions, but ' +
+          'received ' + getPostfixForTypeWarning(checker) + ' at index ' + i + '.'
+        );
+        return emptyFunctionThatReturnsNull;
+      }
+    }
+
+    function validate(props, propName, componentName, location, propFullName) {
+      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
+        var checker = arrayOfTypeCheckers[i];
+        if (checker(props, propName, componentName, location, propFullName, ReactPropTypesSecret) == null) {
+          return null;
+        }
+      }
+
+      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`.'));
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createNodeChecker() {
+    function validate(props, propName, componentName, location, propFullName) {
+      if (!isNode(props[propName])) {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`, expected a ReactNode.'));
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createShapeTypeChecker(shapeTypes) {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
+      }
+      for (var key in shapeTypes) {
+        var checker = shapeTypes[key];
+        if (!checker) {
+          continue;
+        }
+        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+        if (error) {
+          return error;
+        }
+      }
+      return null;
+    }
+    return createChainableTypeChecker(validate);
+  }
+
+  function createStrictShapeTypeChecker(shapeTypes) {
+    function validate(props, propName, componentName, location, propFullName) {
+      var propValue = props[propName];
+      var propType = getPropType(propValue);
+      if (propType !== 'object') {
+        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
+      }
+      // We need to check all keys in case some are required but missing from
+      // props.
+      var allKeys = assign({}, props[propName], shapeTypes);
+      for (var key in allKeys) {
+        var checker = shapeTypes[key];
+        if (!checker) {
+          return new PropTypeError(
+            'Invalid ' + location + ' `' + propFullName + '` key `' + key + '` supplied to `' + componentName + '`.' +
+            '\nBad object: ' + JSON.stringify(props[propName], null, '  ') +
+            '\nValid keys: ' +  JSON.stringify(Object.keys(shapeTypes), null, '  ')
+          );
+        }
+        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret);
+        if (error) {
+          return error;
+        }
+      }
+      return null;
+    }
+
+    return createChainableTypeChecker(validate);
+  }
+
+  function isNode(propValue) {
+    switch (typeof propValue) {
+      case 'number':
+      case 'string':
+      case 'undefined':
+        return true;
+      case 'boolean':
+        return !propValue;
+      case 'object':
+        if (Array.isArray(propValue)) {
+          return propValue.every(isNode);
+        }
+        if (propValue === null || isValidElement(propValue)) {
+          return true;
+        }
+
+        var iteratorFn = getIteratorFn(propValue);
+        if (iteratorFn) {
+          var iterator = iteratorFn.call(propValue);
+          var step;
+          if (iteratorFn !== propValue.entries) {
+            while (!(step = iterator.next()).done) {
+              if (!isNode(step.value)) {
+                return false;
+              }
+            }
+          } else {
+            // Iterator will provide entry [k,v] tuples rather than values.
+            while (!(step = iterator.next()).done) {
+              var entry = step.value;
+              if (entry) {
+                if (!isNode(entry[1])) {
+                  return false;
+                }
+              }
+            }
+          }
+        } else {
+          return false;
+        }
+
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  function isSymbol(propType, propValue) {
+    // Native Symbol.
+    if (propType === 'symbol') {
+      return true;
+    }
+
+    // falsy value can't be a Symbol
+    if (!propValue) {
+      return false;
+    }
+
+    // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
+    if (propValue['@@toStringTag'] === 'Symbol') {
+      return true;
+    }
+
+    // Fallback for non-spec compliant Symbols which are polyfilled.
+    if (typeof Symbol === 'function' && propValue instanceof Symbol) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Equivalent of `typeof` but with special handling for array and regexp.
+  function getPropType(propValue) {
+    var propType = typeof propValue;
+    if (Array.isArray(propValue)) {
+      return 'array';
+    }
+    if (propValue instanceof RegExp) {
+      // Old webkits (at least until Android 4.0) return 'function' rather than
+      // 'object' for typeof a RegExp. We'll normalize this here so that /bla/
+      // passes PropTypes.object.
+      return 'object';
+    }
+    if (isSymbol(propType, propValue)) {
+      return 'symbol';
+    }
+    return propType;
+  }
+
+  // This handles more types than `getPropType`. Only used for error messages.
+  // See `createPrimitiveTypeChecker`.
+  function getPreciseType(propValue) {
+    if (typeof propValue === 'undefined' || propValue === null) {
+      return '' + propValue;
+    }
+    var propType = getPropType(propValue);
+    if (propType === 'object') {
+      if (propValue instanceof Date) {
+        return 'date';
+      } else if (propValue instanceof RegExp) {
+        return 'regexp';
+      }
+    }
+    return propType;
+  }
+
+  // Returns a string that is postfixed to a warning about an invalid type.
+  // For example, "undefined" or "of type array"
+  function getPostfixForTypeWarning(value) {
+    var type = getPreciseType(value);
+    switch (type) {
+      case 'array':
+      case 'object':
+        return 'an ' + type;
+      case 'boolean':
+      case 'date':
+      case 'regexp':
+        return 'a ' + type;
+      default:
+        return type;
+    }
+  }
+
+  // Returns class name of the object, if any.
+  function getClassName(propValue) {
+    if (!propValue.constructor || !propValue.constructor.name) {
+      return ANONYMOUS;
+    }
+    return propValue.constructor.name;
+  }
+
+  ReactPropTypes.checkPropTypes = checkPropTypes;
+  ReactPropTypes.resetWarningCache = checkPropTypes.resetWarningCache;
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+},{"./checkPropTypes":136,"./lib/ReactPropTypesSecret":140,"object-assign":134,"react-is":146}],139:[function(require,module,exports){
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+if ("development" !== 'production') {
+  var ReactIs = require('react-is');
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(ReactIs.isElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = require('./factoryWithThrowingShims')();
+}
+
+},{"./factoryWithThrowingShims":137,"./factoryWithTypeCheckers":138,"react-is":146}],140:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -22446,7 +23126,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],138:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 /** @license React v16.12.0
  * react-dom.development.js
  *
@@ -50243,7 +50923,7 @@ module.exports = reactDom;
   })();
 }
 
-},{"object-assign":134,"prop-types/checkPropTypes":136,"react":143,"scheduler":148,"scheduler/tracing":149}],139:[function(require,module,exports){
+},{"object-assign":134,"prop-types/checkPropTypes":136,"react":149,"scheduler":154,"scheduler/tracing":155}],142:[function(require,module,exports){
 /** @license React v16.12.0
  * react-dom.production.min.js
  *
@@ -50535,7 +51215,7 @@ xe,ye,Ca.injectEventPluginsByName,fa,Sc,function(a){ya(a,Rc)},cb,db,Pd,Ba,Sj,{cu
 (function(a){var b=a.findFiberByHostInstance;return ok(n({},a,{overrideHookState:null,overrideProps:null,setSuspenseHandler:null,scheduleUpdate:null,currentDispatcherRef:Ea.ReactCurrentDispatcher,findHostInstanceByFiber:function(a){a=ic(a);return null===a?null:a.stateNode},findFiberByHostInstance:function(a){return b?b(a):null},findHostInstancesForRefresh:null,scheduleRefresh:null,scheduleRoot:null,setRefreshHandler:null,getCurrentFiber:null}))})({findFiberByHostInstance:Fc,bundleType:0,version:"16.12.0",
 rendererPackageName:"react-dom"});var Dk={default:Ck},Ek=Dk&&Ck||Dk;module.exports=Ek.default||Ek;
 
-},{"object-assign":134,"react":143,"scheduler":148}],140:[function(require,module,exports){
+},{"object-assign":134,"react":149,"scheduler":154}],143:[function(require,module,exports){
 'use strict';
 
 function checkDCE() {
@@ -50575,7 +51255,275 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react-dom.development.js');
 }
 
-},{"./cjs/react-dom.development.js":138,"./cjs/react-dom.production.min.js":139}],141:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":141,"./cjs/react-dom.production.min.js":142}],144:[function(require,module,exports){
+(function (process){
+/** @license React v16.12.0
+ * react-is.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+
+
+if (process.env.NODE_ENV !== "production") {
+  (function() {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
+// nor polyfill, then a plain number is used for performance.
+var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
+var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
+var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
+var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
+var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
+var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
+var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+// (unstable) APIs that have been removed. Can we remove the symbols?
+
+var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
+var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
+var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
+var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
+var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
+var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
+var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
+
+function isValidElementType(type) {
+  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE);
+}
+
+/**
+ * Forked from fbjs/warning:
+ * https://github.com/facebook/fbjs/blob/e66ba20ad5be433eb54423f2b097d829324d9de6/packages/fbjs/src/__forks__/warning.js
+ *
+ * Only change is we use console.warn instead of console.error,
+ * and do nothing when 'console' is not supported.
+ * This really simplifies the code.
+ * ---
+ * Similar to invariant but only logs a warning if the condition is not met.
+ * This can be used to log issues in development environments in critical
+ * paths. Removing the logging code for production environments will keep the
+ * same logic and follow the same code paths.
+ */
+var lowPriorityWarningWithoutStack = function () {};
+
+{
+  var printWarning = function (format) {
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    var argIndex = 0;
+    var message = 'Warning: ' + format.replace(/%s/g, function () {
+      return args[argIndex++];
+    });
+
+    if (typeof console !== 'undefined') {
+      console.warn(message);
+    }
+
+    try {
+      // --- Welcome to debugging React ---
+      // This error was thrown as a convenience so that you can use this stack
+      // to find the callsite that caused this warning to fire.
+      throw new Error(message);
+    } catch (x) {}
+  };
+
+  lowPriorityWarningWithoutStack = function (condition, format) {
+    if (format === undefined) {
+      throw new Error('`lowPriorityWarningWithoutStack(condition, format, ...args)` requires a warning ' + 'message argument');
+    }
+
+    if (!condition) {
+      for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        args[_key2 - 2] = arguments[_key2];
+      }
+
+      printWarning.apply(void 0, [format].concat(args));
+    }
+  };
+}
+
+var lowPriorityWarningWithoutStack$1 = lowPriorityWarningWithoutStack;
+
+function typeOf(object) {
+  if (typeof object === 'object' && object !== null) {
+    var $$typeof = object.$$typeof;
+
+    switch ($$typeof) {
+      case REACT_ELEMENT_TYPE:
+        var type = object.type;
+
+        switch (type) {
+          case REACT_ASYNC_MODE_TYPE:
+          case REACT_CONCURRENT_MODE_TYPE:
+          case REACT_FRAGMENT_TYPE:
+          case REACT_PROFILER_TYPE:
+          case REACT_STRICT_MODE_TYPE:
+          case REACT_SUSPENSE_TYPE:
+            return type;
+
+          default:
+            var $$typeofType = type && type.$$typeof;
+
+            switch ($$typeofType) {
+              case REACT_CONTEXT_TYPE:
+              case REACT_FORWARD_REF_TYPE:
+              case REACT_LAZY_TYPE:
+              case REACT_MEMO_TYPE:
+              case REACT_PROVIDER_TYPE:
+                return $$typeofType;
+
+              default:
+                return $$typeof;
+            }
+
+        }
+
+      case REACT_PORTAL_TYPE:
+        return $$typeof;
+    }
+  }
+
+  return undefined;
+} // AsyncMode is deprecated along with isAsyncMode
+
+var AsyncMode = REACT_ASYNC_MODE_TYPE;
+var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+var ContextConsumer = REACT_CONTEXT_TYPE;
+var ContextProvider = REACT_PROVIDER_TYPE;
+var Element = REACT_ELEMENT_TYPE;
+var ForwardRef = REACT_FORWARD_REF_TYPE;
+var Fragment = REACT_FRAGMENT_TYPE;
+var Lazy = REACT_LAZY_TYPE;
+var Memo = REACT_MEMO_TYPE;
+var Portal = REACT_PORTAL_TYPE;
+var Profiler = REACT_PROFILER_TYPE;
+var StrictMode = REACT_STRICT_MODE_TYPE;
+var Suspense = REACT_SUSPENSE_TYPE;
+var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
+
+function isAsyncMode(object) {
+  {
+    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
+      hasWarnedAboutDeprecatedIsAsyncMode = true;
+      lowPriorityWarningWithoutStack$1(false, 'The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+    }
+  }
+
+  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
+}
+function isConcurrentMode(object) {
+  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
+}
+function isContextConsumer(object) {
+  return typeOf(object) === REACT_CONTEXT_TYPE;
+}
+function isContextProvider(object) {
+  return typeOf(object) === REACT_PROVIDER_TYPE;
+}
+function isElement(object) {
+  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+}
+function isForwardRef(object) {
+  return typeOf(object) === REACT_FORWARD_REF_TYPE;
+}
+function isFragment(object) {
+  return typeOf(object) === REACT_FRAGMENT_TYPE;
+}
+function isLazy(object) {
+  return typeOf(object) === REACT_LAZY_TYPE;
+}
+function isMemo(object) {
+  return typeOf(object) === REACT_MEMO_TYPE;
+}
+function isPortal(object) {
+  return typeOf(object) === REACT_PORTAL_TYPE;
+}
+function isProfiler(object) {
+  return typeOf(object) === REACT_PROFILER_TYPE;
+}
+function isStrictMode(object) {
+  return typeOf(object) === REACT_STRICT_MODE_TYPE;
+}
+function isSuspense(object) {
+  return typeOf(object) === REACT_SUSPENSE_TYPE;
+}
+
+exports.typeOf = typeOf;
+exports.AsyncMode = AsyncMode;
+exports.ConcurrentMode = ConcurrentMode;
+exports.ContextConsumer = ContextConsumer;
+exports.ContextProvider = ContextProvider;
+exports.Element = Element;
+exports.ForwardRef = ForwardRef;
+exports.Fragment = Fragment;
+exports.Lazy = Lazy;
+exports.Memo = Memo;
+exports.Portal = Portal;
+exports.Profiler = Profiler;
+exports.StrictMode = StrictMode;
+exports.Suspense = Suspense;
+exports.isValidElementType = isValidElementType;
+exports.isAsyncMode = isAsyncMode;
+exports.isConcurrentMode = isConcurrentMode;
+exports.isContextConsumer = isContextConsumer;
+exports.isContextProvider = isContextProvider;
+exports.isElement = isElement;
+exports.isForwardRef = isForwardRef;
+exports.isFragment = isFragment;
+exports.isLazy = isLazy;
+exports.isMemo = isMemo;
+exports.isPortal = isPortal;
+exports.isProfiler = isProfiler;
+exports.isStrictMode = isStrictMode;
+exports.isSuspense = isSuspense;
+  })();
+}
+
+}).call(this,require('_process'))
+},{"_process":135}],145:[function(require,module,exports){
+/** @license React v16.12.0
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';Object.defineProperty(exports,"__esModule",{value:!0});
+var b="function"===typeof Symbol&&Symbol.for,c=b?Symbol.for("react.element"):60103,d=b?Symbol.for("react.portal"):60106,e=b?Symbol.for("react.fragment"):60107,f=b?Symbol.for("react.strict_mode"):60108,g=b?Symbol.for("react.profiler"):60114,h=b?Symbol.for("react.provider"):60109,k=b?Symbol.for("react.context"):60110,l=b?Symbol.for("react.async_mode"):60111,m=b?Symbol.for("react.concurrent_mode"):60111,n=b?Symbol.for("react.forward_ref"):60112,p=b?Symbol.for("react.suspense"):60113,q=b?Symbol.for("react.suspense_list"):
+60120,r=b?Symbol.for("react.memo"):60115,t=b?Symbol.for("react.lazy"):60116,v=b?Symbol.for("react.fundamental"):60117,w=b?Symbol.for("react.responder"):60118,x=b?Symbol.for("react.scope"):60119;function y(a){if("object"===typeof a&&null!==a){var u=a.$$typeof;switch(u){case c:switch(a=a.type,a){case l:case m:case e:case g:case f:case p:return a;default:switch(a=a&&a.$$typeof,a){case k:case n:case t:case r:case h:return a;default:return u}}case d:return u}}}function z(a){return y(a)===m}
+exports.typeOf=y;exports.AsyncMode=l;exports.ConcurrentMode=m;exports.ContextConsumer=k;exports.ContextProvider=h;exports.Element=c;exports.ForwardRef=n;exports.Fragment=e;exports.Lazy=t;exports.Memo=r;exports.Portal=d;exports.Profiler=g;exports.StrictMode=f;exports.Suspense=p;
+exports.isValidElementType=function(a){return"string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===v||a.$$typeof===w||a.$$typeof===x)};exports.isAsyncMode=function(a){return z(a)||y(a)===l};exports.isConcurrentMode=z;exports.isContextConsumer=function(a){return y(a)===k};exports.isContextProvider=function(a){return y(a)===h};
+exports.isElement=function(a){return"object"===typeof a&&null!==a&&a.$$typeof===c};exports.isForwardRef=function(a){return y(a)===n};exports.isFragment=function(a){return y(a)===e};exports.isLazy=function(a){return y(a)===t};exports.isMemo=function(a){return y(a)===r};exports.isPortal=function(a){return y(a)===d};exports.isProfiler=function(a){return y(a)===g};exports.isStrictMode=function(a){return y(a)===f};exports.isSuspense=function(a){return y(a)===p};
+
+},{}],146:[function(require,module,exports){
+(function (process){
+'use strict';
+
+if (process.env.NODE_ENV === 'production') {
+  module.exports = require('./cjs/react-is.production.min.js');
+} else {
+  module.exports = require('./cjs/react-is.development.js');
+}
+
+}).call(this,require('_process'))
+},{"./cjs/react-is.development.js":144,"./cjs/react-is.production.min.js":145,"_process":135}],147:[function(require,module,exports){
 /** @license React v16.12.0
  * react.development.js
  *
@@ -52897,7 +53845,7 @@ module.exports = react;
   })();
 }
 
-},{"object-assign":134,"prop-types/checkPropTypes":136}],142:[function(require,module,exports){
+},{"object-assign":134,"prop-types/checkPropTypes":136}],148:[function(require,module,exports){
 /** @license React v16.12.0
  * react.production.min.js
  *
@@ -52924,7 +53872,7 @@ b,c){return W().useImperativeHandle(a,b,c)},useDebugValue:function(){},useLayout
 if(null!=b){void 0!==b.ref&&(g=b.ref,l=J.current);void 0!==b.key&&(d=""+b.key);if(a.type&&a.type.defaultProps)var f=a.type.defaultProps;for(k in b)K.call(b,k)&&!L.hasOwnProperty(k)&&(e[k]=void 0===b[k]&&void 0!==f?f[k]:b[k])}var k=arguments.length-2;if(1===k)e.children=c;else if(1<k){f=Array(k);for(var m=0;m<k;m++)f[m]=arguments[m+2];e.children=f}return{$$typeof:p,type:a.type,key:d,ref:g,props:e,_owner:l}},createFactory:function(a){var b=M.bind(null,a);b.type=a;return b},isValidElement:N,version:"16.12.0",
 __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentDispatcher:I,ReactCurrentBatchConfig:{suspense:null},ReactCurrentOwner:J,IsSomeRendererActing:{current:!1},assign:h}},Y={default:X},Z=Y&&X||Y;module.exports=Z.default||Z;
 
-},{"object-assign":134}],143:[function(require,module,exports){
+},{"object-assign":134}],149:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -52933,7 +53881,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react.development.js');
 }
 
-},{"./cjs/react.development.js":141,"./cjs/react.production.min.js":142}],144:[function(require,module,exports){
+},{"./cjs/react.development.js":147,"./cjs/react.production.min.js":148}],150:[function(require,module,exports){
 /** @license React v0.18.0
  * scheduler-tracing.development.js
  *
@@ -53358,7 +54306,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
   })();
 }
 
-},{}],145:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 /** @license React v0.18.0
  * scheduler-tracing.production.min.js
  *
@@ -53370,7 +54318,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 
 'use strict';Object.defineProperty(exports,"__esModule",{value:!0});var b=0;exports.__interactionsRef=null;exports.__subscriberRef=null;exports.unstable_clear=function(a){return a()};exports.unstable_getCurrent=function(){return null};exports.unstable_getThreadID=function(){return++b};exports.unstable_trace=function(a,d,c){return c()};exports.unstable_wrap=function(a){return a};exports.unstable_subscribe=function(){};exports.unstable_unsubscribe=function(){};
 
-},{}],146:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 /** @license React v0.18.0
  * scheduler.development.js
  *
@@ -54276,7 +55224,7 @@ exports.unstable_Profiling = unstable_Profiling;
   })();
 }
 
-},{}],147:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 /** @license React v0.18.0
  * scheduler.production.min.js
  *
@@ -54300,7 +55248,7 @@ exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();i
 exports.unstable_wrapCallback=function(a){var b=R;return function(){var c=R;R=b;try{return a.apply(this,arguments)}finally{R=c}}};exports.unstable_getCurrentPriorityLevel=function(){return R};exports.unstable_shouldYield=function(){var a=exports.unstable_now();V(a);var b=L(N);return b!==Q&&null!==Q&&null!==b&&null!==b.callback&&b.startTime<=a&&b.expirationTime<Q.expirationTime||k()};exports.unstable_requestPaint=Z;exports.unstable_continueExecution=function(){T||S||(T=!0,f(X))};
 exports.unstable_pauseExecution=function(){};exports.unstable_getFirstCallbackNode=function(){return L(N)};exports.unstable_Profiling=null;
 
-},{}],148:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -54309,7 +55257,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler.development.js');
 }
 
-},{"./cjs/scheduler.development.js":146,"./cjs/scheduler.production.min.js":147}],149:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":152,"./cjs/scheduler.production.min.js":153}],155:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -54318,14 +55266,14 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler-tracing.development.js');
 }
 
-},{"./cjs/scheduler-tracing.development.js":144,"./cjs/scheduler-tracing.production.min.js":145}],150:[function(require,module,exports){
+},{"./cjs/scheduler-tracing.development.js":150,"./cjs/scheduler-tracing.production.min.js":151}],156:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],151:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -54915,7 +55863,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":150,"_process":135,"inherits":132}],152:[function(require,module,exports){
+},{"./support/isBuffer":156,"_process":135,"inherits":132}],158:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -54964,6 +55912,8 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 
 var _lodash = _interopRequireDefault(require("lodash"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _react = _interopRequireWildcard(require("react"));
 
@@ -55207,10 +56157,14 @@ function ConfigurationPanel(props) {
   }, "it!")))));
 }
 
+ConfigurationPanel.propTypes = {
+  onSubmit: _propTypes["default"].func.isRequired,
+  video: _propTypes["default"].element.isRequired
+};
 var _default = ConfigurationPanel;
 exports["default"] = _default;
 
-},{"../utils/to-seconds.js":159,"core-js/modules/es.array.filter":103,"core-js/modules/es.array.for-each":104,"core-js/modules/es.array.is-array":105,"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.to-string":109,"core-js/modules/es.function.name":110,"core-js/modules/es.object.define-properties":111,"core-js/modules/es.object.define-property":112,"core-js/modules/es.object.get-own-property-descriptor":113,"core-js/modules/es.object.get-own-property-descriptors":114,"core-js/modules/es.object.keys":115,"core-js/modules/es.object.to-string":116,"core-js/modules/es.regexp.to-string":120,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.for-each":126,"core-js/modules/web.dom-collections.iterator":127,"lodash":133,"react":143}],153:[function(require,module,exports){
+},{"../utils/to-seconds.js":165,"core-js/modules/es.array.filter":103,"core-js/modules/es.array.for-each":104,"core-js/modules/es.array.is-array":105,"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.to-string":109,"core-js/modules/es.function.name":110,"core-js/modules/es.object.define-properties":111,"core-js/modules/es.object.define-property":112,"core-js/modules/es.object.get-own-property-descriptor":113,"core-js/modules/es.object.get-own-property-descriptors":114,"core-js/modules/es.object.keys":115,"core-js/modules/es.object.to-string":116,"core-js/modules/es.regexp.to-string":120,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.for-each":126,"core-js/modules/web.dom-collections.iterator":127,"lodash":133,"prop-types":139,"react":149}],159:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -55258,9 +56212,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _react = _interopRequireWildcard(require("react"));
-
 var _classnames = _interopRequireDefault(require("classnames"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+var _react = _interopRequireWildcard(require("react"));
 
 var _toSeconds = _interopRequireDefault(require("../utils/to-seconds.js"));
 
@@ -55272,11 +56228,11 @@ var _configurationPanel = _interopRequireDefault(require("./configuration-panel.
 
 var _progress = _interopRequireDefault(require("./progress.jsx"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -55360,8 +56316,8 @@ function GifitApp(props) {
 
   function handleConfigurationSubmit(configuration) {
     var gifConfiguration = _objectSpread({}, configuration, {
-      start: parseInt((0, _toSeconds["default"])(configuration.start) * 1000),
-      end: parseInt((0, _toSeconds["default"])(configuration.end) * 1000)
+      start: parseInt((0, _toSeconds["default"])(configuration.start) * 1000, 10),
+      end: parseInt((0, _toSeconds["default"])(configuration.end) * 1000, 10)
     });
 
     gifService.current.createGif(gifConfiguration, props.video);
@@ -55429,10 +56385,13 @@ function GifitApp(props) {
   }));
 }
 
+GifitApp.propTypes = {
+  video: _propTypes["default"].element.isRequired
+};
 var _default = GifitApp;
 exports["default"] = _default;
 
-},{"../services/gif-service.js":157,"../utils/gifit-events.js":158,"../utils/to-seconds.js":159,"./configuration-panel.jsx":152,"./progress.jsx":155,"classnames":1,"core-js/modules/es.array.filter":103,"core-js/modules/es.array.for-each":104,"core-js/modules/es.array.is-array":105,"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.to-string":109,"core-js/modules/es.object.define-properties":111,"core-js/modules/es.object.define-property":112,"core-js/modules/es.object.get-own-property-descriptor":113,"core-js/modules/es.object.get-own-property-descriptors":114,"core-js/modules/es.object.keys":115,"core-js/modules/es.object.to-string":116,"core-js/modules/es.parse-int":118,"core-js/modules/es.regexp.to-string":120,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.for-each":126,"core-js/modules/web.dom-collections.iterator":127,"react":143}],154:[function(require,module,exports){
+},{"../services/gif-service.js":163,"../utils/gifit-events.js":164,"../utils/to-seconds.js":165,"./configuration-panel.jsx":158,"./progress.jsx":161,"classnames":1,"core-js/modules/es.array.filter":103,"core-js/modules/es.array.for-each":104,"core-js/modules/es.array.is-array":105,"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.to-string":109,"core-js/modules/es.object.define-properties":111,"core-js/modules/es.object.define-property":112,"core-js/modules/es.object.get-own-property-descriptor":113,"core-js/modules/es.object.get-own-property-descriptors":114,"core-js/modules/es.object.keys":115,"core-js/modules/es.object.to-string":116,"core-js/modules/es.parse-int":118,"core-js/modules/es.regexp.to-string":120,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.for-each":126,"core-js/modules/web.dom-collections.iterator":127,"prop-types":139,"react":149}],160:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -55467,7 +56426,7 @@ function GifitButton() {
 var _default = GifitButton;
 exports["default"] = _default;
 
-},{"../utils/gifit-events.js":158,"react":143}],155:[function(require,module,exports){
+},{"../utils/gifit-events.js":164,"react":149}],161:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.iterator");
@@ -55488,6 +56447,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -55539,10 +56500,25 @@ function Progress(props) {
   }, "Save GIF")));
 }
 
+Progress.propTypes = {
+  image: _propTypes["default"].shape({
+    blob: _propTypes["default"].object,
+    height: _propTypes["default"].number,
+    width: _propTypes["default"].number
+  }),
+  onCloseClick: _propTypes["default"].func.isRequired,
+  percent: _propTypes["default"].number,
+  status: _propTypes["default"].string
+};
+Progress.defaultProps = {
+  image: null,
+  percent: 0,
+  status: null
+};
 var _default = Progress;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.now":108,"core-js/modules/es.date.to-string":109,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.url":130,"react":143}],156:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator":106,"core-js/modules/es.date.now":108,"core-js/modules/es.date.to-string":109,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.url":130,"prop-types":139,"react":149}],162:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol");
@@ -55664,11 +56640,10 @@ function scanPage() {
   }
 }
 
-;
 scanPage();
 setInterval(scanPage, 1000);
 
-},{"./components/gifit-app.jsx":153,"./components/gifit-button.jsx":154,"./utils/gifit-events.js":158,"core-js/modules/es.array.iterator":106,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.timers":128,"react":143,"react-dom":140}],157:[function(require,module,exports){
+},{"./components/gifit-app.jsx":159,"./components/gifit-button.jsx":160,"./utils/gifit-events.js":164,"core-js/modules/es.array.iterator":106,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/es.symbol":125,"core-js/modules/es.symbol.description":123,"core-js/modules/es.symbol.iterator":124,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.timers":128,"react":149,"react-dom":143}],163:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.iterator");
@@ -55690,6 +56665,7 @@ var _util = require("util");
 
 var _events = require("events");
 
+ // eslint-disable-next-line no-sync
 
 
 var gifJsWorker = "(function () {\n  function r (e, n, t) {\n    function o (i, f) {\n      if (!n[i]) {\n        if (!e[i]) {\n          const c = typeof require === 'function' && require; if (!f && c) {\n            return c(i, !0);\n          } if (u) {\n            return u(i, !0);\n          } const a = new Error(`Cannot find module '${i}'`); throw a.code = 'MODULE_NOT_FOUND', a;\n        } const p = n[i] = { exports: {}}; e[i][0].call(p.exports, function (r) {\n          const n = e[i][1][r]; return o(n || r);\n        }, p, p.exports, r, e, n, t);\n      } return n[i].exports;\n    } for (var u = typeof require === 'function' && require, i = 0; i < t.length; i++) {\n      o(t[i]);\n    } return o;\n  } return r;\n}())({ 1: [function (require, module, exports) {\n  /*\n    GIFEncoder.js\n\n    Authors\n    Kevin Weiner (original Java version - kweiner@fmsware.com)\n    Thibault Imbert (AS3 version - bytearray.org)\n    Johan Nordberg (JS version - code@johan-nordberg.com)\n  */\n\n  const NeuQuant = require('./TypedNeuQuant.js');\n  const LZWEncoder = require('./LZWEncoder.js');\n\n  function ByteArray () {\n    this.page = -1;\n    this.pages = [];\n    this.newPage();\n  }\n\n  ByteArray.pageSize = 4096;\n  ByteArray.charMap = {};\n\n  for (let i = 0; i < 256; i++) {\n    ByteArray.charMap[i] = String.fromCharCode(i);\n  }\n\n  ByteArray.prototype.newPage = function () {\n    this.pages[++this.page] = new Uint8Array(ByteArray.pageSize);\n    this.cursor = 0;\n  };\n\n  ByteArray.prototype.getData = function () {\n    let rv = '';\n    for (let p = 0; p < this.pages.length; p++) {\n      for (let i = 0; i < ByteArray.pageSize; i++) {\n        rv += ByteArray.charMap[this.pages[p][i]];\n      }\n    }\n    return rv;\n  };\n\n  ByteArray.prototype.writeByte = function (val) {\n    if (this.cursor >= ByteArray.pageSize) {\n      this.newPage();\n    }\n    this.pages[this.page][this.cursor++] = val;\n  };\n\n  ByteArray.prototype.writeUTFBytes = function (string) {\n    for (let l = string.length, i = 0; i < l; i++) {\n      this.writeByte(string.charCodeAt(i));\n    }\n  };\n\n  ByteArray.prototype.writeBytes = function (array, offset, length) {\n    for (let l = length || array.length, i = offset || 0; i < l; i++) {\n      this.writeByte(array[i]);\n    }\n  };\n\n  function GIFEncoder (width, height) {\n    // image size\n    this.width = ~~width;\n    this.height = ~~height;\n\n    // transparent color if given\n    this.transparent = null;\n\n    // transparent index in color table\n    this.transIndex = 0;\n\n    // -1 = no repeat, 0 = forever. anything else is repeat count\n    this.repeat = -1;\n\n    // frame delay (hundredths)\n    this.delay = 0;\n\n    this.image = null; // current frame\n    this.pixels = null; // BGR byte array from frame\n    this.indexedPixels = null; // converted frame indexed to palette\n    this.colorDepth = null; // number of bit planes\n    this.colorTab = null; // RGB palette\n    this.neuQuant = null; // NeuQuant instance that was used to generate this.colorTab.\n    this.usedEntry = new Array(); // active palette entries\n    this.palSize = 7; // color table size (bits-1)\n    this.dispose = -1; // disposal code (-1 = use default)\n    this.firstFrame = true;\n    this.sample = 10; // default sample interval for quantizer\n    this.dither = false; // default dithering\n    this.globalPalette = false;\n\n    this.out = new ByteArray();\n  }\n\n  /*\n    Sets the delay time between each frame, or changes it for subsequent frames\n    (applies to last frame added)\n  */\n\n  GIFEncoder.prototype.setDelay = function (milliseconds) {\n    this.delay = Math.round(milliseconds / 10);\n  };\n\n  /*\n    Sets frame rate in frames per second.\n  */\n\n  GIFEncoder.prototype.setFrameRate = function (fps) {\n    this.delay = Math.round(100 / fps);\n  };\n\n  /*\n    Sets the GIF frame disposal code for the last added frame and any\n    subsequent frames.\n\n    Default is 0 if no transparent color has been set, otherwise 2.\n  */\n\n  GIFEncoder.prototype.setDispose = function (disposalCode) {\n    if (disposalCode >= 0) {\n      this.dispose = disposalCode;\n    }\n  };\n\n  /*\n    Sets the number of times the set of GIF frames should be played.\n\n    -1 = play once\n    0 = repeat indefinitely\n\n    Default is -1\n\n    Must be invoked before the first image is added\n  */\n\n  GIFEncoder.prototype.setRepeat = function (repeat) {\n    this.repeat = repeat;\n  };\n\n  /*\n    Sets the transparent color for the last added frame and any subsequent\n    frames. Since all colors are subject to modification in the quantization\n    process, the color in the final palette for each frame closest to the given\n    color becomes the transparent color for that frame. May be set to null to\n    indicate no transparent color.\n  */\n\n  GIFEncoder.prototype.setTransparent = function (color) {\n    this.transparent = color;\n  };\n\n  /*\n    Adds next GIF frame. The frame is not written immediately, but is\n    actually deferred until the next frame is received so that timing\n    data can be inserted.  Invoking finish() flushes all frames.\n  */\n\n  GIFEncoder.prototype.addFrame = function (imageData) {\n    this.image = imageData;\n\n    this.colorTab = this.globalPalette && this.globalPalette.slice ? this.globalPalette : null;\n\n    this.getImagePixels(); // convert to correct format if necessary\n    this.analyzePixels(); // build color table & map pixels\n\n    if (this.globalPalette === true) {\n      this.globalPalette = this.colorTab;\n    }\n\n    if (this.firstFrame) {\n      this.writeLSD(); // logical screen descriptior\n      this.writePalette(); // global color table\n      if (this.repeat >= 0) {\n        // use NS app extension to indicate reps\n        this.writeNetscapeExt();\n      }\n    }\n\n    this.writeGraphicCtrlExt(); // write graphic control extension\n    this.writeImageDesc(); // image descriptor\n    if (!this.firstFrame && !this.globalPalette) {\n      this.writePalette();\n    } // local color table\n    this.writePixels(); // encode and write pixel data\n\n    this.firstFrame = false;\n  };\n\n  /*\n    Adds final trailer to the GIF stream, if you don't call the finish method\n    the GIF stream will not be valid.\n  */\n\n  GIFEncoder.prototype.finish = function () {\n    this.out.writeByte(0x3b); // gif trailer\n  };\n\n  /*\n    Sets quality of color quantization (conversion of images to the maximum 256\n    colors allowed by the GIF specification). Lower values (minimum = 1)\n    produce better colors, but slow processing significantly. 10 is the\n    default, and produces good color mapping at reasonable speeds. Values\n    greater than 20 do not yield significant improvements in speed.\n  */\n\n  GIFEncoder.prototype.setQuality = function (quality) {\n    if (quality < 1) {\n      quality = 1;\n    }\n    this.sample = quality;\n  };\n\n  /*\n    Sets dithering method. Available are:\n    - FALSE no dithering\n    - TRUE or FloydSteinberg\n    - FalseFloydSteinberg\n    - Stucki\n    - Atkinson\n    You can add '-serpentine' to use serpentine scanning\n  */\n\n  GIFEncoder.prototype.setDither = function (dither) {\n    if (dither === true) {\n      dither = 'FloydSteinberg';\n    }\n    this.dither = dither;\n  };\n\n  /*\n    Sets global palette for all frames.\n    You can provide TRUE to create global palette from first picture.\n    Or an array of r,g,b,r,g,b,...\n  */\n\n  GIFEncoder.prototype.setGlobalPalette = function (palette) {\n    this.globalPalette = palette;\n  };\n\n  /*\n    Returns global palette used for all frames.\n    If setGlobalPalette(true) was used, then this function will return\n    calculated palette after the first frame is added.\n  */\n\n  GIFEncoder.prototype.getGlobalPalette = function () {\n    return (this.globalPalette && this.globalPalette.slice && this.globalPalette.slice(0)) || this.globalPalette;\n  };\n\n  /*\n    Writes GIF file header\n  */\n\n  GIFEncoder.prototype.writeHeader = function () {\n    this.out.writeUTFBytes('GIF89a');\n  };\n\n  /*\n    Analyzes current frame colors and creates color map.\n  */\n\n  GIFEncoder.prototype.analyzePixels = function () {\n    if (!this.colorTab) {\n      this.neuQuant = new NeuQuant(this.pixels, this.sample);\n      this.neuQuant.buildColormap(); // create reduced palette\n      this.colorTab = this.neuQuant.getColormap();\n    }\n\n    // map image pixels to new palette\n    if (this.dither) {\n      this.ditherPixels(this.dither.replace('-serpentine', ''), this.dither.match(/-serpentine/) !== null);\n    } else {\n      this.indexPixels();\n    }\n\n    this.pixels = null;\n    this.colorDepth = 8;\n    this.palSize = 7;\n\n    // get closest match to transparent color if specified\n    if (this.transparent !== null) {\n      this.transIndex = this.findClosest(this.transparent, true);\n    }\n  };\n\n  /*\n    Index pixels, without dithering\n  */\n\n  GIFEncoder.prototype.indexPixels = function (imgq) {\n    const nPix = this.pixels.length / 3;\n    this.indexedPixels = new Uint8Array(nPix);\n    let k = 0;\n    for (let j = 0; j < nPix; j++) {\n      const index = this.findClosestRGB(\n        this.pixels[k++] & 0xff,\n        this.pixels[k++] & 0xff,\n        this.pixels[k++] & 0xff\n      );\n      this.usedEntry[index] = true;\n      this.indexedPixels[j] = index;\n    }\n  };\n\n  /*\n    Taken from http://jsbin.com/iXofIji/2/edit by PAEz\n  */\n\n  GIFEncoder.prototype.ditherPixels = function (kernel, serpentine) {\n    const kernels = {\n      FalseFloydSteinberg: [\n        [3 / 8, 1, 0],\n        [3 / 8, 0, 1],\n        [2 / 8, 1, 1]\n      ],\n      FloydSteinberg: [\n        [7 / 16, 1, 0],\n        [3 / 16, -1, 1],\n        [5 / 16, 0, 1],\n        [1 / 16, 1, 1]\n      ],\n      Stucki: [\n        [8 / 42, 1, 0],\n        [4 / 42, 2, 0],\n        [2 / 42, -2, 1],\n        [4 / 42, -1, 1],\n        [8 / 42, 0, 1],\n        [4 / 42, 1, 1],\n        [2 / 42, 2, 1],\n        [1 / 42, -2, 2],\n        [2 / 42, -1, 2],\n        [4 / 42, 0, 2],\n        [2 / 42, 1, 2],\n        [1 / 42, 2, 2]\n      ],\n      Atkinson: [\n        [1 / 8, 1, 0],\n        [1 / 8, 2, 0],\n        [1 / 8, -1, 1],\n        [1 / 8, 0, 1],\n        [1 / 8, 1, 1],\n        [1 / 8, 0, 2]\n      ]\n    };\n\n    if (!kernel || !kernels[kernel]) {\n      throw `Unknown dithering kernel: ${kernel}`;\n    }\n\n    const ds = kernels[kernel];\n    let index = 0,\n      height = this.height,\n      width = this.width,\n      data = this.pixels;\n    let direction = serpentine ? -1 : 1;\n\n    this.indexedPixels = new Uint8Array(this.pixels.length / 3);\n\n    for (let y = 0; y < height; y++) {\n\n      if (serpentine) {\n        direction = direction * -1;\n      }\n\n      for (let x = (direction == 1 ? 0 : width - 1), xend = (direction == 1 ? width : 0); x !== xend; x += direction) {\n\n        index = (y * width) + x;\n        // Get original colour\n        let idx = index * 3;\n        const r1 = data[idx];\n        const g1 = data[idx + 1];\n        const b1 = data[idx + 2];\n\n        // Get converted colour\n        idx = this.findClosestRGB(r1, g1, b1);\n        this.usedEntry[idx] = true;\n        this.indexedPixels[index] = idx;\n        idx *= 3;\n        const r2 = this.colorTab[idx];\n        const g2 = this.colorTab[idx + 1];\n        const b2 = this.colorTab[idx + 2];\n\n        const er = r1 - r2;\n        const eg = g1 - g2;\n        const eb = b1 - b2;\n\n        for (let i = (direction == 1 ? 0 : ds.length - 1), end = (direction == 1 ? ds.length : 0); i !== end; i += direction) {\n          const x1 = ds[i][1]; // *direction;  //  Should this by timesd by direction?..to make the kernel go in the opposite direction....got no idea....\n          const y1 = ds[i][2];\n          if (x1 + x >= 0 && x1 + x < width && y1 + y >= 0 && y1 + y < height) {\n            const d = ds[i][0];\n            idx = index + x1 + (y1 * width);\n            idx *= 3;\n\n            data[idx] = Math.max(0, Math.min(255, data[idx] + er * d));\n            data[idx + 1] = Math.max(0, Math.min(255, data[idx + 1] + eg * d));\n            data[idx + 2] = Math.max(0, Math.min(255, data[idx + 2] + eb * d));\n          }\n        }\n      }\n    }\n  };\n\n  /*\n    Returns index of palette color closest to c\n  */\n\n  GIFEncoder.prototype.findClosest = function (c, used) {\n    return this.findClosestRGB((c & 0xFF0000) >> 16, (c & 0x00FF00) >> 8, (c & 0x0000FF), used);\n  };\n\n  GIFEncoder.prototype.findClosestRGB = function (r, g, b, used) {\n    if (this.colorTab === null) {\n      return -1;\n    }\n\n    if (this.neuQuant && !used) {\n      return this.neuQuant.lookupRGB(r, g, b);\n    }\n\n    const c = b | (g << 8) | (r << 16);\n\n    let minpos = 0;\n    let dmin = 256 * 256 * 256;\n    const len = this.colorTab.length;\n\n    for (let i = 0, index = 0; i < len; index++) {\n      const dr = r - (this.colorTab[i++] & 0xff);\n      const dg = g - (this.colorTab[i++] & 0xff);\n      const db = b - (this.colorTab[i++] & 0xff);\n      const d = dr * dr + dg * dg + db * db;\n      if ((!used || this.usedEntry[index]) && (d < dmin)) {\n        dmin = d;\n        minpos = index;\n      }\n    }\n\n    return minpos;\n  };\n\n  /*\n    Extracts image pixels into byte array pixels\n    (removes alphachannel from canvas imagedata)\n  */\n\n  GIFEncoder.prototype.getImagePixels = function () {\n    const w = this.width;\n    const h = this.height;\n    this.pixels = new Uint8Array(w * h * 3);\n\n    const data = this.image;\n    let srcPos = 0;\n    let count = 0;\n\n    for (let i = 0; i < h; i++) {\n      for (let j = 0; j < w; j++) {\n        this.pixels[count++] = data[srcPos++];\n        this.pixels[count++] = data[srcPos++];\n        this.pixels[count++] = data[srcPos++];\n        srcPos++;\n      }\n    }\n  };\n\n  /*\n    Writes Graphic Control Extension\n  */\n\n  GIFEncoder.prototype.writeGraphicCtrlExt = function () {\n    this.out.writeByte(0x21); // extension introducer\n    this.out.writeByte(0xf9); // GCE label\n    this.out.writeByte(4); // data block size\n\n    let transp, disp;\n    if (this.transparent === null) {\n      transp = 0;\n      disp = 0; // dispose = no action\n    } else {\n      transp = 1;\n      disp = 2; // force clear if using transparent color\n    }\n\n    if (this.dispose >= 0) {\n      disp = this.dispose & 7; // user override\n    }\n    disp <<= 2;\n\n    // packed fields\n    this.out.writeByte(\n      0 | // 1:3 reserved\n      disp | // 4:6 disposal\n      0 | // 7 user input - 0 = none\n      transp // 8 transparency flag\n    );\n\n    this.writeShort(this.delay); // delay x 1/100 sec\n    this.out.writeByte(this.transIndex); // transparent color index\n    this.out.writeByte(0); // block terminator\n  };\n\n  /*\n    Writes Image Descriptor\n  */\n\n  GIFEncoder.prototype.writeImageDesc = function () {\n    this.out.writeByte(0x2c); // image separator\n    this.writeShort(0); // image position x,y = 0,0\n    this.writeShort(0);\n    this.writeShort(this.width); // image size\n    this.writeShort(this.height);\n\n    // packed fields\n    if (this.firstFrame || this.globalPalette) {\n      // no LCT - GCT is used for first (or only) frame\n      this.out.writeByte(0);\n    } else {\n      // specify normal LCT\n      this.out.writeByte(\n        0x80 | // 1 local color table 1=yes\n        0 | // 2 interlace - 0=no\n        0 | // 3 sorted - 0=no\n        0 | // 4-5 reserved\n        this.palSize // 6-8 size of color table\n      );\n    }\n  };\n\n  /*\n    Writes Logical Screen Descriptor\n  */\n\n  GIFEncoder.prototype.writeLSD = function () {\n    // logical screen size\n    this.writeShort(this.width);\n    this.writeShort(this.height);\n\n    // packed fields\n    this.out.writeByte(\n      0x80 | // 1 : global color table flag = 1 (gct used)\n      0x70 | // 2-4 : color resolution = 7\n      0x00 | // 5 : gct sort flag = 0\n      this.palSize // 6-8 : gct size\n    );\n\n    this.out.writeByte(0); // background color index\n    this.out.writeByte(0); // pixel aspect ratio - assume 1:1\n  };\n\n  /*\n    Writes Netscape application extension to define repeat count.\n  */\n\n  GIFEncoder.prototype.writeNetscapeExt = function () {\n    this.out.writeByte(0x21); // extension introducer\n    this.out.writeByte(0xff); // app extension label\n    this.out.writeByte(11); // block size\n    this.out.writeUTFBytes('NETSCAPE2.0'); // app id + auth code\n    this.out.writeByte(3); // sub-block size\n    this.out.writeByte(1); // loop sub-block id\n    this.writeShort(this.repeat); // loop count (extra iterations, 0=repeat forever)\n    this.out.writeByte(0); // block terminator\n  };\n\n  /*\n    Writes color table\n  */\n\n  GIFEncoder.prototype.writePalette = function () {\n    this.out.writeBytes(this.colorTab);\n    const n = (3 * 256) - this.colorTab.length;\n    for (let i = 0; i < n; i++) {\n      this.out.writeByte(0);\n    }\n  };\n\n  GIFEncoder.prototype.writeShort = function (pValue) {\n    this.out.writeByte(pValue & 0xFF);\n    this.out.writeByte((pValue >> 8) & 0xFF);\n  };\n\n  /*\n    Encodes and writes pixel data\n  */\n\n  GIFEncoder.prototype.writePixels = function () {\n    const enc = new LZWEncoder(this.width, this.height, this.indexedPixels, this.colorDepth);\n    enc.encode(this.out);\n  };\n\n  /*\n    Retrieves the GIF stream\n  */\n\n  GIFEncoder.prototype.stream = function () {\n    return this.out;\n  };\n\n  module.exports = GIFEncoder;\n\n}, { './LZWEncoder.js': 2, './TypedNeuQuant.js': 3 }],\n2: [function (require, module, exports) {\n  /*\n    LZWEncoder.js\n\n    Authors\n    Kevin Weiner (original Java version - kweiner@fmsware.com)\n    Thibault Imbert (AS3 version - bytearray.org)\n    Johan Nordberg (JS version - code@johan-nordberg.com)\n\n    Acknowledgements\n    GIFCOMPR.C - GIF Image compression routines\n    Lempel-Ziv compression based on 'compress'. GIF modifications by\n    David Rowley (mgardi@watdcsu.waterloo.edu)\n    GIF Image compression - modified 'compress'\n    Based on: compress.c - File compression ala IEEE Computer, June 1984.\n    By Authors: Spencer W. Thomas (decvax!harpo!utah-cs!utah-gr!thomas)\n    Jim McKie (decvax!mcvax!jim)\n    Steve Davies (decvax!vax135!petsd!peora!srd)\n    Ken Turkowski (decvax!decwrl!turtlevax!ken)\n    James A. Woods (decvax!ihnp4!ames!jaw)\n    Joe Orost (decvax!vax135!petsd!joe)\n  */\n\n  const EOF = -1;\n  const BITS = 12;\n  const HSIZE = 5003; // 80% occupancy\n  const masks = [0x0000,\n    0x0001,\n    0x0003,\n    0x0007,\n    0x000F,\n    0x001F,\n    0x003F,\n    0x007F,\n    0x00FF,\n    0x01FF,\n    0x03FF,\n    0x07FF,\n    0x0FFF,\n    0x1FFF,\n    0x3FFF,\n    0x7FFF,\n    0xFFFF];\n\n  function LZWEncoder (width, height, pixels, colorDepth) {\n    const initCodeSize = Math.max(2, colorDepth);\n\n    const accum = new Uint8Array(256);\n    const htab = new Int32Array(HSIZE);\n    const codetab = new Int32Array(HSIZE);\n\n    let cur_accum,\n      cur_bits = 0;\n    let a_count;\n    let free_ent = 0; // first unused entry\n    let maxcode;\n\n    // block compression parameters -- after all codes are used up,\n    // and compression rate changes, start over.\n    let clear_flg = false;\n\n    // Algorithm: use open addressing double hashing (no chaining) on the\n    // prefix code / next character combination. We do a variant of Knuth's\n    // algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime\n    // secondary probe. Here, the modular division first probe is gives way\n    // to a faster exclusive-or manipulation. Also do block compression with\n    // an adaptive reset, whereby the code table is cleared when the compression\n    // ratio decreases, but after the table fills. The variable-length output\n    // codes are re-sized at this point, and a special CLEAR code is generated\n    // for the decompressor. Late addition: construct the table according to\n    // file size for noticeable speed improvement on small files. Please direct\n    // questions about this implementation to ames!jaw.\n    let g_init_bits, ClearCode, EOFCode;\n\n    // Add a character to the end of the current packet, and if it is 254\n    // characters, flush the packet to disk.\n    function char_out (c, outs) {\n      accum[a_count++] = c;\n      if (a_count >= 254) {\n        flush_char(outs);\n      }\n    }\n\n    // Clear out the hash table\n    // table clear for block compress\n    function cl_block (outs) {\n      cl_hash(HSIZE);\n      free_ent = ClearCode + 2;\n      clear_flg = true;\n      output(ClearCode, outs);\n    }\n\n    // Reset code table\n    function cl_hash (hsize) {\n      for (let i = 0; i < hsize; ++i) {\n        htab[i] = -1;\n      }\n    }\n\n    function compress (init_bits, outs) {\n      let fcode, c, i, ent, disp, hsize_reg, hshift;\n\n      // Set up the globals: g_init_bits - initial number of bits\n      g_init_bits = init_bits;\n\n      // Set up the necessary values\n      clear_flg = false;\n      n_bits = g_init_bits;\n      maxcode = MAXCODE(n_bits);\n\n      ClearCode = 1 << (init_bits - 1);\n      EOFCode = ClearCode + 1;\n      free_ent = ClearCode + 2;\n\n      a_count = 0; // clear packet\n\n      ent = nextPixel();\n\n      hshift = 0;\n      for (fcode = HSIZE; fcode < 65536; fcode *= 2) {\n        ++hshift;\n      }\n      hshift = 8 - hshift; // set hash code range bound\n      hsize_reg = HSIZE;\n      cl_hash(hsize_reg); // clear hash table\n\n      output(ClearCode, outs);\n\n      outer_loop: while ((c = nextPixel()) != EOF) {\n        fcode = (c << BITS) + ent;\n        i = (c << hshift) ^ ent; // xor hashing\n        if (htab[i] === fcode) {\n          ent = codetab[i];\n          continue;\n        } else if (htab[i] >= 0) { // non-empty slot\n          disp = hsize_reg - i; // secondary hash (after G. Knott)\n          if (i === 0) {\n            disp = 1;\n          }\n          do {\n            if ((i -= disp) < 0) {\n              i += hsize_reg;\n            }\n            if (htab[i] === fcode) {\n              ent = codetab[i];\n              continue outer_loop;\n            }\n          } while (htab[i] >= 0);\n        }\n        output(ent, outs);\n        ent = c;\n        if (free_ent < 1 << BITS) {\n          codetab[i] = free_ent++; // code -> hashtable\n          htab[i] = fcode;\n        } else {\n          cl_block(outs);\n        }\n      }\n\n      // Put out the final code.\n      output(ent, outs);\n      output(EOFCode, outs);\n    }\n\n    function encode (outs) {\n      outs.writeByte(initCodeSize); // write \"initial code size\" byte\n      remaining = width * height; // reset navigation variables\n      curPixel = 0;\n      compress(initCodeSize + 1, outs); // compress and write the pixel data\n      outs.writeByte(0); // write block terminator\n    }\n\n    // Flush the packet to disk, and reset the accumulator\n    function flush_char (outs) {\n      if (a_count > 0) {\n        outs.writeByte(a_count);\n        outs.writeBytes(accum, 0, a_count);\n        a_count = 0;\n      }\n    }\n\n    function MAXCODE (n_bits) {\n      return (1 << n_bits) - 1;\n    }\n\n    // Return the next pixel from the image\n    function nextPixel () {\n      if (remaining === 0) {\n        return EOF;\n      }\n      --remaining;\n      const pix = pixels[curPixel++];\n      return pix & 0xff;\n    }\n\n    function output (code, outs) {\n      cur_accum &= masks[cur_bits];\n\n      if (cur_bits > 0) {\n        cur_accum |= (code << cur_bits);\n      } else {\n        cur_accum = code;\n      }\n\n      cur_bits += n_bits;\n\n      while (cur_bits >= 8) {\n        char_out((cur_accum & 0xff), outs);\n        cur_accum >>= 8;\n        cur_bits -= 8;\n      }\n\n      // If the next entry is going to be too big for the code size,\n      // then increase it, if possible.\n      if (free_ent > maxcode || clear_flg) {\n        if (clear_flg) {\n          maxcode = MAXCODE(n_bits = g_init_bits);\n          clear_flg = false;\n        } else {\n          ++n_bits;\n          if (n_bits == BITS) {\n            maxcode = 1 << BITS;\n          } else {\n            maxcode = MAXCODE(n_bits);\n          }\n        }\n      }\n\n      if (code == EOFCode) {\n        // At EOF, write the rest of the buffer.\n        while (cur_bits > 0) {\n          char_out((cur_accum & 0xff), outs);\n          cur_accum >>= 8;\n          cur_bits -= 8;\n        }\n        flush_char(outs);\n      }\n    }\n\n    this.encode = encode;\n  }\n\n  module.exports = LZWEncoder;\n\n}, {}],\n3: [function (require, module, exports) {\n  /* NeuQuant Neural-Net Quantization Algorithm\n   * ------------------------------------------\n   *\n   * Copyright (c) 1994 Anthony Dekker\n   *\n   * NEUQUANT Neural-Net quantization algorithm by Anthony Dekker, 1994.\n   * See \"Kohonen neural networks for optimal colour quantization\"\n   * in \"Network: Computation in Neural Systems\" Vol. 5 (1994) pp 351-367.\n   * for a discussion of the algorithm.\n   * See also  http://members.ozemail.com.au/~dekker/NEUQUANT.HTML\n   *\n   * Any party obtaining a copy of these files from the author, directly or\n   * indirectly, is granted, free of charge, a full and unrestricted irrevocable,\n   * world-wide, paid up, royalty-free, nonexclusive right and license to deal\n   * in this software and documentation files (the \"Software\"), including without\n   * limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,\n   * and/or sell copies of the Software, and to permit persons who receive\n   * copies from any such party to do so, with the only requirement being\n   * that this copyright notice remain intact.\n   *\n   * (JavaScript port 2012 by Johan Nordberg)\n   */\n\n  const ncycles = 100; // number of learning cycles\n  const netsize = 256; // number of colors used\n  const maxnetpos = netsize - 1;\n\n  // defs for freq and bias\n  const netbiasshift = 4; // bias for colour values\n  const intbiasshift = 16; // bias for fractions\n  const intbias = (1 << intbiasshift);\n  const gammashift = 10;\n  const gamma = (1 << gammashift);\n  const betashift = 10;\n  const beta = (intbias >> betashift); /* beta = 1/1024 */\n  const betagamma = (intbias << (gammashift - betashift));\n\n  // defs for decreasing radius factor\n  const initrad = (netsize >> 3); // for 256 cols, radius starts\n  const radiusbiasshift = 6; // at 32.0 biased by 6 bits\n  const radiusbias = (1 << radiusbiasshift);\n  const initradius = (initrad * radiusbias); // and decreases by a\n  const radiusdec = 30; // factor of 1/30 each cycle\n\n  // defs for decreasing alpha factor\n  const alphabiasshift = 10; // alpha starts at 1.0\n  const initalpha = (1 << alphabiasshift);\n  let alphadec; // biased by 10 bits\n\n  /* radbias and alpharadbias used for radpower calculation */\n\n  const radbiasshift = 8;\n  const radbias = (1 << radbiasshift);\n  const alpharadbshift = (alphabiasshift + radbiasshift);\n  const alpharadbias = (1 << alpharadbshift);\n\n  // four primes near 500 - assume no image has a length so large that it is\n  // divisible by all four primes\n  const prime1 = 499;\n  const prime2 = 491;\n  const prime3 = 487;\n  const prime4 = 503;\n  const minpicturebytes = (3 * prime4);\n\n  /*\n    Constructor: NeuQuant\n\n    Arguments:\n\n    pixels - array of pixels in RGB format\n    samplefac - sampling factor 1 to 30 where lower is better quality\n\n    >\n    > pixels = [r, g, b, r, g, b, r, g, b, ..]\n    >\n  */\n\n  function NeuQuant (pixels, samplefac) {\n    let network; // int[netsize][4]\n    let netindex; // for network lookup - really 256\n\n    // bias and freq arrays for learning\n    let bias;\n    let freq;\n    let radpower;\n\n    /*\n      Private Method: init\n\n      sets up arrays\n    */\n\n    function init () {\n      network = [];\n      netindex = new Int32Array(256);\n      bias = new Int32Array(netsize);\n      freq = new Int32Array(netsize);\n      radpower = new Int32Array(netsize >> 3);\n\n      let i, v;\n      for (i = 0; i < netsize; i++) {\n        v = (i << (netbiasshift + 8)) / netsize;\n        network[i] = new Float64Array([v, v, v, 0]);\n        // network[i] = [v, v, v, 0]\n        freq[i] = intbias / netsize;\n        bias[i] = 0;\n      }\n    }\n\n    /*\n      Private Method: unbiasnet\n\n      unbiases network to give byte values 0..255 and record position i to prepare for sort\n    */\n\n    function unbiasnet () {\n      for (let i = 0; i < netsize; i++) {\n        network[i][0] >>= netbiasshift;\n        network[i][1] >>= netbiasshift;\n        network[i][2] >>= netbiasshift;\n        network[i][3] = i; // record color number\n      }\n    }\n\n    /*\n      Private Method: altersingle\n\n      moves neuron *i* towards biased (b,g,r) by factor *alpha*\n    */\n\n    function altersingle (alpha, i, b, g, r) {\n      network[i][0] -= (alpha * (network[i][0] - b)) / initalpha;\n      network[i][1] -= (alpha * (network[i][1] - g)) / initalpha;\n      network[i][2] -= (alpha * (network[i][2] - r)) / initalpha;\n    }\n\n    /*\n      Private Method: alterneigh\n\n      moves neurons in *radius* around index *i* towards biased (b,g,r) by factor *alpha*\n    */\n\n    function alterneigh (radius, i, b, g, r) {\n      const lo = Math.abs(i - radius);\n      const hi = Math.min(i + radius, netsize);\n\n      let j = i + 1;\n      let k = i - 1;\n      let m = 1;\n\n      let p, a;\n      while ((j < hi) || (k > lo)) {\n        a = radpower[m++];\n\n        if (j < hi) {\n          p = network[j++];\n          p[0] -= (a * (p[0] - b)) / alpharadbias;\n          p[1] -= (a * (p[1] - g)) / alpharadbias;\n          p[2] -= (a * (p[2] - r)) / alpharadbias;\n        }\n\n        if (k > lo) {\n          p = network[k--];\n          p[0] -= (a * (p[0] - b)) / alpharadbias;\n          p[1] -= (a * (p[1] - g)) / alpharadbias;\n          p[2] -= (a * (p[2] - r)) / alpharadbias;\n        }\n      }\n    }\n\n    /*\n      Private Method: contest\n\n      searches for biased BGR values\n    */\n\n    function contest (b, g, r) {\n      /*\n        finds closest neuron (min dist) and updates freq\n        finds best neuron (min dist-bias) and returns position\n        for frequently chosen neurons, freq[i] is high and bias[i] is negative\n        bias[i] = gamma * ((1 / netsize) - freq[i])\n      */\n\n      let bestd = ~(1 << 31);\n      let bestbiasd = bestd;\n      let bestpos = -1;\n      let bestbiaspos = bestpos;\n\n      let i, n, dist, biasdist, betafreq;\n      for (i = 0; i < netsize; i++) {\n        n = network[i];\n\n        dist = Math.abs(n[0] - b) + Math.abs(n[1] - g) + Math.abs(n[2] - r);\n        if (dist < bestd) {\n          bestd = dist;\n          bestpos = i;\n        }\n\n        biasdist = dist - ((bias[i]) >> (intbiasshift - netbiasshift));\n        if (biasdist < bestbiasd) {\n          bestbiasd = biasdist;\n          bestbiaspos = i;\n        }\n\n        betafreq = (freq[i] >> betashift);\n        freq[i] -= betafreq;\n        bias[i] += (betafreq << gammashift);\n      }\n\n      freq[bestpos] += beta;\n      bias[bestpos] -= betagamma;\n\n      return bestbiaspos;\n    }\n\n    /*\n      Private Method: inxbuild\n\n      sorts network and builds netindex[0..255]\n    */\n\n    function inxbuild () {\n      let i, j, p, q, smallpos, smallval,\n        previouscol = 0,\n        startpos = 0;\n      for (i = 0; i < netsize; i++) {\n        p = network[i];\n        smallpos = i;\n        smallval = p[1]; // index on g\n        // find smallest in i..netsize-1\n        for (j = i + 1; j < netsize; j++) {\n          q = network[j];\n          if (q[1] < smallval) { // index on g\n            smallpos = j;\n            smallval = q[1]; // index on g\n          }\n        }\n        q = network[smallpos];\n        // swap p (i) and q (smallpos) entries\n        if (i != smallpos) {\n          j = q[0]; q[0] = p[0]; p[0] = j;\n          j = q[1]; q[1] = p[1]; p[1] = j;\n          j = q[2]; q[2] = p[2]; p[2] = j;\n          j = q[3]; q[3] = p[3]; p[3] = j;\n        }\n        // smallval entry is now in position i\n\n        if (smallval != previouscol) {\n          netindex[previouscol] = (startpos + i) >> 1;\n          for (j = previouscol + 1; j < smallval; j++) {\n            netindex[j] = i;\n          }\n          previouscol = smallval;\n          startpos = i;\n        }\n      }\n      netindex[previouscol] = (startpos + maxnetpos) >> 1;\n      for (j = previouscol + 1; j < 256; j++) {\n        netindex[j] = maxnetpos;\n      } // really 256\n    }\n\n    /*\n      Private Method: inxsearch\n\n      searches for BGR values 0..255 and returns a color index\n    */\n\n    function inxsearch (b, g, r) {\n      let a, p, dist;\n\n      let bestd = 1000; // biggest possible dist is 256*3\n      let best = -1;\n\n      let i = netindex[g]; // index on g\n      let j = i - 1; // start at netindex[g] and work outwards\n\n      while ((i < netsize) || (j >= 0)) {\n        if (i < netsize) {\n          p = network[i];\n          dist = p[1] - g; // inx key\n          if (dist >= bestd) {\n            i = netsize;\n          } // stop iter\n          else {\n            i++;\n            if (dist < 0) {\n              dist = -dist;\n            }\n            a = p[0] - b; if (a < 0) {\n              a = -a;\n            }\n            dist += a;\n            if (dist < bestd) {\n              a = p[2] - r; if (a < 0) {\n                a = -a;\n              }\n              dist += a;\n              if (dist < bestd) {\n                bestd = dist;\n                best = p[3];\n              }\n            }\n          }\n        }\n        if (j >= 0) {\n          p = network[j];\n          dist = g - p[1]; // inx key - reverse dif\n          if (dist >= bestd) {\n            j = -1;\n          } // stop iter\n          else {\n            j--;\n            if (dist < 0) {\n              dist = -dist;\n            }\n            a = p[0] - b; if (a < 0) {\n              a = -a;\n            }\n            dist += a;\n            if (dist < bestd) {\n              a = p[2] - r; if (a < 0) {\n                a = -a;\n              }\n              dist += a;\n              if (dist < bestd) {\n                bestd = dist;\n                best = p[3];\n              }\n            }\n          }\n        }\n      }\n\n      return best;\n    }\n\n    /*\n      Private Method: learn\n\n      \"Main Learning Loop\"\n    */\n\n    function learn () {\n      let i;\n\n      const lengthcount = pixels.length;\n      const alphadec = 30 + ((samplefac - 1) / 3);\n      const samplepixels = lengthcount / (3 * samplefac);\n      let delta = ~~(samplepixels / ncycles);\n      let alpha = initalpha;\n      let radius = initradius;\n\n      let rad = radius >> radiusbiasshift;\n\n      if (rad <= 1) {\n        rad = 0;\n      }\n      for (i = 0; i < rad; i++) {\n        radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));\n      }\n\n      let step;\n      if (lengthcount < minpicturebytes) {\n        samplefac = 1;\n        step = 3;\n      } else if ((lengthcount % prime1) !== 0) {\n        step = 3 * prime1;\n      } else if ((lengthcount % prime2) !== 0) {\n        step = 3 * prime2;\n      } else if ((lengthcount % prime3) !== 0) {\n        step = 3 * prime3;\n      } else {\n        step = 3 * prime4;\n      }\n\n      let b, g, r, j;\n      let pix = 0; // current pixel\n\n      i = 0;\n      while (i < samplepixels) {\n        b = (pixels[pix] & 0xff) << netbiasshift;\n        g = (pixels[pix + 1] & 0xff) << netbiasshift;\n        r = (pixels[pix + 2] & 0xff) << netbiasshift;\n\n        j = contest(b, g, r);\n\n        altersingle(alpha, j, b, g, r);\n        if (rad !== 0) {\n          alterneigh(rad, j, b, g, r);\n        } // alter neighbours\n\n        pix += step;\n        if (pix >= lengthcount) {\n          pix -= lengthcount;\n        }\n\n        i++;\n\n        if (delta === 0) {\n          delta = 1;\n        }\n        if (i % delta === 0) {\n          alpha -= alpha / alphadec;\n          radius -= radius / radiusdec;\n          rad = radius >> radiusbiasshift;\n\n          if (rad <= 1) {\n            rad = 0;\n          }\n          for (j = 0; j < rad; j++) {\n            radpower[j] = alpha * (((rad * rad - j * j) * radbias) / (rad * rad));\n          }\n        }\n      }\n    }\n\n    /*\n      Method: buildColormap\n\n      1. initializes network\n      2. trains it\n      3. removes misconceptions\n      4. builds colorindex\n    */\n\n    function buildColormap () {\n      init();\n      learn();\n      unbiasnet();\n      inxbuild();\n    }\n    this.buildColormap = buildColormap;\n\n    /*\n      Method: getColormap\n\n      builds colormap from the index\n\n      returns array in the format:\n\n      >\n      > [r, g, b, r, g, b, r, g, b, ..]\n      >\n    */\n\n    function getColormap () {\n      const map = [];\n      const index = [];\n\n      for (let i = 0; i < netsize; i++) {\n        index[network[i][3]] = i;\n      }\n\n      let k = 0;\n      for (let l = 0; l < netsize; l++) {\n        const j = index[l];\n        map[k++] = (network[j][0]);\n        map[k++] = (network[j][1]);\n        map[k++] = (network[j][2]);\n      }\n      return map;\n    }\n    this.getColormap = getColormap;\n\n    /*\n      Method: lookupRGB\n\n      looks for the closest *r*, *g*, *b* color in the map and\n      returns its index\n    */\n\n    this.lookupRGB = inxsearch;\n  }\n\n  module.exports = NeuQuant;\n\n}, {}],\n4: [function (require, module, exports) {\n  let GIFEncoder, renderFrame;\n\n  GIFEncoder = require('./GIFEncoder.js');\n\n  renderFrame = function (frame) {\n    let encoder, page, stream, transfer;\n    encoder = new GIFEncoder(frame.width, frame.height);\n    if (frame.index === 0) {\n      encoder.writeHeader();\n    } else {\n      encoder.firstFrame = false;\n    }\n    encoder.setTransparent(frame.transparent);\n    encoder.setDispose(frame.dispose);\n    encoder.setRepeat(frame.repeat);\n    encoder.setDelay(frame.delay);\n    encoder.setQuality(frame.quality);\n    encoder.setDither(frame.dither);\n    encoder.setGlobalPalette(frame.globalPalette);\n    encoder.addFrame(frame.data);\n    if (frame.last) {\n      encoder.finish();\n    }\n    if (frame.globalPalette === true) {\n      frame.globalPalette = encoder.getGlobalPalette();\n    }\n    stream = encoder.stream();\n    frame.data = stream.pages;\n    frame.cursor = stream.cursor;\n    frame.pageSize = stream.constructor.pageSize;\n    if (frame.canTransfer) {\n      transfer = (function () {\n        let i, len, ref, results;\n        ref = frame.data;\n        results = [];\n        for (i = 0, len = ref.length; i < len; i++) {\n          page = ref[i];\n          results.push(page.buffer);\n        }\n        return results;\n      }());\n      return self.postMessage(frame, transfer);\n    }\n    return self.postMessage(frame);\n\n  };\n\n  self.onmessage = function (event) {\n    return renderFrame(event.data);\n  };\n\n\n}, { './GIFEncoder.js': 1 }] }, {}, [4]);\n// # sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9icm93c2VyLXBhY2svX3ByZWx1ZGUuanMiLCJzcmMvR0lGRW5jb2Rlci5qcyIsInNyYy9MWldFbmNvZGVyLmpzIiwic3JjL1R5cGVkTmV1UXVhbnQuanMiLCJzcmMvZ2lmLndvcmtlci5jb2ZmZWUiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7QUNBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FDMWlCQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FDak5BO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUMvYUEsSUFBQTs7QUFBQSxVQUFBLEdBQWEsT0FBQSxDQUFRLGlCQUFSOztBQUViLFdBQUEsR0FBYyxTQUFDLEtBQUQ7QUFDWixNQUFBO0VBQUEsT0FBQSxHQUFVLElBQUksVUFBSixDQUFlLEtBQUssQ0FBQyxLQUFyQixFQUE0QixLQUFLLENBQUMsTUFBbEM7RUFFVixJQUFHLEtBQUssQ0FBQyxLQUFOLEtBQWUsQ0FBbEI7SUFDRSxPQUFPLENBQUMsV0FBUixDQUFBLEVBREY7R0FBQSxNQUFBO0lBR0UsT0FBTyxDQUFDLFVBQVIsR0FBcUIsTUFIdkI7O0VBS0EsT0FBTyxDQUFDLGNBQVIsQ0FBdUIsS0FBSyxDQUFDLFdBQTdCO0VBQ0EsT0FBTyxDQUFDLFVBQVIsQ0FBbUIsS0FBSyxDQUFDLE9BQXpCO0VBQ0EsT0FBTyxDQUFDLFNBQVIsQ0FBa0IsS0FBSyxDQUFDLE1BQXhCO0VBQ0EsT0FBTyxDQUFDLFFBQVIsQ0FBaUIsS0FBSyxDQUFDLEtBQXZCO0VBQ0EsT0FBTyxDQUFDLFVBQVIsQ0FBbUIsS0FBSyxDQUFDLE9BQXpCO0VBQ0EsT0FBTyxDQUFDLFNBQVIsQ0FBa0IsS0FBSyxDQUFDLE1BQXhCO0VBQ0EsT0FBTyxDQUFDLGdCQUFSLENBQXlCLEtBQUssQ0FBQyxhQUEvQjtFQUNBLE9BQU8sQ0FBQyxRQUFSLENBQWlCLEtBQUssQ0FBQyxJQUF2QjtFQUNBLElBQW9CLEtBQUssQ0FBQyxJQUExQjtJQUFBLE9BQU8sQ0FBQyxNQUFSLENBQUEsRUFBQTs7RUFDQSxJQUFHLEtBQUssQ0FBQyxhQUFOLEtBQXVCLElBQTFCO0lBQ0UsS0FBSyxDQUFDLGFBQU4sR0FBc0IsT0FBTyxDQUFDLGdCQUFSLENBQUEsRUFEeEI7O0VBR0EsTUFBQSxHQUFTLE9BQU8sQ0FBQyxNQUFSLENBQUE7RUFDVCxLQUFLLENBQUMsSUFBTixHQUFhLE1BQU0sQ0FBQztFQUNwQixLQUFLLENBQUMsTUFBTixHQUFlLE1BQU0sQ0FBQztFQUN0QixLQUFLLENBQUMsUUFBTixHQUFpQixNQUFNLENBQUMsV0FBVyxDQUFDO0VBRXBDLElBQUcsS0FBSyxDQUFDLFdBQVQ7SUFDRSxRQUFBOztBQUFZO0FBQUE7V0FBQSxxQ0FBQTs7cUJBQUEsSUFBSSxDQUFDO0FBQUw7OztXQUNaLElBQUksQ0FBQyxXQUFMLENBQWlCLEtBQWpCLEVBQXdCLFFBQXhCLEVBRkY7R0FBQSxNQUFBO1dBSUUsSUFBSSxDQUFDLFdBQUwsQ0FBaUIsS0FBakIsRUFKRjs7QUF6Qlk7O0FBK0JkLElBQUksQ0FBQyxTQUFMLEdBQWlCLFNBQUMsS0FBRDtTQUFXLFdBQUEsQ0FBWSxLQUFLLENBQUMsSUFBbEI7QUFBWCIsImZpbGUiOiJnZW5lcmF0ZWQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlc0NvbnRlbnQiOlsiKGZ1bmN0aW9uKCl7ZnVuY3Rpb24gcihlLG4sdCl7ZnVuY3Rpb24gbyhpLGYpe2lmKCFuW2ldKXtpZighZVtpXSl7dmFyIGM9XCJmdW5jdGlvblwiPT10eXBlb2YgcmVxdWlyZSYmcmVxdWlyZTtpZighZiYmYylyZXR1cm4gYyhpLCEwKTtpZih1KXJldHVybiB1KGksITApO3ZhciBhPW5ldyBFcnJvcihcIkNhbm5vdCBmaW5kIG1vZHVsZSAnXCIraStcIidcIik7dGhyb3cgYS5jb2RlPVwiTU9EVUxFX05PVF9GT1VORFwiLGF9dmFyIHA9bltpXT17ZXhwb3J0czp7fX07ZVtpXVswXS5jYWxsKHAuZXhwb3J0cyxmdW5jdGlvbihyKXt2YXIgbj1lW2ldWzFdW3JdO3JldHVybiBvKG58fHIpfSxwLHAuZXhwb3J0cyxyLGUsbix0KX1yZXR1cm4gbltpXS5leHBvcnRzfWZvcih2YXIgdT1cImZ1bmN0aW9uXCI9PXR5cGVvZiByZXF1aXJlJiZyZXF1aXJlLGk9MDtpPHQubGVuZ3RoO2krKylvKHRbaV0pO3JldHVybiBvfXJldHVybiByfSkoKSIsIi8qXG4gIEdJRkVuY29kZXIuanNcblxuICBBdXRob3JzXG4gIEtldmluIFdlaW5lciAob3JpZ2luYWwgSmF2YSB2ZXJzaW9uIC0ga3dlaW5lckBmbXN3YXJlLmNvbSlcbiAgVGhpYmF1bHQgSW1iZXJ0IChBUzMgdmVyc2lvbiAtIGJ5dGVhcnJheS5vcmcpXG4gIEpvaGFuIE5vcmRiZXJnIChKUyB2ZXJzaW9uIC0gY29kZUBqb2hhbi1ub3JkYmVyZy5jb20pXG4qL1xuXG52YXIgTmV1UXVhbnQgPSByZXF1aXJlKCcuL1R5cGVkTmV1UXVhbnQuanMnKTtcbnZhciBMWldFbmNvZGVyID0gcmVxdWlyZSgnLi9MWldFbmNvZGVyLmpzJyk7XG5cbmZ1bmN0aW9uIEJ5dGVBcnJheSgpIHtcbiAgdGhpcy5wYWdlID0gLTE7XG4gIHRoaXMucGFnZXMgPSBbXTtcbiAgdGhpcy5uZXdQYWdlKCk7XG59XG5cbkJ5dGVBcnJheS5wYWdlU2l6ZSA9IDQwOTY7XG5CeXRlQXJyYXkuY2hhck1hcCA9IHt9O1xuXG5mb3IgKHZhciBpID0gMDsgaSA8IDI1NjsgaSsrKVxuICBCeXRlQXJyYXkuY2hhck1hcFtpXSA9IFN0cmluZy5mcm9tQ2hhckNvZGUoaSk7XG5cbkJ5dGVBcnJheS5wcm90b3R5cGUubmV3UGFnZSA9IGZ1bmN0aW9uKCkge1xuICB0aGlzLnBhZ2VzWysrdGhpcy5wYWdlXSA9IG5ldyBVaW50OEFycmF5KEJ5dGVBcnJheS5wYWdlU2l6ZSk7XG4gIHRoaXMuY3Vyc29yID0gMDtcbn07XG5cbkJ5dGVBcnJheS5wcm90b3R5cGUuZ2V0RGF0YSA9IGZ1bmN0aW9uKCkge1xuICB2YXIgcnYgPSAnJztcbiAgZm9yICh2YXIgcCA9IDA7IHAgPCB0aGlzLnBhZ2VzLmxlbmd0aDsgcCsrKSB7XG4gICAgZm9yICh2YXIgaSA9IDA7IGkgPCBCeXRlQXJyYXkucGFnZVNpemU7IGkrKykge1xuICAgICAgcnYgKz0gQnl0ZUFycmF5LmNoYXJNYXBbdGhpcy5wYWdlc1twXVtpXV07XG4gICAgfVxuICB9XG4gIHJldHVybiBydjtcbn07XG5cbkJ5dGVBcnJheS5wcm90b3R5cGUud3JpdGVCeXRlID0gZnVuY3Rpb24odmFsKSB7XG4gIGlmICh0aGlzLmN1cnNvciA+PSBCeXRlQXJyYXkucGFnZVNpemUpIHRoaXMubmV3UGFnZSgpO1xuICB0aGlzLnBhZ2VzW3RoaXMucGFnZV1bdGhpcy5jdXJzb3IrK10gPSB2YWw7XG59O1xuXG5CeXRlQXJyYXkucHJvdG90eXBlLndyaXRlVVRGQnl0ZXMgPSBmdW5jdGlvbihzdHJpbmcpIHtcbiAgZm9yICh2YXIgbCA9IHN0cmluZy5sZW5ndGgsIGkgPSAwOyBpIDwgbDsgaSsrKVxuICAgIHRoaXMud3JpdGVCeXRlKHN0cmluZy5jaGFyQ29kZUF0KGkpKTtcbn07XG5cbkJ5dGVBcnJheS5wcm90b3R5cGUud3JpdGVCeXRlcyA9IGZ1bmN0aW9uKGFycmF5LCBvZmZzZXQsIGxlbmd0aCkge1xuICBmb3IgKHZhciBsID0gbGVuZ3RoIHx8IGFycmF5Lmxlbmd0aCwgaSA9IG9mZnNldCB8fCAwOyBpIDwgbDsgaSsrKVxuICAgIHRoaXMud3JpdGVCeXRlKGFycmF5W2ldKTtcbn07XG5cbmZ1bmN0aW9uIEdJRkVuY29kZXIod2lkdGgsIGhlaWdodCkge1xuICAvLyBpbWFnZSBzaXplXG4gIHRoaXMud2lkdGggPSB+fndpZHRoO1xuICB0aGlzLmhlaWdodCA9IH5+aGVpZ2h0O1xuXG4gIC8vIHRyYW5zcGFyZW50IGNvbG9yIGlmIGdpdmVuXG4gIHRoaXMudHJhbnNwYXJlbnQgPSBudWxsO1xuXG4gIC8vIHRyYW5zcGFyZW50IGluZGV4IGluIGNvbG9yIHRhYmxlXG4gIHRoaXMudHJhbnNJbmRleCA9IDA7XG5cbiAgLy8gLTEgPSBubyByZXBlYXQsIDAgPSBmb3JldmVyLiBhbnl0aGluZyBlbHNlIGlzIHJlcGVhdCBjb3VudFxuICB0aGlzLnJlcGVhdCA9IC0xO1xuXG4gIC8vIGZyYW1lIGRlbGF5IChodW5kcmVkdGhzKVxuICB0aGlzLmRlbGF5ID0gMDtcblxuICB0aGlzLmltYWdlID0gbnVsbDsgLy8gY3VycmVudCBmcmFtZVxuICB0aGlzLnBpeGVscyA9IG51bGw7IC8vIEJHUiBieXRlIGFycmF5IGZyb20gZnJhbWVcbiAgdGhpcy5pbmRleGVkUGl4ZWxzID0gbnVsbDsgLy8gY29udmVydGVkIGZyYW1lIGluZGV4ZWQgdG8gcGFsZXR0ZVxuICB0aGlzLmNvbG9yRGVwdGggPSBudWxsOyAvLyBudW1iZXIgb2YgYml0IHBsYW5lc1xuICB0aGlzLmNvbG9yVGFiID0gbnVsbDsgLy8gUkdCIHBhbGV0dGVcbiAgdGhpcy5uZXVRdWFudCA9IG51bGw7IC8vIE5ldVF1YW50IGluc3RhbmNlIHRoYXQgd2FzIHVzZWQgdG8gZ2VuZXJhdGUgdGhpcy5jb2xvclRhYi5cbiAgdGhpcy51c2VkRW50cnkgPSBuZXcgQXJyYXkoKTsgLy8gYWN0aXZlIHBhbGV0dGUgZW50cmllc1xuICB0aGlzLnBhbFNpemUgPSA3OyAvLyBjb2xvciB0YWJsZSBzaXplIChiaXRzLTEpXG4gIHRoaXMuZGlzcG9zZSA9IC0xOyAvLyBkaXNwb3NhbCBjb2RlICgtMSA9IHVzZSBkZWZhdWx0KVxuICB0aGlzLmZpcnN0RnJhbWUgPSB0cnVlO1xuICB0aGlzLnNhbXBsZSA9IDEwOyAvLyBkZWZhdWx0IHNhbXBsZSBpbnRlcnZhbCBmb3IgcXVhbnRpemVyXG4gIHRoaXMuZGl0aGVyID0gZmFsc2U7IC8vIGRlZmF1bHQgZGl0aGVyaW5nXG4gIHRoaXMuZ2xvYmFsUGFsZXR0ZSA9IGZhbHNlO1xuXG4gIHRoaXMub3V0ID0gbmV3IEJ5dGVBcnJheSgpO1xufVxuXG4vKlxuICBTZXRzIHRoZSBkZWxheSB0aW1lIGJldHdlZW4gZWFjaCBmcmFtZSwgb3IgY2hhbmdlcyBpdCBmb3Igc3Vic2VxdWVudCBmcmFtZXNcbiAgKGFwcGxpZXMgdG8gbGFzdCBmcmFtZSBhZGRlZClcbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5zZXREZWxheSA9IGZ1bmN0aW9uKG1pbGxpc2Vjb25kcykge1xuICB0aGlzLmRlbGF5ID0gTWF0aC5yb3VuZChtaWxsaXNlY29uZHMgLyAxMCk7XG59O1xuXG4vKlxuICBTZXRzIGZyYW1lIHJhdGUgaW4gZnJhbWVzIHBlciBzZWNvbmQuXG4qL1xuR0lGRW5jb2Rlci5wcm90b3R5cGUuc2V0RnJhbWVSYXRlID0gZnVuY3Rpb24oZnBzKSB7XG4gIHRoaXMuZGVsYXkgPSBNYXRoLnJvdW5kKDEwMCAvIGZwcyk7XG59O1xuXG4vKlxuICBTZXRzIHRoZSBHSUYgZnJhbWUgZGlzcG9zYWwgY29kZSBmb3IgdGhlIGxhc3QgYWRkZWQgZnJhbWUgYW5kIGFueVxuICBzdWJzZXF1ZW50IGZyYW1lcy5cblxuICBEZWZhdWx0IGlzIDAgaWYgbm8gdHJhbnNwYXJlbnQgY29sb3IgaGFzIGJlZW4gc2V0LCBvdGhlcndpc2UgMi5cbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5zZXREaXNwb3NlID0gZnVuY3Rpb24oZGlzcG9zYWxDb2RlKSB7XG4gIGlmIChkaXNwb3NhbENvZGUgPj0gMCkgdGhpcy5kaXNwb3NlID0gZGlzcG9zYWxDb2RlO1xufTtcblxuLypcbiAgU2V0cyB0aGUgbnVtYmVyIG9mIHRpbWVzIHRoZSBzZXQgb2YgR0lGIGZyYW1lcyBzaG91bGQgYmUgcGxheWVkLlxuXG4gIC0xID0gcGxheSBvbmNlXG4gIDAgPSByZXBlYXQgaW5kZWZpbml0ZWx5XG5cbiAgRGVmYXVsdCBpcyAtMVxuXG4gIE11c3QgYmUgaW52b2tlZCBiZWZvcmUgdGhlIGZpcnN0IGltYWdlIGlzIGFkZGVkXG4qL1xuXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5zZXRSZXBlYXQgPSBmdW5jdGlvbihyZXBlYXQpIHtcbiAgdGhpcy5yZXBlYXQgPSByZXBlYXQ7XG59O1xuXG4vKlxuICBTZXRzIHRoZSB0cmFuc3BhcmVudCBjb2xvciBmb3IgdGhlIGxhc3QgYWRkZWQgZnJhbWUgYW5kIGFueSBzdWJzZXF1ZW50XG4gIGZyYW1lcy4gU2luY2UgYWxsIGNvbG9ycyBhcmUgc3ViamVjdCB0byBtb2RpZmljYXRpb24gaW4gdGhlIHF1YW50aXphdGlvblxuICBwcm9jZXNzLCB0aGUgY29sb3IgaW4gdGhlIGZpbmFsIHBhbGV0dGUgZm9yIGVhY2ggZnJhbWUgY2xvc2VzdCB0byB0aGUgZ2l2ZW5cbiAgY29sb3IgYmVjb21lcyB0aGUgdHJhbnNwYXJlbnQgY29sb3IgZm9yIHRoYXQgZnJhbWUuIE1heSBiZSBzZXQgdG8gbnVsbCB0b1xuICBpbmRpY2F0ZSBubyB0cmFuc3BhcmVudCBjb2xvci5cbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5zZXRUcmFuc3BhcmVudCA9IGZ1bmN0aW9uKGNvbG9yKSB7XG4gIHRoaXMudHJhbnNwYXJlbnQgPSBjb2xvcjtcbn07XG5cbi8qXG4gIEFkZHMgbmV4dCBHSUYgZnJhbWUuIFRoZSBmcmFtZSBpcyBub3Qgd3JpdHRlbiBpbW1lZGlhdGVseSwgYnV0IGlzXG4gIGFjdHVhbGx5IGRlZmVycmVkIHVudGlsIHRoZSBuZXh0IGZyYW1lIGlzIHJlY2VpdmVkIHNvIHRoYXQgdGltaW5nXG4gIGRhdGEgY2FuIGJlIGluc2VydGVkLiAgSW52b2tpbmcgZmluaXNoKCkgZmx1c2hlcyBhbGwgZnJhbWVzLlxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLmFkZEZyYW1lID0gZnVuY3Rpb24oaW1hZ2VEYXRhKSB7XG4gIHRoaXMuaW1hZ2UgPSBpbWFnZURhdGE7XG5cbiAgdGhpcy5jb2xvclRhYiA9IHRoaXMuZ2xvYmFsUGFsZXR0ZSAmJiB0aGlzLmdsb2JhbFBhbGV0dGUuc2xpY2UgPyB0aGlzLmdsb2JhbFBhbGV0dGUgOiBudWxsO1xuXG4gIHRoaXMuZ2V0SW1hZ2VQaXhlbHMoKTsgLy8gY29udmVydCB0byBjb3JyZWN0IGZvcm1hdCBpZiBuZWNlc3NhcnlcbiAgdGhpcy5hbmFseXplUGl4ZWxzKCk7IC8vIGJ1aWxkIGNvbG9yIHRhYmxlICYgbWFwIHBpeGVsc1xuXG4gIGlmICh0aGlzLmdsb2JhbFBhbGV0dGUgPT09IHRydWUpIHRoaXMuZ2xvYmFsUGFsZXR0ZSA9IHRoaXMuY29sb3JUYWI7XG5cbiAgaWYgKHRoaXMuZmlyc3RGcmFtZSkge1xuICAgIHRoaXMud3JpdGVMU0QoKTsgLy8gbG9naWNhbCBzY3JlZW4gZGVzY3JpcHRpb3JcbiAgICB0aGlzLndyaXRlUGFsZXR0ZSgpOyAvLyBnbG9iYWwgY29sb3IgdGFibGVcbiAgICBpZiAodGhpcy5yZXBlYXQgPj0gMCkge1xuICAgICAgLy8gdXNlIE5TIGFwcCBleHRlbnNpb24gdG8gaW5kaWNhdGUgcmVwc1xuICAgICAgdGhpcy53cml0ZU5ldHNjYXBlRXh0KCk7XG4gICAgfVxuICB9XG5cbiAgdGhpcy53cml0ZUdyYXBoaWNDdHJsRXh0KCk7IC8vIHdyaXRlIGdyYXBoaWMgY29udHJvbCBleHRlbnNpb25cbiAgdGhpcy53cml0ZUltYWdlRGVzYygpOyAvLyBpbWFnZSBkZXNjcmlwdG9yXG4gIGlmICghdGhpcy5maXJzdEZyYW1lICYmICF0aGlzLmdsb2JhbFBhbGV0dGUpIHRoaXMud3JpdGVQYWxldHRlKCk7IC8vIGxvY2FsIGNvbG9yIHRhYmxlXG4gIHRoaXMud3JpdGVQaXhlbHMoKTsgLy8gZW5jb2RlIGFuZCB3cml0ZSBwaXhlbCBkYXRhXG5cbiAgdGhpcy5maXJzdEZyYW1lID0gZmFsc2U7XG59O1xuXG4vKlxuICBBZGRzIGZpbmFsIHRyYWlsZXIgdG8gdGhlIEdJRiBzdHJlYW0sIGlmIHlvdSBkb24ndCBjYWxsIHRoZSBmaW5pc2ggbWV0aG9kXG4gIHRoZSBHSUYgc3RyZWFtIHdpbGwgbm90IGJlIHZhbGlkLlxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLmZpbmlzaCA9IGZ1bmN0aW9uKCkge1xuICB0aGlzLm91dC53cml0ZUJ5dGUoMHgzYik7IC8vIGdpZiB0cmFpbGVyXG59O1xuXG4vKlxuICBTZXRzIHF1YWxpdHkgb2YgY29sb3IgcXVhbnRpemF0aW9uIChjb252ZXJzaW9uIG9mIGltYWdlcyB0byB0aGUgbWF4aW11bSAyNTZcbiAgY29sb3JzIGFsbG93ZWQgYnkgdGhlIEdJRiBzcGVjaWZpY2F0aW9uKS4gTG93ZXIgdmFsdWVzIChtaW5pbXVtID0gMSlcbiAgcHJvZHVjZSBiZXR0ZXIgY29sb3JzLCBidXQgc2xvdyBwcm9jZXNzaW5nIHNpZ25pZmljYW50bHkuIDEwIGlzIHRoZVxuICBkZWZhdWx0LCBhbmQgcHJvZHVjZXMgZ29vZCBjb2xvciBtYXBwaW5nIGF0IHJlYXNvbmFibGUgc3BlZWRzLiBWYWx1ZXNcbiAgZ3JlYXRlciB0aGFuIDIwIGRvIG5vdCB5aWVsZCBzaWduaWZpY2FudCBpbXByb3ZlbWVudHMgaW4gc3BlZWQuXG4qL1xuR0lGRW5jb2Rlci5wcm90b3R5cGUuc2V0UXVhbGl0eSA9IGZ1bmN0aW9uKHF1YWxpdHkpIHtcbiAgaWYgKHF1YWxpdHkgPCAxKSBxdWFsaXR5ID0gMTtcbiAgdGhpcy5zYW1wbGUgPSBxdWFsaXR5O1xufTtcblxuLypcbiAgU2V0cyBkaXRoZXJpbmcgbWV0aG9kLiBBdmFpbGFibGUgYXJlOlxuICAtIEZBTFNFIG5vIGRpdGhlcmluZ1xuICAtIFRSVUUgb3IgRmxveWRTdGVpbmJlcmdcbiAgLSBGYWxzZUZsb3lkU3RlaW5iZXJnXG4gIC0gU3R1Y2tpXG4gIC0gQXRraW5zb25cbiAgWW91IGNhbiBhZGQgJy1zZXJwZW50aW5lJyB0byB1c2Ugc2VycGVudGluZSBzY2FubmluZ1xuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLnNldERpdGhlciA9IGZ1bmN0aW9uKGRpdGhlcikge1xuICBpZiAoZGl0aGVyID09PSB0cnVlKSBkaXRoZXIgPSAnRmxveWRTdGVpbmJlcmcnO1xuICB0aGlzLmRpdGhlciA9IGRpdGhlcjtcbn07XG5cbi8qXG4gIFNldHMgZ2xvYmFsIHBhbGV0dGUgZm9yIGFsbCBmcmFtZXMuXG4gIFlvdSBjYW4gcHJvdmlkZSBUUlVFIHRvIGNyZWF0ZSBnbG9iYWwgcGFsZXR0ZSBmcm9tIGZpcnN0IHBpY3R1cmUuXG4gIE9yIGFuIGFycmF5IG9mIHIsZyxiLHIsZyxiLC4uLlxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLnNldEdsb2JhbFBhbGV0dGUgPSBmdW5jdGlvbihwYWxldHRlKSB7XG4gIHRoaXMuZ2xvYmFsUGFsZXR0ZSA9IHBhbGV0dGU7XG59O1xuXG4vKlxuICBSZXR1cm5zIGdsb2JhbCBwYWxldHRlIHVzZWQgZm9yIGFsbCBmcmFtZXMuXG4gIElmIHNldEdsb2JhbFBhbGV0dGUodHJ1ZSkgd2FzIHVzZWQsIHRoZW4gdGhpcyBmdW5jdGlvbiB3aWxsIHJldHVyblxuICBjYWxjdWxhdGVkIHBhbGV0dGUgYWZ0ZXIgdGhlIGZpcnN0IGZyYW1lIGlzIGFkZGVkLlxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLmdldEdsb2JhbFBhbGV0dGUgPSBmdW5jdGlvbigpIHtcbiAgcmV0dXJuICh0aGlzLmdsb2JhbFBhbGV0dGUgJiYgdGhpcy5nbG9iYWxQYWxldHRlLnNsaWNlICYmIHRoaXMuZ2xvYmFsUGFsZXR0ZS5zbGljZSgwKSkgfHwgdGhpcy5nbG9iYWxQYWxldHRlO1xufTtcblxuLypcbiAgV3JpdGVzIEdJRiBmaWxlIGhlYWRlclxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLndyaXRlSGVhZGVyID0gZnVuY3Rpb24oKSB7XG4gIHRoaXMub3V0LndyaXRlVVRGQnl0ZXMoXCJHSUY4OWFcIik7XG59O1xuXG4vKlxuICBBbmFseXplcyBjdXJyZW50IGZyYW1lIGNvbG9ycyBhbmQgY3JlYXRlcyBjb2xvciBtYXAuXG4qL1xuR0lGRW5jb2Rlci5wcm90b3R5cGUuYW5hbHl6ZVBpeGVscyA9IGZ1bmN0aW9uKCkge1xuICBpZiAoIXRoaXMuY29sb3JUYWIpIHtcbiAgICB0aGlzLm5ldVF1YW50ID0gbmV3IE5ldVF1YW50KHRoaXMucGl4ZWxzLCB0aGlzLnNhbXBsZSk7XG4gICAgdGhpcy5uZXVRdWFudC5idWlsZENvbG9ybWFwKCk7IC8vIGNyZWF0ZSByZWR1Y2VkIHBhbGV0dGVcbiAgICB0aGlzLmNvbG9yVGFiID0gdGhpcy5uZXVRdWFudC5nZXRDb2xvcm1hcCgpO1xuICB9XG5cbiAgLy8gbWFwIGltYWdlIHBpeGVscyB0byBuZXcgcGFsZXR0ZVxuICBpZiAodGhpcy5kaXRoZXIpIHtcbiAgICB0aGlzLmRpdGhlclBpeGVscyh0aGlzLmRpdGhlci5yZXBsYWNlKCctc2VycGVudGluZScsICcnKSwgdGhpcy5kaXRoZXIubWF0Y2goLy1zZXJwZW50aW5lLykgIT09IG51bGwpO1xuICB9IGVsc2Uge1xuICAgIHRoaXMuaW5kZXhQaXhlbHMoKTtcbiAgfVxuXG4gIHRoaXMucGl4ZWxzID0gbnVsbDtcbiAgdGhpcy5jb2xvckRlcHRoID0gODtcbiAgdGhpcy5wYWxTaXplID0gNztcblxuICAvLyBnZXQgY2xvc2VzdCBtYXRjaCB0byB0cmFuc3BhcmVudCBjb2xvciBpZiBzcGVjaWZpZWRcbiAgaWYgKHRoaXMudHJhbnNwYXJlbnQgIT09IG51bGwpIHtcbiAgICB0aGlzLnRyYW5zSW5kZXggPSB0aGlzLmZpbmRDbG9zZXN0KHRoaXMudHJhbnNwYXJlbnQsIHRydWUpO1xuICB9XG59O1xuXG4vKlxuICBJbmRleCBwaXhlbHMsIHdpdGhvdXQgZGl0aGVyaW5nXG4qL1xuR0lGRW5jb2Rlci5wcm90b3R5cGUuaW5kZXhQaXhlbHMgPSBmdW5jdGlvbihpbWdxKSB7XG4gIHZhciBuUGl4ID0gdGhpcy5waXhlbHMubGVuZ3RoIC8gMztcbiAgdGhpcy5pbmRleGVkUGl4ZWxzID0gbmV3IFVpbnQ4QXJyYXkoblBpeCk7XG4gIHZhciBrID0gMDtcbiAgZm9yICh2YXIgaiA9IDA7IGogPCBuUGl4OyBqKyspIHtcbiAgICB2YXIgaW5kZXggPSB0aGlzLmZpbmRDbG9zZXN0UkdCKFxuICAgICAgdGhpcy5waXhlbHNbaysrXSAmIDB4ZmYsXG4gICAgICB0aGlzLnBpeGVsc1trKytdICYgMHhmZixcbiAgICAgIHRoaXMucGl4ZWxzW2srK10gJiAweGZmXG4gICAgKTtcbiAgICB0aGlzLnVzZWRFbnRyeVtpbmRleF0gPSB0cnVlO1xuICAgIHRoaXMuaW5kZXhlZFBpeGVsc1tqXSA9IGluZGV4O1xuICB9XG59O1xuXG4vKlxuICBUYWtlbiBmcm9tIGh0dHA6Ly9qc2Jpbi5jb20vaVhvZklqaS8yL2VkaXQgYnkgUEFFelxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLmRpdGhlclBpeGVscyA9IGZ1bmN0aW9uKGtlcm5lbCwgc2VycGVudGluZSkge1xuICB2YXIga2VybmVscyA9IHtcbiAgICBGYWxzZUZsb3lkU3RlaW5iZXJnOiBbXG4gICAgICBbMyAvIDgsIDEsIDBdLFxuICAgICAgWzMgLyA4LCAwLCAxXSxcbiAgICAgIFsyIC8gOCwgMSwgMV1cbiAgICBdLFxuICAgIEZsb3lkU3RlaW5iZXJnOiBbXG4gICAgICBbNyAvIDE2LCAxLCAwXSxcbiAgICAgIFszIC8gMTYsIC0xLCAxXSxcbiAgICAgIFs1IC8gMTYsIDAsIDFdLFxuICAgICAgWzEgLyAxNiwgMSwgMV1cbiAgICBdLFxuICAgIFN0dWNraTogW1xuICAgICAgWzggLyA0MiwgMSwgMF0sXG4gICAgICBbNCAvIDQyLCAyLCAwXSxcbiAgICAgIFsyIC8gNDIsIC0yLCAxXSxcbiAgICAgIFs0IC8gNDIsIC0xLCAxXSxcbiAgICAgIFs4IC8gNDIsIDAsIDFdLFxuICAgICAgWzQgLyA0MiwgMSwgMV0sXG4gICAgICBbMiAvIDQyLCAyLCAxXSxcbiAgICAgIFsxIC8gNDIsIC0yLCAyXSxcbiAgICAgIFsyIC8gNDIsIC0xLCAyXSxcbiAgICAgIFs0IC8gNDIsIDAsIDJdLFxuICAgICAgWzIgLyA0MiwgMSwgMl0sXG4gICAgICBbMSAvIDQyLCAyLCAyXVxuICAgIF0sXG4gICAgQXRraW5zb246IFtcbiAgICAgIFsxIC8gOCwgMSwgMF0sXG4gICAgICBbMSAvIDgsIDIsIDBdLFxuICAgICAgWzEgLyA4LCAtMSwgMV0sXG4gICAgICBbMSAvIDgsIDAsIDFdLFxuICAgICAgWzEgLyA4LCAxLCAxXSxcbiAgICAgIFsxIC8gOCwgMCwgMl1cbiAgICBdXG4gIH07XG5cbiAgaWYgKCFrZXJuZWwgfHwgIWtlcm5lbHNba2VybmVsXSkge1xuICAgIHRocm93ICdVbmtub3duIGRpdGhlcmluZyBrZXJuZWw6ICcgKyBrZXJuZWw7XG4gIH1cblxuICB2YXIgZHMgPSBrZXJuZWxzW2tlcm5lbF07XG4gIHZhciBpbmRleCA9IDAsXG4gICAgaGVpZ2h0ID0gdGhpcy5oZWlnaHQsXG4gICAgd2lkdGggPSB0aGlzLndpZHRoLFxuICAgIGRhdGEgPSB0aGlzLnBpeGVscztcbiAgdmFyIGRpcmVjdGlvbiA9IHNlcnBlbnRpbmUgPyAtMSA6IDE7XG5cbiAgdGhpcy5pbmRleGVkUGl4ZWxzID0gbmV3IFVpbnQ4QXJyYXkodGhpcy5waXhlbHMubGVuZ3RoIC8gMyk7XG5cbiAgZm9yICh2YXIgeSA9IDA7IHkgPCBoZWlnaHQ7IHkrKykge1xuXG4gICAgaWYgKHNlcnBlbnRpbmUpIGRpcmVjdGlvbiA9IGRpcmVjdGlvbiAqIC0xO1xuXG4gICAgZm9yICh2YXIgeCA9IChkaXJlY3Rpb24gPT0gMSA/IDAgOiB3aWR0aCAtIDEpLCB4ZW5kID0gKGRpcmVjdGlvbiA9PSAxID8gd2lkdGggOiAwKTsgeCAhPT0geGVuZDsgeCArPSBkaXJlY3Rpb24pIHtcblxuICAgICAgaW5kZXggPSAoeSAqIHdpZHRoKSArIHg7XG4gICAgICAvLyBHZXQgb3JpZ2luYWwgY29sb3VyXG4gICAgICB2YXIgaWR4ID0gaW5kZXggKiAzO1xuICAgICAgdmFyIHIxID0gZGF0YVtpZHhdO1xuICAgICAgdmFyIGcxID0gZGF0YVtpZHggKyAxXTtcbiAgICAgIHZhciBiMSA9IGRhdGFbaWR4ICsgMl07XG5cbiAgICAgIC8vIEdldCBjb252ZXJ0ZWQgY29sb3VyXG4gICAgICBpZHggPSB0aGlzLmZpbmRDbG9zZXN0UkdCKHIxLCBnMSwgYjEpO1xuICAgICAgdGhpcy51c2VkRW50cnlbaWR4XSA9IHRydWU7XG4gICAgICB0aGlzLmluZGV4ZWRQaXhlbHNbaW5kZXhdID0gaWR4O1xuICAgICAgaWR4ICo9IDM7XG4gICAgICB2YXIgcjIgPSB0aGlzLmNvbG9yVGFiW2lkeF07XG4gICAgICB2YXIgZzIgPSB0aGlzLmNvbG9yVGFiW2lkeCArIDFdO1xuICAgICAgdmFyIGIyID0gdGhpcy5jb2xvclRhYltpZHggKyAyXTtcblxuICAgICAgdmFyIGVyID0gcjEgLSByMjtcbiAgICAgIHZhciBlZyA9IGcxIC0gZzI7XG4gICAgICB2YXIgZWIgPSBiMSAtIGIyO1xuXG4gICAgICBmb3IgKHZhciBpID0gKGRpcmVjdGlvbiA9PSAxID8gMDogZHMubGVuZ3RoIC0gMSksIGVuZCA9IChkaXJlY3Rpb24gPT0gMSA/IGRzLmxlbmd0aCA6IDApOyBpICE9PSBlbmQ7IGkgKz0gZGlyZWN0aW9uKSB7XG4gICAgICAgIHZhciB4MSA9IGRzW2ldWzFdOyAvLyAqZGlyZWN0aW9uOyAgLy8gIFNob3VsZCB0aGlzIGJ5IHRpbWVzZCBieSBkaXJlY3Rpb24/Li50byBtYWtlIHRoZSBrZXJuZWwgZ28gaW4gdGhlIG9wcG9zaXRlIGRpcmVjdGlvbi4uLi5nb3Qgbm8gaWRlYS4uLi5cbiAgICAgICAgdmFyIHkxID0gZHNbaV1bMl07XG4gICAgICAgIGlmICh4MSArIHggPj0gMCAmJiB4MSArIHggPCB3aWR0aCAmJiB5MSArIHkgPj0gMCAmJiB5MSArIHkgPCBoZWlnaHQpIHtcbiAgICAgICAgICB2YXIgZCA9IGRzW2ldWzBdO1xuICAgICAgICAgIGlkeCA9IGluZGV4ICsgeDEgKyAoeTEgKiB3aWR0aCk7XG4gICAgICAgICAgaWR4ICo9IDM7XG5cbiAgICAgICAgICBkYXRhW2lkeF0gPSBNYXRoLm1heCgwLCBNYXRoLm1pbigyNTUsIGRhdGFbaWR4XSArIGVyICogZCkpO1xuICAgICAgICAgIGRhdGFbaWR4ICsgMV0gPSBNYXRoLm1heCgwLCBNYXRoLm1pbigyNTUsIGRhdGFbaWR4ICsgMV0gKyBlZyAqIGQpKTtcbiAgICAgICAgICBkYXRhW2lkeCArIDJdID0gTWF0aC5tYXgoMCwgTWF0aC5taW4oMjU1LCBkYXRhW2lkeCArIDJdICsgZWIgKiBkKSk7XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICB9XG4gIH1cbn07XG5cbi8qXG4gIFJldHVybnMgaW5kZXggb2YgcGFsZXR0ZSBjb2xvciBjbG9zZXN0IHRvIGNcbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5maW5kQ2xvc2VzdCA9IGZ1bmN0aW9uKGMsIHVzZWQpIHtcbiAgcmV0dXJuIHRoaXMuZmluZENsb3Nlc3RSR0IoKGMgJiAweEZGMDAwMCkgPj4gMTYsIChjICYgMHgwMEZGMDApID4+IDgsIChjICYgMHgwMDAwRkYpLCB1c2VkKTtcbn07XG5cbkdJRkVuY29kZXIucHJvdG90eXBlLmZpbmRDbG9zZXN0UkdCID0gZnVuY3Rpb24ociwgZywgYiwgdXNlZCkge1xuICBpZiAodGhpcy5jb2xvclRhYiA9PT0gbnVsbCkgcmV0dXJuIC0xO1xuXG4gIGlmICh0aGlzLm5ldVF1YW50ICYmICF1c2VkKSB7XG4gICAgcmV0dXJuIHRoaXMubmV1UXVhbnQubG9va3VwUkdCKHIsIGcsIGIpO1xuICB9XG5cbiAgdmFyIGMgPSBiIHwgKGcgPDwgOCkgfCAociA8PCAxNik7XG5cbiAgdmFyIG1pbnBvcyA9IDA7XG4gIHZhciBkbWluID0gMjU2ICogMjU2ICogMjU2O1xuICB2YXIgbGVuID0gdGhpcy5jb2xvclRhYi5sZW5ndGg7XG5cbiAgZm9yICh2YXIgaSA9IDAsIGluZGV4ID0gMDsgaSA8IGxlbjsgaW5kZXgrKykge1xuICAgIHZhciBkciA9IHIgLSAodGhpcy5jb2xvclRhYltpKytdICYgMHhmZik7XG4gICAgdmFyIGRnID0gZyAtICh0aGlzLmNvbG9yVGFiW2krK10gJiAweGZmKTtcbiAgICB2YXIgZGIgPSBiIC0gKHRoaXMuY29sb3JUYWJbaSsrXSAmIDB4ZmYpO1xuICAgIHZhciBkID0gZHIgKiBkciArIGRnICogZGcgKyBkYiAqIGRiO1xuICAgIGlmICgoIXVzZWQgfHwgdGhpcy51c2VkRW50cnlbaW5kZXhdKSAmJiAoZCA8IGRtaW4pKSB7XG4gICAgICBkbWluID0gZDtcbiAgICAgIG1pbnBvcyA9IGluZGV4O1xuICAgIH1cbiAgfVxuXG4gIHJldHVybiBtaW5wb3M7XG59O1xuXG4vKlxuICBFeHRyYWN0cyBpbWFnZSBwaXhlbHMgaW50byBieXRlIGFycmF5IHBpeGVsc1xuICAocmVtb3ZlcyBhbHBoYWNoYW5uZWwgZnJvbSBjYW52YXMgaW1hZ2VkYXRhKVxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLmdldEltYWdlUGl4ZWxzID0gZnVuY3Rpb24oKSB7XG4gIHZhciB3ID0gdGhpcy53aWR0aDtcbiAgdmFyIGggPSB0aGlzLmhlaWdodDtcbiAgdGhpcy5waXhlbHMgPSBuZXcgVWludDhBcnJheSh3ICogaCAqIDMpO1xuXG4gIHZhciBkYXRhID0gdGhpcy5pbWFnZTtcbiAgdmFyIHNyY1BvcyA9IDA7XG4gIHZhciBjb3VudCA9IDA7XG5cbiAgZm9yICh2YXIgaSA9IDA7IGkgPCBoOyBpKyspIHtcbiAgICBmb3IgKHZhciBqID0gMDsgaiA8IHc7IGorKykge1xuICAgICAgdGhpcy5waXhlbHNbY291bnQrK10gPSBkYXRhW3NyY1BvcysrXTtcbiAgICAgIHRoaXMucGl4ZWxzW2NvdW50KytdID0gZGF0YVtzcmNQb3MrK107XG4gICAgICB0aGlzLnBpeGVsc1tjb3VudCsrXSA9IGRhdGFbc3JjUG9zKytdO1xuICAgICAgc3JjUG9zKys7XG4gICAgfVxuICB9XG59O1xuXG4vKlxuICBXcml0ZXMgR3JhcGhpYyBDb250cm9sIEV4dGVuc2lvblxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLndyaXRlR3JhcGhpY0N0cmxFeHQgPSBmdW5jdGlvbigpIHtcbiAgdGhpcy5vdXQud3JpdGVCeXRlKDB4MjEpOyAvLyBleHRlbnNpb24gaW50cm9kdWNlclxuICB0aGlzLm91dC53cml0ZUJ5dGUoMHhmOSk7IC8vIEdDRSBsYWJlbFxuICB0aGlzLm91dC53cml0ZUJ5dGUoNCk7IC8vIGRhdGEgYmxvY2sgc2l6ZVxuXG4gIHZhciB0cmFuc3AsIGRpc3A7XG4gIGlmICh0aGlzLnRyYW5zcGFyZW50ID09PSBudWxsKSB7XG4gICAgdHJhbnNwID0gMDtcbiAgICBkaXNwID0gMDsgLy8gZGlzcG9zZSA9IG5vIGFjdGlvblxuICB9IGVsc2Uge1xuICAgIHRyYW5zcCA9IDE7XG4gICAgZGlzcCA9IDI7IC8vIGZvcmNlIGNsZWFyIGlmIHVzaW5nIHRyYW5zcGFyZW50IGNvbG9yXG4gIH1cblxuICBpZiAodGhpcy5kaXNwb3NlID49IDApIHtcbiAgICBkaXNwID0gdGhpcy5kaXNwb3NlICYgNzsgLy8gdXNlciBvdmVycmlkZVxuICB9XG4gIGRpc3AgPDw9IDI7XG5cbiAgLy8gcGFja2VkIGZpZWxkc1xuICB0aGlzLm91dC53cml0ZUJ5dGUoXG4gICAgMCB8IC8vIDE6MyByZXNlcnZlZFxuICAgIGRpc3AgfCAvLyA0OjYgZGlzcG9zYWxcbiAgICAwIHwgLy8gNyB1c2VyIGlucHV0IC0gMCA9IG5vbmVcbiAgICB0cmFuc3AgLy8gOCB0cmFuc3BhcmVuY3kgZmxhZ1xuICApO1xuXG4gIHRoaXMud3JpdGVTaG9ydCh0aGlzLmRlbGF5KTsgLy8gZGVsYXkgeCAxLzEwMCBzZWNcbiAgdGhpcy5vdXQud3JpdGVCeXRlKHRoaXMudHJhbnNJbmRleCk7IC8vIHRyYW5zcGFyZW50IGNvbG9yIGluZGV4XG4gIHRoaXMub3V0LndyaXRlQnl0ZSgwKTsgLy8gYmxvY2sgdGVybWluYXRvclxufTtcblxuLypcbiAgV3JpdGVzIEltYWdlIERlc2NyaXB0b3JcbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS53cml0ZUltYWdlRGVzYyA9IGZ1bmN0aW9uKCkge1xuICB0aGlzLm91dC53cml0ZUJ5dGUoMHgyYyk7IC8vIGltYWdlIHNlcGFyYXRvclxuICB0aGlzLndyaXRlU2hvcnQoMCk7IC8vIGltYWdlIHBvc2l0aW9uIHgseSA9IDAsMFxuICB0aGlzLndyaXRlU2hvcnQoMCk7XG4gIHRoaXMud3JpdGVTaG9ydCh0aGlzLndpZHRoKTsgLy8gaW1hZ2Ugc2l6ZVxuICB0aGlzLndyaXRlU2hvcnQodGhpcy5oZWlnaHQpO1xuXG4gIC8vIHBhY2tlZCBmaWVsZHNcbiAgaWYgKHRoaXMuZmlyc3RGcmFtZSB8fCB0aGlzLmdsb2JhbFBhbGV0dGUpIHtcbiAgICAvLyBubyBMQ1QgLSBHQ1QgaXMgdXNlZCBmb3IgZmlyc3QgKG9yIG9ubHkpIGZyYW1lXG4gICAgdGhpcy5vdXQud3JpdGVCeXRlKDApO1xuICB9IGVsc2Uge1xuICAgIC8vIHNwZWNpZnkgbm9ybWFsIExDVFxuICAgIHRoaXMub3V0LndyaXRlQnl0ZShcbiAgICAgIDB4ODAgfCAvLyAxIGxvY2FsIGNvbG9yIHRhYmxlIDE9eWVzXG4gICAgICAwIHwgLy8gMiBpbnRlcmxhY2UgLSAwPW5vXG4gICAgICAwIHwgLy8gMyBzb3J0ZWQgLSAwPW5vXG4gICAgICAwIHwgLy8gNC01IHJlc2VydmVkXG4gICAgICB0aGlzLnBhbFNpemUgLy8gNi04IHNpemUgb2YgY29sb3IgdGFibGVcbiAgICApO1xuICB9XG59O1xuXG4vKlxuICBXcml0ZXMgTG9naWNhbCBTY3JlZW4gRGVzY3JpcHRvclxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLndyaXRlTFNEID0gZnVuY3Rpb24oKSB7XG4gIC8vIGxvZ2ljYWwgc2NyZWVuIHNpemVcbiAgdGhpcy53cml0ZVNob3J0KHRoaXMud2lkdGgpO1xuICB0aGlzLndyaXRlU2hvcnQodGhpcy5oZWlnaHQpO1xuXG4gIC8vIHBhY2tlZCBmaWVsZHNcbiAgdGhpcy5vdXQud3JpdGVCeXRlKFxuICAgIDB4ODAgfCAvLyAxIDogZ2xvYmFsIGNvbG9yIHRhYmxlIGZsYWcgPSAxIChnY3QgdXNlZClcbiAgICAweDcwIHwgLy8gMi00IDogY29sb3IgcmVzb2x1dGlvbiA9IDdcbiAgICAweDAwIHwgLy8gNSA6IGdjdCBzb3J0IGZsYWcgPSAwXG4gICAgdGhpcy5wYWxTaXplIC8vIDYtOCA6IGdjdCBzaXplXG4gICk7XG5cbiAgdGhpcy5vdXQud3JpdGVCeXRlKDApOyAvLyBiYWNrZ3JvdW5kIGNvbG9yIGluZGV4XG4gIHRoaXMub3V0LndyaXRlQnl0ZSgwKTsgLy8gcGl4ZWwgYXNwZWN0IHJhdGlvIC0gYXNzdW1lIDE6MVxufTtcblxuLypcbiAgV3JpdGVzIE5ldHNjYXBlIGFwcGxpY2F0aW9uIGV4dGVuc2lvbiB0byBkZWZpbmUgcmVwZWF0IGNvdW50LlxuKi9cbkdJRkVuY29kZXIucHJvdG90eXBlLndyaXRlTmV0c2NhcGVFeHQgPSBmdW5jdGlvbigpIHtcbiAgdGhpcy5vdXQud3JpdGVCeXRlKDB4MjEpOyAvLyBleHRlbnNpb24gaW50cm9kdWNlclxuICB0aGlzLm91dC53cml0ZUJ5dGUoMHhmZik7IC8vIGFwcCBleHRlbnNpb24gbGFiZWxcbiAgdGhpcy5vdXQud3JpdGVCeXRlKDExKTsgLy8gYmxvY2sgc2l6ZVxuICB0aGlzLm91dC53cml0ZVVURkJ5dGVzKCdORVRTQ0FQRTIuMCcpOyAvLyBhcHAgaWQgKyBhdXRoIGNvZGVcbiAgdGhpcy5vdXQud3JpdGVCeXRlKDMpOyAvLyBzdWItYmxvY2sgc2l6ZVxuICB0aGlzLm91dC53cml0ZUJ5dGUoMSk7IC8vIGxvb3Agc3ViLWJsb2NrIGlkXG4gIHRoaXMud3JpdGVTaG9ydCh0aGlzLnJlcGVhdCk7IC8vIGxvb3AgY291bnQgKGV4dHJhIGl0ZXJhdGlvbnMsIDA9cmVwZWF0IGZvcmV2ZXIpXG4gIHRoaXMub3V0LndyaXRlQnl0ZSgwKTsgLy8gYmxvY2sgdGVybWluYXRvclxufTtcblxuLypcbiAgV3JpdGVzIGNvbG9yIHRhYmxlXG4qL1xuR0lGRW5jb2Rlci5wcm90b3R5cGUud3JpdGVQYWxldHRlID0gZnVuY3Rpb24oKSB7XG4gIHRoaXMub3V0LndyaXRlQnl0ZXModGhpcy5jb2xvclRhYik7XG4gIHZhciBuID0gKDMgKiAyNTYpIC0gdGhpcy5jb2xvclRhYi5sZW5ndGg7XG4gIGZvciAodmFyIGkgPSAwOyBpIDwgbjsgaSsrKVxuICAgIHRoaXMub3V0LndyaXRlQnl0ZSgwKTtcbn07XG5cbkdJRkVuY29kZXIucHJvdG90eXBlLndyaXRlU2hvcnQgPSBmdW5jdGlvbihwVmFsdWUpIHtcbiAgdGhpcy5vdXQud3JpdGVCeXRlKHBWYWx1ZSAmIDB4RkYpO1xuICB0aGlzLm91dC53cml0ZUJ5dGUoKHBWYWx1ZSA+PiA4KSAmIDB4RkYpO1xufTtcblxuLypcbiAgRW5jb2RlcyBhbmQgd3JpdGVzIHBpeGVsIGRhdGFcbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS53cml0ZVBpeGVscyA9IGZ1bmN0aW9uKCkge1xuICB2YXIgZW5jID0gbmV3IExaV0VuY29kZXIodGhpcy53aWR0aCwgdGhpcy5oZWlnaHQsIHRoaXMuaW5kZXhlZFBpeGVscywgdGhpcy5jb2xvckRlcHRoKTtcbiAgZW5jLmVuY29kZSh0aGlzLm91dCk7XG59O1xuXG4vKlxuICBSZXRyaWV2ZXMgdGhlIEdJRiBzdHJlYW1cbiovXG5HSUZFbmNvZGVyLnByb3RvdHlwZS5zdHJlYW0gPSBmdW5jdGlvbigpIHtcbiAgcmV0dXJuIHRoaXMub3V0O1xufTtcblxubW9kdWxlLmV4cG9ydHMgPSBHSUZFbmNvZGVyO1xuIiwiLypcbiAgTFpXRW5jb2Rlci5qc1xuXG4gIEF1dGhvcnNcbiAgS2V2aW4gV2VpbmVyIChvcmlnaW5hbCBKYXZhIHZlcnNpb24gLSBrd2VpbmVyQGZtc3dhcmUuY29tKVxuICBUaGliYXVsdCBJbWJlcnQgKEFTMyB2ZXJzaW9uIC0gYnl0ZWFycmF5Lm9yZylcbiAgSm9oYW4gTm9yZGJlcmcgKEpTIHZlcnNpb24gLSBjb2RlQGpvaGFuLW5vcmRiZXJnLmNvbSlcblxuICBBY2tub3dsZWRnZW1lbnRzXG4gIEdJRkNPTVBSLkMgLSBHSUYgSW1hZ2UgY29tcHJlc3Npb24gcm91dGluZXNcbiAgTGVtcGVsLVppdiBjb21wcmVzc2lvbiBiYXNlZCBvbiAnY29tcHJlc3MnLiBHSUYgbW9kaWZpY2F0aW9ucyBieVxuICBEYXZpZCBSb3dsZXkgKG1nYXJkaUB3YXRkY3N1LndhdGVybG9vLmVkdSlcbiAgR0lGIEltYWdlIGNvbXByZXNzaW9uIC0gbW9kaWZpZWQgJ2NvbXByZXNzJ1xuICBCYXNlZCBvbjogY29tcHJlc3MuYyAtIEZpbGUgY29tcHJlc3Npb24gYWxhIElFRUUgQ29tcHV0ZXIsIEp1bmUgMTk4NC5cbiAgQnkgQXV0aG9yczogU3BlbmNlciBXLiBUaG9tYXMgKGRlY3ZheCFoYXJwbyF1dGFoLWNzIXV0YWgtZ3IhdGhvbWFzKVxuICBKaW0gTWNLaWUgKGRlY3ZheCFtY3ZheCFqaW0pXG4gIFN0ZXZlIERhdmllcyAoZGVjdmF4IXZheDEzNSFwZXRzZCFwZW9yYSFzcmQpXG4gIEtlbiBUdXJrb3dza2kgKGRlY3ZheCFkZWN3cmwhdHVydGxldmF4IWtlbilcbiAgSmFtZXMgQS4gV29vZHMgKGRlY3ZheCFpaG5wNCFhbWVzIWphdylcbiAgSm9lIE9yb3N0IChkZWN2YXghdmF4MTM1IXBldHNkIWpvZSlcbiovXG5cbnZhciBFT0YgPSAtMTtcbnZhciBCSVRTID0gMTI7XG52YXIgSFNJWkUgPSA1MDAzOyAvLyA4MCUgb2NjdXBhbmN5XG52YXIgbWFza3MgPSBbMHgwMDAwLCAweDAwMDEsIDB4MDAwMywgMHgwMDA3LCAweDAwMEYsIDB4MDAxRixcbiAgICAgICAgICAgICAweDAwM0YsIDB4MDA3RiwgMHgwMEZGLCAweDAxRkYsIDB4MDNGRiwgMHgwN0ZGLFxuICAgICAgICAgICAgIDB4MEZGRiwgMHgxRkZGLCAweDNGRkYsIDB4N0ZGRiwgMHhGRkZGXTtcblxuZnVuY3Rpb24gTFpXRW5jb2Rlcih3aWR0aCwgaGVpZ2h0LCBwaXhlbHMsIGNvbG9yRGVwdGgpIHtcbiAgdmFyIGluaXRDb2RlU2l6ZSA9IE1hdGgubWF4KDIsIGNvbG9yRGVwdGgpO1xuXG4gIHZhciBhY2N1bSA9IG5ldyBVaW50OEFycmF5KDI1Nik7XG4gIHZhciBodGFiID0gbmV3IEludDMyQXJyYXkoSFNJWkUpO1xuICB2YXIgY29kZXRhYiA9IG5ldyBJbnQzMkFycmF5KEhTSVpFKTtcblxuICB2YXIgY3VyX2FjY3VtLCBjdXJfYml0cyA9IDA7XG4gIHZhciBhX2NvdW50O1xuICB2YXIgZnJlZV9lbnQgPSAwOyAvLyBmaXJzdCB1bnVzZWQgZW50cnlcbiAgdmFyIG1heGNvZGU7XG5cbiAgLy8gYmxvY2sgY29tcHJlc3Npb24gcGFyYW1ldGVycyAtLSBhZnRlciBhbGwgY29kZXMgYXJlIHVzZWQgdXAsXG4gIC8vIGFuZCBjb21wcmVzc2lvbiByYXRlIGNoYW5nZXMsIHN0YXJ0IG92ZXIuXG4gIHZhciBjbGVhcl9mbGcgPSBmYWxzZTtcblxuICAvLyBBbGdvcml0aG06IHVzZSBvcGVuIGFkZHJlc3NpbmcgZG91YmxlIGhhc2hpbmcgKG5vIGNoYWluaW5nKSBvbiB0aGVcbiAgLy8gcHJlZml4IGNvZGUgLyBuZXh0IGNoYXJhY3RlciBjb21iaW5hdGlvbi4gV2UgZG8gYSB2YXJpYW50IG9mIEtudXRoJ3NcbiAgLy8gYWxnb3JpdGhtIEQgKHZvbC4gMywgc2VjLiA2LjQpIGFsb25nIHdpdGggRy4gS25vdHQncyByZWxhdGl2ZWx5LXByaW1lXG4gIC8vIHNlY29uZGFyeSBwcm9iZS4gSGVyZSwgdGhlIG1vZHVsYXIgZGl2aXNpb24gZmlyc3QgcHJvYmUgaXMgZ2l2ZXMgd2F5XG4gIC8vIHRvIGEgZmFzdGVyIGV4Y2x1c2l2ZS1vciBtYW5pcHVsYXRpb24uIEFsc28gZG8gYmxvY2sgY29tcHJlc3Npb24gd2l0aFxuICAvLyBhbiBhZGFwdGl2ZSByZXNldCwgd2hlcmVieSB0aGUgY29kZSB0YWJsZSBpcyBjbGVhcmVkIHdoZW4gdGhlIGNvbXByZXNzaW9uXG4gIC8vIHJhdGlvIGRlY3JlYXNlcywgYnV0IGFmdGVyIHRoZSB0YWJsZSBmaWxscy4gVGhlIHZhcmlhYmxlLWxlbmd0aCBvdXRwdXRcbiAgLy8gY29kZXMgYXJlIHJlLXNpemVkIGF0IHRoaXMgcG9pbnQsIGFuZCBhIHNwZWNpYWwgQ0xFQVIgY29kZSBpcyBnZW5lcmF0ZWRcbiAgLy8gZm9yIHRoZSBkZWNvbXByZXNzb3IuIExhdGUgYWRkaXRpb246IGNvbnN0cnVjdCB0aGUgdGFibGUgYWNjb3JkaW5nIHRvXG4gIC8vIGZpbGUgc2l6ZSBmb3Igbm90aWNlYWJsZSBzcGVlZCBpbXByb3ZlbWVudCBvbiBzbWFsbCBmaWxlcy4gUGxlYXNlIGRpcmVjdFxuICAvLyBxdWVzdGlvbnMgYWJvdXQgdGhpcyBpbXBsZW1lbnRhdGlvbiB0byBhbWVzIWphdy5cbiAgdmFyIGdfaW5pdF9iaXRzLCBDbGVhckNvZGUsIEVPRkNvZGU7XG5cbiAgLy8gQWRkIGEgY2hhcmFjdGVyIHRvIHRoZSBlbmQgb2YgdGhlIGN1cnJlbnQgcGFja2V0LCBhbmQgaWYgaXQgaXMgMjU0XG4gIC8vIGNoYXJhY3RlcnMsIGZsdXNoIHRoZSBwYWNrZXQgdG8gZGlzay5cbiAgZnVuY3Rpb24gY2hhcl9vdXQoYywgb3V0cykge1xuICAgIGFjY3VtW2FfY291bnQrK10gPSBjO1xuICAgIGlmIChhX2NvdW50ID49IDI1NCkgZmx1c2hfY2hhcihvdXRzKTtcbiAgfVxuXG4gIC8vIENsZWFyIG91dCB0aGUgaGFzaCB0YWJsZVxuICAvLyB0YWJsZSBjbGVhciBmb3IgYmxvY2sgY29tcHJlc3NcbiAgZnVuY3Rpb24gY2xfYmxvY2sob3V0cykge1xuICAgIGNsX2hhc2goSFNJWkUpO1xuICAgIGZyZWVfZW50ID0gQ2xlYXJDb2RlICsgMjtcbiAgICBjbGVhcl9mbGcgPSB0cnVlO1xuICAgIG91dHB1dChDbGVhckNvZGUsIG91dHMpO1xuICB9XG5cbiAgLy8gUmVzZXQgY29kZSB0YWJsZVxuICBmdW5jdGlvbiBjbF9oYXNoKGhzaXplKSB7XG4gICAgZm9yICh2YXIgaSA9IDA7IGkgPCBoc2l6ZTsgKytpKSBodGFiW2ldID0gLTE7XG4gIH1cblxuICBmdW5jdGlvbiBjb21wcmVzcyhpbml0X2JpdHMsIG91dHMpIHtcbiAgICB2YXIgZmNvZGUsIGMsIGksIGVudCwgZGlzcCwgaHNpemVfcmVnLCBoc2hpZnQ7XG5cbiAgICAvLyBTZXQgdXAgdGhlIGdsb2JhbHM6IGdfaW5pdF9iaXRzIC0gaW5pdGlhbCBudW1iZXIgb2YgYml0c1xuICAgIGdfaW5pdF9iaXRzID0gaW5pdF9iaXRzO1xuXG4gICAgLy8gU2V0IHVwIHRoZSBuZWNlc3NhcnkgdmFsdWVzXG4gICAgY2xlYXJfZmxnID0gZmFsc2U7XG4gICAgbl9iaXRzID0gZ19pbml0X2JpdHM7XG4gICAgbWF4Y29kZSA9IE1BWENPREUobl9iaXRzKTtcblxuICAgIENsZWFyQ29kZSA9IDEgPDwgKGluaXRfYml0cyAtIDEpO1xuICAgIEVPRkNvZGUgPSBDbGVhckNvZGUgKyAxO1xuICAgIGZyZWVfZW50ID0gQ2xlYXJDb2RlICsgMjtcblxuICAgIGFfY291bnQgPSAwOyAvLyBjbGVhciBwYWNrZXRcblxuICAgIGVudCA9IG5leHRQaXhlbCgpO1xuXG4gICAgaHNoaWZ0ID0gMDtcbiAgICBmb3IgKGZjb2RlID0gSFNJWkU7IGZjb2RlIDwgNjU1MzY7IGZjb2RlICo9IDIpICsraHNoaWZ0O1xuICAgIGhzaGlmdCA9IDggLSBoc2hpZnQ7IC8vIHNldCBoYXNoIGNvZGUgcmFuZ2UgYm91bmRcbiAgICBoc2l6ZV9yZWcgPSBIU0laRTtcbiAgICBjbF9oYXNoKGhzaXplX3JlZyk7IC8vIGNsZWFyIGhhc2ggdGFibGVcblxuICAgIG91dHB1dChDbGVhckNvZGUsIG91dHMpO1xuXG4gICAgb3V0ZXJfbG9vcDogd2hpbGUgKChjID0gbmV4dFBpeGVsKCkpICE9IEVPRikge1xuICAgICAgZmNvZGUgPSAoYyA8PCBCSVRTKSArIGVudDtcbiAgICAgIGkgPSAoYyA8PCBoc2hpZnQpIF4gZW50OyAvLyB4b3IgaGFzaGluZ1xuICAgICAgaWYgKGh0YWJbaV0gPT09IGZjb2RlKSB7XG4gICAgICAgIGVudCA9IGNvZGV0YWJbaV07XG4gICAgICAgIGNvbnRpbnVlO1xuICAgICAgfSBlbHNlIGlmIChodGFiW2ldID49IDApIHsgLy8gbm9uLWVtcHR5IHNsb3RcbiAgICAgICAgZGlzcCA9IGhzaXplX3JlZyAtIGk7IC8vIHNlY29uZGFyeSBoYXNoIChhZnRlciBHLiBLbm90dClcbiAgICAgICAgaWYgKGkgPT09IDApIGRpc3AgPSAxO1xuICAgICAgICBkbyB7XG4gICAgICAgICAgaWYgKChpIC09IGRpc3ApIDwgMCkgaSArPSBoc2l6ZV9yZWc7XG4gICAgICAgICAgaWYgKGh0YWJbaV0gPT09IGZjb2RlKSB7XG4gICAgICAgICAgICBlbnQgPSBjb2RldGFiW2ldO1xuICAgICAgICAgICAgY29udGludWUgb3V0ZXJfbG9vcDtcbiAgICAgICAgICB9XG4gICAgICAgIH0gd2hpbGUgKGh0YWJbaV0gPj0gMCk7XG4gICAgICB9XG4gICAgICBvdXRwdXQoZW50LCBvdXRzKTtcbiAgICAgIGVudCA9IGM7XG4gICAgICBpZiAoZnJlZV9lbnQgPCAxIDw8IEJJVFMpIHtcbiAgICAgICAgY29kZXRhYltpXSA9IGZyZWVfZW50Kys7IC8vIGNvZGUgLT4gaGFzaHRhYmxlXG4gICAgICAgIGh0YWJbaV0gPSBmY29kZTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIGNsX2Jsb2NrKG91dHMpO1xuICAgICAgfVxuICAgIH1cblxuICAgIC8vIFB1dCBvdXQgdGhlIGZpbmFsIGNvZGUuXG4gICAgb3V0cHV0KGVudCwgb3V0cyk7XG4gICAgb3V0cHV0KEVPRkNvZGUsIG91dHMpO1xuICB9XG5cbiAgZnVuY3Rpb24gZW5jb2RlKG91dHMpIHtcbiAgICBvdXRzLndyaXRlQnl0ZShpbml0Q29kZVNpemUpOyAvLyB3cml0ZSBcImluaXRpYWwgY29kZSBzaXplXCIgYnl0ZVxuICAgIHJlbWFpbmluZyA9IHdpZHRoICogaGVpZ2h0OyAvLyByZXNldCBuYXZpZ2F0aW9uIHZhcmlhYmxlc1xuICAgIGN1clBpeGVsID0gMDtcbiAgICBjb21wcmVzcyhpbml0Q29kZVNpemUgKyAxLCBvdXRzKTsgLy8gY29tcHJlc3MgYW5kIHdyaXRlIHRoZSBwaXhlbCBkYXRhXG4gICAgb3V0cy53cml0ZUJ5dGUoMCk7IC8vIHdyaXRlIGJsb2NrIHRlcm1pbmF0b3JcbiAgfVxuXG4gIC8vIEZsdXNoIHRoZSBwYWNrZXQgdG8gZGlzaywgYW5kIHJlc2V0IHRoZSBhY2N1bXVsYXRvclxuICBmdW5jdGlvbiBmbHVzaF9jaGFyKG91dHMpIHtcbiAgICBpZiAoYV9jb3VudCA+IDApIHtcbiAgICAgIG91dHMud3JpdGVCeXRlKGFfY291bnQpO1xuICAgICAgb3V0cy53cml0ZUJ5dGVzKGFjY3VtLCAwLCBhX2NvdW50KTtcbiAgICAgIGFfY291bnQgPSAwO1xuICAgIH1cbiAgfVxuXG4gIGZ1bmN0aW9uIE1BWENPREUobl9iaXRzKSB7XG4gICAgcmV0dXJuICgxIDw8IG5fYml0cykgLSAxO1xuICB9XG5cbiAgLy8gUmV0dXJuIHRoZSBuZXh0IHBpeGVsIGZyb20gdGhlIGltYWdlXG4gIGZ1bmN0aW9uIG5leHRQaXhlbCgpIHtcbiAgICBpZiAocmVtYWluaW5nID09PSAwKSByZXR1cm4gRU9GO1xuICAgIC0tcmVtYWluaW5nO1xuICAgIHZhciBwaXggPSBwaXhlbHNbY3VyUGl4ZWwrK107XG4gICAgcmV0dXJuIHBpeCAmIDB4ZmY7XG4gIH1cblxuICBmdW5jdGlvbiBvdXRwdXQoY29kZSwgb3V0cykge1xuICAgIGN1cl9hY2N1bSAmPSBtYXNrc1tjdXJfYml0c107XG5cbiAgICBpZiAoY3VyX2JpdHMgPiAwKSBjdXJfYWNjdW0gfD0gKGNvZGUgPDwgY3VyX2JpdHMpO1xuICAgIGVsc2UgY3VyX2FjY3VtID0gY29kZTtcblxuICAgIGN1cl9iaXRzICs9IG5fYml0cztcblxuICAgIHdoaWxlIChjdXJfYml0cyA+PSA4KSB7XG4gICAgICBjaGFyX291dCgoY3VyX2FjY3VtICYgMHhmZiksIG91dHMpO1xuICAgICAgY3VyX2FjY3VtID4+PSA4O1xuICAgICAgY3VyX2JpdHMgLT0gODtcbiAgICB9XG5cbiAgICAvLyBJZiB0aGUgbmV4dCBlbnRyeSBpcyBnb2luZyB0byBiZSB0b28gYmlnIGZvciB0aGUgY29kZSBzaXplLFxuICAgIC8vIHRoZW4gaW5jcmVhc2UgaXQsIGlmIHBvc3NpYmxlLlxuICAgIGlmIChmcmVlX2VudCA+IG1heGNvZGUgfHwgY2xlYXJfZmxnKSB7XG4gICAgICBpZiAoY2xlYXJfZmxnKSB7XG4gICAgICAgIG1heGNvZGUgPSBNQVhDT0RFKG5fYml0cyA9IGdfaW5pdF9iaXRzKTtcbiAgICAgICAgY2xlYXJfZmxnID0gZmFsc2U7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICArK25fYml0cztcbiAgICAgICAgaWYgKG5fYml0cyA9PSBCSVRTKSBtYXhjb2RlID0gMSA8PCBCSVRTO1xuICAgICAgICBlbHNlIG1heGNvZGUgPSBNQVhDT0RFKG5fYml0cyk7XG4gICAgICB9XG4gICAgfVxuXG4gICAgaWYgKGNvZGUgPT0gRU9GQ29kZSkge1xuICAgICAgLy8gQXQgRU9GLCB3cml0ZSB0aGUgcmVzdCBvZiB0aGUgYnVmZmVyLlxuICAgICAgd2hpbGUgKGN1cl9iaXRzID4gMCkge1xuICAgICAgICBjaGFyX291dCgoY3VyX2FjY3VtICYgMHhmZiksIG91dHMpO1xuICAgICAgICBjdXJfYWNjdW0gPj49IDg7XG4gICAgICAgIGN1cl9iaXRzIC09IDg7XG4gICAgICB9XG4gICAgICBmbHVzaF9jaGFyKG91dHMpO1xuICAgIH1cbiAgfVxuXG4gIHRoaXMuZW5jb2RlID0gZW5jb2RlO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IExaV0VuY29kZXI7XG4iLCIvKiBOZXVRdWFudCBOZXVyYWwtTmV0IFF1YW50aXphdGlvbiBBbGdvcml0aG1cbiAqIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxuICpcbiAqIENvcHlyaWdodCAoYykgMTk5NCBBbnRob255IERla2tlclxuICpcbiAqIE5FVVFVQU5UIE5ldXJhbC1OZXQgcXVhbnRpemF0aW9uIGFsZ29yaXRobSBieSBBbnRob255IERla2tlciwgMTk5NC5cbiAqIFNlZSBcIktvaG9uZW4gbmV1cmFsIG5ldHdvcmtzIGZvciBvcHRpbWFsIGNvbG91ciBxdWFudGl6YXRpb25cIlxuICogaW4gXCJOZXR3b3JrOiBDb21wdXRhdGlvbiBpbiBOZXVyYWwgU3lzdGVtc1wiIFZvbC4gNSAoMTk5NCkgcHAgMzUxLTM2Ny5cbiAqIGZvciBhIGRpc2N1c3Npb24gb2YgdGhlIGFsZ29yaXRobS5cbiAqIFNlZSBhbHNvICBodHRwOi8vbWVtYmVycy5vemVtYWlsLmNvbS5hdS9+ZGVra2VyL05FVVFVQU5ULkhUTUxcbiAqXG4gKiBBbnkgcGFydHkgb2J0YWluaW5nIGEgY29weSBvZiB0aGVzZSBmaWxlcyBmcm9tIHRoZSBhdXRob3IsIGRpcmVjdGx5IG9yXG4gKiBpbmRpcmVjdGx5LCBpcyBncmFudGVkLCBmcmVlIG9mIGNoYXJnZSwgYSBmdWxsIGFuZCB1bnJlc3RyaWN0ZWQgaXJyZXZvY2FibGUsXG4gKiB3b3JsZC13aWRlLCBwYWlkIHVwLCByb3lhbHR5LWZyZWUsIG5vbmV4Y2x1c2l2ZSByaWdodCBhbmQgbGljZW5zZSB0byBkZWFsXG4gKiBpbiB0aGlzIHNvZnR3YXJlIGFuZCBkb2N1bWVudGF0aW9uIGZpbGVzICh0aGUgXCJTb2Z0d2FyZVwiKSwgaW5jbHVkaW5nIHdpdGhvdXRcbiAqIGxpbWl0YXRpb24gdGhlIHJpZ2h0cyB0byB1c2UsIGNvcHksIG1vZGlmeSwgbWVyZ2UsIHB1Ymxpc2gsIGRpc3RyaWJ1dGUsIHN1YmxpY2Vuc2UsXG4gKiBhbmQvb3Igc2VsbCBjb3BpZXMgb2YgdGhlIFNvZnR3YXJlLCBhbmQgdG8gcGVybWl0IHBlcnNvbnMgd2hvIHJlY2VpdmVcbiAqIGNvcGllcyBmcm9tIGFueSBzdWNoIHBhcnR5IHRvIGRvIHNvLCB3aXRoIHRoZSBvbmx5IHJlcXVpcmVtZW50IGJlaW5nXG4gKiB0aGF0IHRoaXMgY29weXJpZ2h0IG5vdGljZSByZW1haW4gaW50YWN0LlxuICpcbiAqIChKYXZhU2NyaXB0IHBvcnQgMjAxMiBieSBKb2hhbiBOb3JkYmVyZylcbiAqL1xuXG52YXIgbmN5Y2xlcyA9IDEwMDsgLy8gbnVtYmVyIG9mIGxlYXJuaW5nIGN5Y2xlc1xudmFyIG5ldHNpemUgPSAyNTY7IC8vIG51bWJlciBvZiBjb2xvcnMgdXNlZFxudmFyIG1heG5ldHBvcyA9IG5ldHNpemUgLSAxO1xuXG4vLyBkZWZzIGZvciBmcmVxIGFuZCBiaWFzXG52YXIgbmV0Ymlhc3NoaWZ0ID0gNDsgLy8gYmlhcyBmb3IgY29sb3VyIHZhbHVlc1xudmFyIGludGJpYXNzaGlmdCA9IDE2OyAvLyBiaWFzIGZvciBmcmFjdGlvbnNcbnZhciBpbnRiaWFzID0gKDEgPDwgaW50Ymlhc3NoaWZ0KTtcbnZhciBnYW1tYXNoaWZ0ID0gMTA7XG52YXIgZ2FtbWEgPSAoMSA8PCBnYW1tYXNoaWZ0KTtcbnZhciBiZXRhc2hpZnQgPSAxMDtcbnZhciBiZXRhID0gKGludGJpYXMgPj4gYmV0YXNoaWZ0KTsgLyogYmV0YSA9IDEvMTAyNCAqL1xudmFyIGJldGFnYW1tYSA9IChpbnRiaWFzIDw8IChnYW1tYXNoaWZ0IC0gYmV0YXNoaWZ0KSk7XG5cbi8vIGRlZnMgZm9yIGRlY3JlYXNpbmcgcmFkaXVzIGZhY3RvclxudmFyIGluaXRyYWQgPSAobmV0c2l6ZSA+PiAzKTsgLy8gZm9yIDI1NiBjb2xzLCByYWRpdXMgc3RhcnRzXG52YXIgcmFkaXVzYmlhc3NoaWZ0ID0gNjsgLy8gYXQgMzIuMCBiaWFzZWQgYnkgNiBiaXRzXG52YXIgcmFkaXVzYmlhcyA9ICgxIDw8IHJhZGl1c2JpYXNzaGlmdCk7XG52YXIgaW5pdHJhZGl1cyA9IChpbml0cmFkICogcmFkaXVzYmlhcyk7IC8vYW5kIGRlY3JlYXNlcyBieSBhXG52YXIgcmFkaXVzZGVjID0gMzA7IC8vIGZhY3RvciBvZiAxLzMwIGVhY2ggY3ljbGVcblxuLy8gZGVmcyBmb3IgZGVjcmVhc2luZyBhbHBoYSBmYWN0b3JcbnZhciBhbHBoYWJpYXNzaGlmdCA9IDEwOyAvLyBhbHBoYSBzdGFydHMgYXQgMS4wXG52YXIgaW5pdGFscGhhID0gKDEgPDwgYWxwaGFiaWFzc2hpZnQpO1xudmFyIGFscGhhZGVjOyAvLyBiaWFzZWQgYnkgMTAgYml0c1xuXG4vKiByYWRiaWFzIGFuZCBhbHBoYXJhZGJpYXMgdXNlZCBmb3IgcmFkcG93ZXIgY2FsY3VsYXRpb24gKi9cbnZhciByYWRiaWFzc2hpZnQgPSA4O1xudmFyIHJhZGJpYXMgPSAoMSA8PCByYWRiaWFzc2hpZnQpO1xudmFyIGFscGhhcmFkYnNoaWZ0ID0gKGFscGhhYmlhc3NoaWZ0ICsgcmFkYmlhc3NoaWZ0KTtcbnZhciBhbHBoYXJhZGJpYXMgPSAoMSA8PCBhbHBoYXJhZGJzaGlmdCk7XG5cbi8vIGZvdXIgcHJpbWVzIG5lYXIgNTAwIC0gYXNzdW1lIG5vIGltYWdlIGhhcyBhIGxlbmd0aCBzbyBsYXJnZSB0aGF0IGl0IGlzXG4vLyBkaXZpc2libGUgYnkgYWxsIGZvdXIgcHJpbWVzXG52YXIgcHJpbWUxID0gNDk5O1xudmFyIHByaW1lMiA9IDQ5MTtcbnZhciBwcmltZTMgPSA0ODc7XG52YXIgcHJpbWU0ID0gNTAzO1xudmFyIG1pbnBpY3R1cmVieXRlcyA9ICgzICogcHJpbWU0KTtcblxuLypcbiAgQ29uc3RydWN0b3I6IE5ldVF1YW50XG5cbiAgQXJndW1lbnRzOlxuXG4gIHBpeGVscyAtIGFycmF5IG9mIHBpeGVscyBpbiBSR0IgZm9ybWF0XG4gIHNhbXBsZWZhYyAtIHNhbXBsaW5nIGZhY3RvciAxIHRvIDMwIHdoZXJlIGxvd2VyIGlzIGJldHRlciBxdWFsaXR5XG5cbiAgPlxuICA+IHBpeGVscyA9IFtyLCBnLCBiLCByLCBnLCBiLCByLCBnLCBiLCAuLl1cbiAgPlxuKi9cbmZ1bmN0aW9uIE5ldVF1YW50KHBpeGVscywgc2FtcGxlZmFjKSB7XG4gIHZhciBuZXR3b3JrOyAvLyBpbnRbbmV0c2l6ZV1bNF1cbiAgdmFyIG5ldGluZGV4OyAvLyBmb3IgbmV0d29yayBsb29rdXAgLSByZWFsbHkgMjU2XG5cbiAgLy8gYmlhcyBhbmQgZnJlcSBhcnJheXMgZm9yIGxlYXJuaW5nXG4gIHZhciBiaWFzO1xuICB2YXIgZnJlcTtcbiAgdmFyIHJhZHBvd2VyO1xuXG4gIC8qXG4gICAgUHJpdmF0ZSBNZXRob2Q6IGluaXRcblxuICAgIHNldHMgdXAgYXJyYXlzXG4gICovXG4gIGZ1bmN0aW9uIGluaXQoKSB7XG4gICAgbmV0d29yayA9IFtdO1xuICAgIG5ldGluZGV4ID0gbmV3IEludDMyQXJyYXkoMjU2KTtcbiAgICBiaWFzID0gbmV3IEludDMyQXJyYXkobmV0c2l6ZSk7XG4gICAgZnJlcSA9IG5ldyBJbnQzMkFycmF5KG5ldHNpemUpO1xuICAgIHJhZHBvd2VyID0gbmV3IEludDMyQXJyYXkobmV0c2l6ZSA+PiAzKTtcblxuICAgIHZhciBpLCB2O1xuICAgIGZvciAoaSA9IDA7IGkgPCBuZXRzaXplOyBpKyspIHtcbiAgICAgIHYgPSAoaSA8PCAobmV0Ymlhc3NoaWZ0ICsgOCkpIC8gbmV0c2l6ZTtcbiAgICAgIG5ldHdvcmtbaV0gPSBuZXcgRmxvYXQ2NEFycmF5KFt2LCB2LCB2LCAwXSk7XG4gICAgICAvL25ldHdvcmtbaV0gPSBbdiwgdiwgdiwgMF1cbiAgICAgIGZyZXFbaV0gPSBpbnRiaWFzIC8gbmV0c2l6ZTtcbiAgICAgIGJpYXNbaV0gPSAwO1xuICAgIH1cbiAgfVxuXG4gIC8qXG4gICAgUHJpdmF0ZSBNZXRob2Q6IHVuYmlhc25ldFxuXG4gICAgdW5iaWFzZXMgbmV0d29yayB0byBnaXZlIGJ5dGUgdmFsdWVzIDAuLjI1NSBhbmQgcmVjb3JkIHBvc2l0aW9uIGkgdG8gcHJlcGFyZSBmb3Igc29ydFxuICAqL1xuICBmdW5jdGlvbiB1bmJpYXNuZXQoKSB7XG4gICAgZm9yICh2YXIgaSA9IDA7IGkgPCBuZXRzaXplOyBpKyspIHtcbiAgICAgIG5ldHdvcmtbaV1bMF0gPj49IG5ldGJpYXNzaGlmdDtcbiAgICAgIG5ldHdvcmtbaV1bMV0gPj49IG5ldGJpYXNzaGlmdDtcbiAgICAgIG5ldHdvcmtbaV1bMl0gPj49IG5ldGJpYXNzaGlmdDtcbiAgICAgIG5ldHdvcmtbaV1bM10gPSBpOyAvLyByZWNvcmQgY29sb3IgbnVtYmVyXG4gICAgfVxuICB9XG5cbiAgLypcbiAgICBQcml2YXRlIE1ldGhvZDogYWx0ZXJzaW5nbGVcblxuICAgIG1vdmVzIG5ldXJvbiAqaSogdG93YXJkcyBiaWFzZWQgKGIsZyxyKSBieSBmYWN0b3IgKmFscGhhKlxuICAqL1xuICBmdW5jdGlvbiBhbHRlcnNpbmdsZShhbHBoYSwgaSwgYiwgZywgcikge1xuICAgIG5ldHdvcmtbaV1bMF0gLT0gKGFscGhhICogKG5ldHdvcmtbaV1bMF0gLSBiKSkgLyBpbml0YWxwaGE7XG4gICAgbmV0d29ya1tpXVsxXSAtPSAoYWxwaGEgKiAobmV0d29ya1tpXVsxXSAtIGcpKSAvIGluaXRhbHBoYTtcbiAgICBuZXR3b3JrW2ldWzJdIC09IChhbHBoYSAqIChuZXR3b3JrW2ldWzJdIC0gcikpIC8gaW5pdGFscGhhO1xuICB9XG5cbiAgLypcbiAgICBQcml2YXRlIE1ldGhvZDogYWx0ZXJuZWlnaFxuXG4gICAgbW92ZXMgbmV1cm9ucyBpbiAqcmFkaXVzKiBhcm91bmQgaW5kZXggKmkqIHRvd2FyZHMgYmlhc2VkIChiLGcscikgYnkgZmFjdG9yICphbHBoYSpcbiAgKi9cbiAgZnVuY3Rpb24gYWx0ZXJuZWlnaChyYWRpdXMsIGksIGIsIGcsIHIpIHtcbiAgICB2YXIgbG8gPSBNYXRoLmFicyhpIC0gcmFkaXVzKTtcbiAgICB2YXIgaGkgPSBNYXRoLm1pbihpICsgcmFkaXVzLCBuZXRzaXplKTtcblxuICAgIHZhciBqID0gaSArIDE7XG4gICAgdmFyIGsgPSBpIC0gMTtcbiAgICB2YXIgbSA9IDE7XG5cbiAgICB2YXIgcCwgYTtcbiAgICB3aGlsZSAoKGogPCBoaSkgfHwgKGsgPiBsbykpIHtcbiAgICAgIGEgPSByYWRwb3dlclttKytdO1xuXG4gICAgICBpZiAoaiA8IGhpKSB7XG4gICAgICAgIHAgPSBuZXR3b3JrW2orK107XG4gICAgICAgIHBbMF0gLT0gKGEgKiAocFswXSAtIGIpKSAvIGFscGhhcmFkYmlhcztcbiAgICAgICAgcFsxXSAtPSAoYSAqIChwWzFdIC0gZykpIC8gYWxwaGFyYWRiaWFzO1xuICAgICAgICBwWzJdIC09IChhICogKHBbMl0gLSByKSkgLyBhbHBoYXJhZGJpYXM7XG4gICAgICB9XG5cbiAgICAgIGlmIChrID4gbG8pIHtcbiAgICAgICAgcCA9IG5ldHdvcmtbay0tXTtcbiAgICAgICAgcFswXSAtPSAoYSAqIChwWzBdIC0gYikpIC8gYWxwaGFyYWRiaWFzO1xuICAgICAgICBwWzFdIC09IChhICogKHBbMV0gLSBnKSkgLyBhbHBoYXJhZGJpYXM7XG4gICAgICAgIHBbMl0gLT0gKGEgKiAocFsyXSAtIHIpKSAvIGFscGhhcmFkYmlhcztcbiAgICAgIH1cbiAgICB9XG4gIH1cblxuICAvKlxuICAgIFByaXZhdGUgTWV0aG9kOiBjb250ZXN0XG5cbiAgICBzZWFyY2hlcyBmb3IgYmlhc2VkIEJHUiB2YWx1ZXNcbiAgKi9cbiAgZnVuY3Rpb24gY29udGVzdChiLCBnLCByKSB7XG4gICAgLypcbiAgICAgIGZpbmRzIGNsb3Nlc3QgbmV1cm9uIChtaW4gZGlzdCkgYW5kIHVwZGF0ZXMgZnJlcVxuICAgICAgZmluZHMgYmVzdCBuZXVyb24gKG1pbiBkaXN0LWJpYXMpIGFuZCByZXR1cm5zIHBvc2l0aW9uXG4gICAgICBmb3IgZnJlcXVlbnRseSBjaG9zZW4gbmV1cm9ucywgZnJlcVtpXSBpcyBoaWdoIGFuZCBiaWFzW2ldIGlzIG5lZ2F0aXZlXG4gICAgICBiaWFzW2ldID0gZ2FtbWEgKiAoKDEgLyBuZXRzaXplKSAtIGZyZXFbaV0pXG4gICAgKi9cblxuICAgIHZhciBiZXN0ZCA9IH4oMSA8PCAzMSk7XG4gICAgdmFyIGJlc3RiaWFzZCA9IGJlc3RkO1xuICAgIHZhciBiZXN0cG9zID0gLTE7XG4gICAgdmFyIGJlc3RiaWFzcG9zID0gYmVzdHBvcztcblxuICAgIHZhciBpLCBuLCBkaXN0LCBiaWFzZGlzdCwgYmV0YWZyZXE7XG4gICAgZm9yIChpID0gMDsgaSA8IG5ldHNpemU7IGkrKykge1xuICAgICAgbiA9IG5ldHdvcmtbaV07XG5cbiAgICAgIGRpc3QgPSBNYXRoLmFicyhuWzBdIC0gYikgKyBNYXRoLmFicyhuWzFdIC0gZykgKyBNYXRoLmFicyhuWzJdIC0gcik7XG4gICAgICBpZiAoZGlzdCA8IGJlc3RkKSB7XG4gICAgICAgIGJlc3RkID0gZGlzdDtcbiAgICAgICAgYmVzdHBvcyA9IGk7XG4gICAgICB9XG5cbiAgICAgIGJpYXNkaXN0ID0gZGlzdCAtICgoYmlhc1tpXSkgPj4gKGludGJpYXNzaGlmdCAtIG5ldGJpYXNzaGlmdCkpO1xuICAgICAgaWYgKGJpYXNkaXN0IDwgYmVzdGJpYXNkKSB7XG4gICAgICAgIGJlc3RiaWFzZCA9IGJpYXNkaXN0O1xuICAgICAgICBiZXN0Ymlhc3BvcyA9IGk7XG4gICAgICB9XG5cbiAgICAgIGJldGFmcmVxID0gKGZyZXFbaV0gPj4gYmV0YXNoaWZ0KTtcbiAgICAgIGZyZXFbaV0gLT0gYmV0YWZyZXE7XG4gICAgICBiaWFzW2ldICs9IChiZXRhZnJlcSA8PCBnYW1tYXNoaWZ0KTtcbiAgICB9XG5cbiAgICBmcmVxW2Jlc3Rwb3NdICs9IGJldGE7XG4gICAgYmlhc1tiZXN0cG9zXSAtPSBiZXRhZ2FtbWE7XG5cbiAgICByZXR1cm4gYmVzdGJpYXNwb3M7XG4gIH1cblxuICAvKlxuICAgIFByaXZhdGUgTWV0aG9kOiBpbnhidWlsZFxuXG4gICAgc29ydHMgbmV0d29yayBhbmQgYnVpbGRzIG5ldGluZGV4WzAuLjI1NV1cbiAgKi9cbiAgZnVuY3Rpb24gaW54YnVpbGQoKSB7XG4gICAgdmFyIGksIGosIHAsIHEsIHNtYWxscG9zLCBzbWFsbHZhbCwgcHJldmlvdXNjb2wgPSAwLCBzdGFydHBvcyA9IDA7XG4gICAgZm9yIChpID0gMDsgaSA8IG5ldHNpemU7IGkrKykge1xuICAgICAgcCA9IG5ldHdvcmtbaV07XG4gICAgICBzbWFsbHBvcyA9IGk7XG4gICAgICBzbWFsbHZhbCA9IHBbMV07IC8vIGluZGV4IG9uIGdcbiAgICAgIC8vIGZpbmQgc21hbGxlc3QgaW4gaS4ubmV0c2l6ZS0xXG4gICAgICBmb3IgKGogPSBpICsgMTsgaiA8IG5ldHNpemU7IGorKykge1xuICAgICAgICBxID0gbmV0d29ya1tqXTtcbiAgICAgICAgaWYgKHFbMV0gPCBzbWFsbHZhbCkgeyAvLyBpbmRleCBvbiBnXG4gICAgICAgICAgc21hbGxwb3MgPSBqO1xuICAgICAgICAgIHNtYWxsdmFsID0gcVsxXTsgLy8gaW5kZXggb24gZ1xuICAgICAgICB9XG4gICAgICB9XG4gICAgICBxID0gbmV0d29ya1tzbWFsbHBvc107XG4gICAgICAvLyBzd2FwIHAgKGkpIGFuZCBxIChzbWFsbHBvcykgZW50cmllc1xuICAgICAgaWYgKGkgIT0gc21hbGxwb3MpIHtcbiAgICAgICAgaiA9IHFbMF07ICAgcVswXSA9IHBbMF07ICAgcFswXSA9IGo7XG4gICAgICAgIGogPSBxWzFdOyAgIHFbMV0gPSBwWzFdOyAgIHBbMV0gPSBqO1xuICAgICAgICBqID0gcVsyXTsgICBxWzJdID0gcFsyXTsgICBwWzJdID0gajtcbiAgICAgICAgaiA9IHFbM107ICAgcVszXSA9IHBbM107ICAgcFszXSA9IGo7XG4gICAgICB9XG4gICAgICAvLyBzbWFsbHZhbCBlbnRyeSBpcyBub3cgaW4gcG9zaXRpb24gaVxuXG4gICAgICBpZiAoc21hbGx2YWwgIT0gcHJldmlvdXNjb2wpIHtcbiAgICAgICAgbmV0aW5kZXhbcHJldmlvdXNjb2xdID0gKHN0YXJ0cG9zICsgaSkgPj4gMTtcbiAgICAgICAgZm9yIChqID0gcHJldmlvdXNjb2wgKyAxOyBqIDwgc21hbGx2YWw7IGorKylcbiAgICAgICAgICBuZXRpbmRleFtqXSA9IGk7XG4gICAgICAgIHByZXZpb3VzY29sID0gc21hbGx2YWw7XG4gICAgICAgIHN0YXJ0cG9zID0gaTtcbiAgICAgIH1cbiAgICB9XG4gICAgbmV0aW5kZXhbcHJldmlvdXNjb2xdID0gKHN0YXJ0cG9zICsgbWF4bmV0cG9zKSA+PiAxO1xuICAgIGZvciAoaiA9IHByZXZpb3VzY29sICsgMTsgaiA8IDI1NjsgaisrKVxuICAgICAgbmV0aW5kZXhbal0gPSBtYXhuZXRwb3M7IC8vIHJlYWxseSAyNTZcbiAgfVxuXG4gIC8qXG4gICAgUHJpdmF0ZSBNZXRob2Q6IGlueHNlYXJjaFxuXG4gICAgc2VhcmNoZXMgZm9yIEJHUiB2YWx1ZXMgMC4uMjU1IGFuZCByZXR1cm5zIGEgY29sb3IgaW5kZXhcbiAgKi9cbiAgZnVuY3Rpb24gaW54c2VhcmNoKGIsIGcsIHIpIHtcbiAgICB2YXIgYSwgcCwgZGlzdDtcblxuICAgIHZhciBiZXN0ZCA9IDEwMDA7IC8vIGJpZ2dlc3QgcG9zc2libGUgZGlzdCBpcyAyNTYqM1xuICAgIHZhciBiZXN0ID0gLTE7XG5cbiAgICB2YXIgaSA9IG5ldGluZGV4W2ddOyAvLyBpbmRleCBvbiBnXG4gICAgdmFyIGogPSBpIC0gMTsgLy8gc3RhcnQgYXQgbmV0aW5kZXhbZ10gYW5kIHdvcmsgb3V0d2FyZHNcblxuICAgIHdoaWxlICgoaSA8IG5ldHNpemUpIHx8IChqID49IDApKSB7XG4gICAgICBpZiAoaSA8IG5ldHNpemUpIHtcbiAgICAgICAgcCA9IG5ldHdvcmtbaV07XG4gICAgICAgIGRpc3QgPSBwWzFdIC0gZzsgLy8gaW54IGtleVxuICAgICAgICBpZiAoZGlzdCA+PSBiZXN0ZCkgaSA9IG5ldHNpemU7IC8vIHN0b3AgaXRlclxuICAgICAgICBlbHNlIHtcbiAgICAgICAgICBpKys7XG4gICAgICAgICAgaWYgKGRpc3QgPCAwKSBkaXN0ID0gLWRpc3Q7XG4gICAgICAgICAgYSA9IHBbMF0gLSBiOyBpZiAoYSA8IDApIGEgPSAtYTtcbiAgICAgICAgICBkaXN0ICs9IGE7XG4gICAgICAgICAgaWYgKGRpc3QgPCBiZXN0ZCkge1xuICAgICAgICAgICAgYSA9IHBbMl0gLSByOyBpZiAoYSA8IDApIGEgPSAtYTtcbiAgICAgICAgICAgIGRpc3QgKz0gYTtcbiAgICAgICAgICAgIGlmIChkaXN0IDwgYmVzdGQpIHtcbiAgICAgICAgICAgICAgYmVzdGQgPSBkaXN0O1xuICAgICAgICAgICAgICBiZXN0ID0gcFszXTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICAgIGlmIChqID49IDApIHtcbiAgICAgICAgcCA9IG5ldHdvcmtbal07XG4gICAgICAgIGRpc3QgPSBnIC0gcFsxXTsgLy8gaW54IGtleSAtIHJldmVyc2UgZGlmXG4gICAgICAgIGlmIChkaXN0ID49IGJlc3RkKSBqID0gLTE7IC8vIHN0b3AgaXRlclxuICAgICAgICBlbHNlIHtcbiAgICAgICAgICBqLS07XG4gICAgICAgICAgaWYgKGRpc3QgPCAwKSBkaXN0ID0gLWRpc3Q7XG4gICAgICAgICAgYSA9IHBbMF0gLSBiOyBpZiAoYSA8IDApIGEgPSAtYTtcbiAgICAgICAgICBkaXN0ICs9IGE7XG4gICAgICAgICAgaWYgKGRpc3QgPCBiZXN0ZCkge1xuICAgICAgICAgICAgYSA9IHBbMl0gLSByOyBpZiAoYSA8IDApIGEgPSAtYTtcbiAgICAgICAgICAgIGRpc3QgKz0gYTtcbiAgICAgICAgICAgIGlmIChkaXN0IDwgYmVzdGQpIHtcbiAgICAgICAgICAgICAgYmVzdGQgPSBkaXN0O1xuICAgICAgICAgICAgICBiZXN0ID0gcFszXTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgIH1cbiAgICB9XG5cbiAgICByZXR1cm4gYmVzdDtcbiAgfVxuXG4gIC8qXG4gICAgUHJpdmF0ZSBNZXRob2Q6IGxlYXJuXG5cbiAgICBcIk1haW4gTGVhcm5pbmcgTG9vcFwiXG4gICovXG4gIGZ1bmN0aW9uIGxlYXJuKCkge1xuICAgIHZhciBpO1xuXG4gICAgdmFyIGxlbmd0aGNvdW50ID0gcGl4ZWxzLmxlbmd0aDtcbiAgICB2YXIgYWxwaGFkZWMgPSAzMCArICgoc2FtcGxlZmFjIC0gMSkgLyAzKTtcbiAgICB2YXIgc2FtcGxlcGl4ZWxzID0gbGVuZ3RoY291bnQgLyAoMyAqIHNhbXBsZWZhYyk7XG4gICAgdmFyIGRlbHRhID0gfn4oc2FtcGxlcGl4ZWxzIC8gbmN5Y2xlcyk7XG4gICAgdmFyIGFscGhhID0gaW5pdGFscGhhO1xuICAgIHZhciByYWRpdXMgPSBpbml0cmFkaXVzO1xuXG4gICAgdmFyIHJhZCA9IHJhZGl1cyA+PiByYWRpdXNiaWFzc2hpZnQ7XG5cbiAgICBpZiAocmFkIDw9IDEpIHJhZCA9IDA7XG4gICAgZm9yIChpID0gMDsgaSA8IHJhZDsgaSsrKVxuICAgICAgcmFkcG93ZXJbaV0gPSBhbHBoYSAqICgoKHJhZCAqIHJhZCAtIGkgKiBpKSAqIHJhZGJpYXMpIC8gKHJhZCAqIHJhZCkpO1xuXG4gICAgdmFyIHN0ZXA7XG4gICAgaWYgKGxlbmd0aGNvdW50IDwgbWlucGljdHVyZWJ5dGVzKSB7XG4gICAgICBzYW1wbGVmYWMgPSAxO1xuICAgICAgc3RlcCA9IDM7XG4gICAgfSBlbHNlIGlmICgobGVuZ3RoY291bnQgJSBwcmltZTEpICE9PSAwKSB7XG4gICAgICBzdGVwID0gMyAqIHByaW1lMTtcbiAgICB9IGVsc2UgaWYgKChsZW5ndGhjb3VudCAlIHByaW1lMikgIT09IDApIHtcbiAgICAgIHN0ZXAgPSAzICogcHJpbWUyO1xuICAgIH0gZWxzZSBpZiAoKGxlbmd0aGNvdW50ICUgcHJpbWUzKSAhPT0gMCkgIHtcbiAgICAgIHN0ZXAgPSAzICogcHJpbWUzO1xuICAgIH0gZWxzZSB7XG4gICAgICBzdGVwID0gMyAqIHByaW1lNDtcbiAgICB9XG5cbiAgICB2YXIgYiwgZywgciwgajtcbiAgICB2YXIgcGl4ID0gMDsgLy8gY3VycmVudCBwaXhlbFxuXG4gICAgaSA9IDA7XG4gICAgd2hpbGUgKGkgPCBzYW1wbGVwaXhlbHMpIHtcbiAgICAgIGIgPSAocGl4ZWxzW3BpeF0gJiAweGZmKSA8PCBuZXRiaWFzc2hpZnQ7XG4gICAgICBnID0gKHBpeGVsc1twaXggKyAxXSAmIDB4ZmYpIDw8IG5ldGJpYXNzaGlmdDtcbiAgICAgIHIgPSAocGl4ZWxzW3BpeCArIDJdICYgMHhmZikgPDwgbmV0Ymlhc3NoaWZ0O1xuXG4gICAgICBqID0gY29udGVzdChiLCBnLCByKTtcblxuICAgICAgYWx0ZXJzaW5nbGUoYWxwaGEsIGosIGIsIGcsIHIpO1xuICAgICAgaWYgKHJhZCAhPT0gMCkgYWx0ZXJuZWlnaChyYWQsIGosIGIsIGcsIHIpOyAvLyBhbHRlciBuZWlnaGJvdXJzXG5cbiAgICAgIHBpeCArPSBzdGVwO1xuICAgICAgaWYgKHBpeCA+PSBsZW5ndGhjb3VudCkgcGl4IC09IGxlbmd0aGNvdW50O1xuXG4gICAgICBpKys7XG5cbiAgICAgIGlmIChkZWx0YSA9PT0gMCkgZGVsdGEgPSAxO1xuICAgICAgaWYgKGkgJSBkZWx0YSA9PT0gMCkge1xuICAgICAgICBhbHBoYSAtPSBhbHBoYSAvIGFscGhhZGVjO1xuICAgICAgICByYWRpdXMgLT0gcmFkaXVzIC8gcmFkaXVzZGVjO1xuICAgICAgICByYWQgPSByYWRpdXMgPj4gcmFkaXVzYmlhc3NoaWZ0O1xuXG4gICAgICAgIGlmIChyYWQgPD0gMSkgcmFkID0gMDtcbiAgICAgICAgZm9yIChqID0gMDsgaiA8IHJhZDsgaisrKVxuICAgICAgICAgIHJhZHBvd2VyW2pdID0gYWxwaGEgKiAoKChyYWQgKiByYWQgLSBqICogaikgKiByYWRiaWFzKSAvIChyYWQgKiByYWQpKTtcbiAgICAgIH1cbiAgICB9XG4gIH1cblxuICAvKlxuICAgIE1ldGhvZDogYnVpbGRDb2xvcm1hcFxuXG4gICAgMS4gaW5pdGlhbGl6ZXMgbmV0d29ya1xuICAgIDIuIHRyYWlucyBpdFxuICAgIDMuIHJlbW92ZXMgbWlzY29uY2VwdGlvbnNcbiAgICA0LiBidWlsZHMgY29sb3JpbmRleFxuICAqL1xuICBmdW5jdGlvbiBidWlsZENvbG9ybWFwKCkge1xuICAgIGluaXQoKTtcbiAgICBsZWFybigpO1xuICAgIHVuYmlhc25ldCgpO1xuICAgIGlueGJ1aWxkKCk7XG4gIH1cbiAgdGhpcy5idWlsZENvbG9ybWFwID0gYnVpbGRDb2xvcm1hcDtcblxuICAvKlxuICAgIE1ldGhvZDogZ2V0Q29sb3JtYXBcblxuICAgIGJ1aWxkcyBjb2xvcm1hcCBmcm9tIHRoZSBpbmRleFxuXG4gICAgcmV0dXJucyBhcnJheSBpbiB0aGUgZm9ybWF0OlxuXG4gICAgPlxuICAgID4gW3IsIGcsIGIsIHIsIGcsIGIsIHIsIGcsIGIsIC4uXVxuICAgID5cbiAgKi9cbiAgZnVuY3Rpb24gZ2V0Q29sb3JtYXAoKSB7XG4gICAgdmFyIG1hcCA9IFtdO1xuICAgIHZhciBpbmRleCA9IFtdO1xuXG4gICAgZm9yICh2YXIgaSA9IDA7IGkgPCBuZXRzaXplOyBpKyspXG4gICAgICBpbmRleFtuZXR3b3JrW2ldWzNdXSA9IGk7XG5cbiAgICB2YXIgayA9IDA7XG4gICAgZm9yICh2YXIgbCA9IDA7IGwgPCBuZXRzaXplOyBsKyspIHtcbiAgICAgIHZhciBqID0gaW5kZXhbbF07XG4gICAgICBtYXBbaysrXSA9IChuZXR3b3JrW2pdWzBdKTtcbiAgICAgIG1hcFtrKytdID0gKG5ldHdvcmtbal1bMV0pO1xuICAgICAgbWFwW2srK10gPSAobmV0d29ya1tqXVsyXSk7XG4gICAgfVxuICAgIHJldHVybiBtYXA7XG4gIH1cbiAgdGhpcy5nZXRDb2xvcm1hcCA9IGdldENvbG9ybWFwO1xuXG4gIC8qXG4gICAgTWV0aG9kOiBsb29rdXBSR0JcblxuICAgIGxvb2tzIGZvciB0aGUgY2xvc2VzdCAqciosICpnKiwgKmIqIGNvbG9yIGluIHRoZSBtYXAgYW5kXG4gICAgcmV0dXJucyBpdHMgaW5kZXhcbiAgKi9cbiAgdGhpcy5sb29rdXBSR0IgPSBpbnhzZWFyY2g7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gTmV1UXVhbnQ7XG4iLCJHSUZFbmNvZGVyID0gcmVxdWlyZSAnLi9HSUZFbmNvZGVyLmpzJ1xuXG5yZW5kZXJGcmFtZSA9IChmcmFtZSkgLT5cbiAgZW5jb2RlciA9IG5ldyBHSUZFbmNvZGVyIGZyYW1lLndpZHRoLCBmcmFtZS5oZWlnaHRcblxuICBpZiBmcmFtZS5pbmRleCBpcyAwXG4gICAgZW5jb2Rlci53cml0ZUhlYWRlcigpXG4gIGVsc2VcbiAgICBlbmNvZGVyLmZpcnN0RnJhbWUgPSBmYWxzZVxuXG4gIGVuY29kZXIuc2V0VHJhbnNwYXJlbnQgZnJhbWUudHJhbnNwYXJlbnRcbiAgZW5jb2Rlci5zZXREaXNwb3NlIGZyYW1lLmRpc3Bvc2VcbiAgZW5jb2Rlci5zZXRSZXBlYXQgZnJhbWUucmVwZWF0XG4gIGVuY29kZXIuc2V0RGVsYXkgZnJhbWUuZGVsYXlcbiAgZW5jb2Rlci5zZXRRdWFsaXR5IGZyYW1lLnF1YWxpdHlcbiAgZW5jb2Rlci5zZXREaXRoZXIgZnJhbWUuZGl0aGVyXG4gIGVuY29kZXIuc2V0R2xvYmFsUGFsZXR0ZSBmcmFtZS5nbG9iYWxQYWxldHRlXG4gIGVuY29kZXIuYWRkRnJhbWUgZnJhbWUuZGF0YVxuICBlbmNvZGVyLmZpbmlzaCgpIGlmIGZyYW1lLmxhc3RcbiAgaWYgZnJhbWUuZ2xvYmFsUGFsZXR0ZSA9PSB0cnVlXG4gICAgZnJhbWUuZ2xvYmFsUGFsZXR0ZSA9IGVuY29kZXIuZ2V0R2xvYmFsUGFsZXR0ZSgpXG5cbiAgc3RyZWFtID0gZW5jb2Rlci5zdHJlYW0oKVxuICBmcmFtZS5kYXRhID0gc3RyZWFtLnBhZ2VzXG4gIGZyYW1lLmN1cnNvciA9IHN0cmVhbS5jdXJzb3JcbiAgZnJhbWUucGFnZVNpemUgPSBzdHJlYW0uY29uc3RydWN0b3IucGFnZVNpemVcblxuICBpZiBmcmFtZS5jYW5UcmFuc2ZlclxuICAgIHRyYW5zZmVyID0gKHBhZ2UuYnVmZmVyIGZvciBwYWdlIGluIGZyYW1lLmRhdGEpXG4gICAgc2VsZi5wb3N0TWVzc2FnZSBmcmFtZSwgdHJhbnNmZXJcbiAgZWxzZVxuICAgIHNlbGYucG9zdE1lc3NhZ2UgZnJhbWVcblxuc2VsZi5vbm1lc3NhZ2UgPSAoZXZlbnQpIC0+IHJlbmRlckZyYW1lIGV2ZW50LmRhdGFcbiJdfQ==\n\n";
@@ -55709,7 +56685,7 @@ function asyncSeek(video, time, callback) {
     video.removeEventListener('seeked', doneSeeking);
 
     if (callback) {
-      callback();
+      return callback();
     }
   }
 
@@ -55763,7 +56739,7 @@ GifService.prototype.createGif = function (configuration, videoElement) {
   } // Initialize GIF maker
 
 
-  var gif = this._gif = new GIF({
+  var gif = this._gif = new window.GIF({
     workers: 8,
     quality: quality,
     repeat: 0,
@@ -55837,7 +56813,7 @@ GifService.prototype.destroy = function () {};
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator":106,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.url":130,"events":131,"util":151}],158:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator":106,"core-js/modules/es.object.to-string":116,"core-js/modules/es.string.iterator":121,"core-js/modules/web.dom-collections.iterator":127,"core-js/modules/web.url":130,"events":131,"util":157}],164:[function(require,module,exports){
 "use strict";
 
 var EventEmitter = require('events').EventEmitter; // EventEmitter used to communicate between the toolbar button and app
@@ -55845,7 +56821,7 @@ var EventEmitter = require('events').EventEmitter; // EventEmitter used to commu
 
 module.exports = new EventEmitter();
 
-},{"events":131}],159:[function(require,module,exports){
+},{"events":131}],165:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.reverse");
@@ -55856,32 +56832,41 @@ require("core-js/modules/es.regexp.exec");
 
 require("core-js/modules/es.string.split");
 
-// Convert a timecode string, like 1:30, to a seconds number
-var toSeconds = function toSeconds(time_string) {
-  var seconds = 0;
-  var time_array = time_string.split(':').reverse();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
 
-  for (var i = 0; i < time_array.length; i++) {
-    var time_segment = parseFloat(time_array[i]);
+// Convert a timecode string, like 1:30, to a seconds number
+function toSeconds(timeString) {
+  var seconds = 0;
+  var timeArray = timeString.split(':').reverse();
+
+  for (var i = 0; i < timeArray.length; i++) {
+    var timeSegment = parseFloat(timeArray[i]) || 0;
 
     switch (i) {
       case 0:
-        seconds += time_segment;
+        seconds += timeSegment;
         break;
 
       case 1:
-        seconds += time_segment * 60;
+        seconds += timeSegment * 60;
         break;
 
       case 2:
-        seconds += time_segment * 60 * 60;
+        seconds += timeSegment * 60 * 60;
+        break;
+
+      default:
         break;
     }
   }
 
   return seconds;
-};
+}
 
-module.exports = toSeconds;
+var _default = toSeconds;
+exports["default"] = _default;
 
-},{"core-js/modules/es.array.reverse":107,"core-js/modules/es.parse-float":117,"core-js/modules/es.regexp.exec":119,"core-js/modules/es.string.split":122}]},{},[156]);
+},{"core-js/modules/es.array.reverse":107,"core-js/modules/es.parse-float":117,"core-js/modules/es.regexp.exec":119,"core-js/modules/es.string.split":122}]},{},[162]);
