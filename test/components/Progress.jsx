@@ -1,8 +1,7 @@
 var test = require('tape');
-var React = require('react/addons');
-var TestUtils = React.addons.TestUtils;
+var TestUtils = require('react-dom/test-utils');
 
-var Progress = require('../../src/components/Progress.jsx');
+var Progress = require('../../src/components/progress.jsx');
 
 test( 'Progress sets image display height based on image aspect ratio', function( t ){
 	t.plan(1);

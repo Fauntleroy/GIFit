@@ -1,10 +1,9 @@
 var fs = require('fs');
 var test = require('tape');
-var React = require('react/addons');
-var TestUtils = React.addons.TestUtils;
-var findWhere = require('lodash/collection/findWhere');
+var TestUtils = require('react-dom/test-utils');
+var _ = require('lodash');
 
-var ConfigurationPanel = require('../../src/components/ConfigurationPanel.jsx');
+var ConfigurationPanel = require('../../src/components/configuration-panel.jsx');
 
 var video_element;
 
@@ -22,12 +21,12 @@ test( 'ConfigurationPanel updates inputs as they change', function( t ){
 	t.plan(2);
 	var configuration_panel = TestUtils.renderIntoDocument( <ConfigurationPanel video={video_element} /> );
 	var input_elements = TestUtils.scryRenderedDOMComponentsWithTag( configuration_panel, 'input' );
-	var input_text_element = findWhere( input_elements, {
+	var input_text_element = _.find( input_elements, {
 		props: {
 			name: 'start'
 		}
 	});
-	var input_checkbox_element = findWhere( input_elements, {
+	var input_checkbox_element = _.find( input_elements, {
 		props: {
 			name: 'link_dimensions'
 		}
@@ -69,12 +68,12 @@ test( 'ConfigurationPanel automatically seeks to start/end times', function( t )
 	t.plan(2);
 	var configuration_panel = TestUtils.renderIntoDocument( <ConfigurationPanel video={video_element} /> );
 	var input_elements = TestUtils.scryRenderedDOMComponentsWithTag( configuration_panel, 'input' );
-	var input_start_element = findWhere( input_elements, {
+	var input_start_element = _.find( input_elements, {
 		props: {
 			name: 'start'
 		}
 	});
-	var input_end_element = findWhere( input_elements, {
+	var input_end_element = _.find( input_elements, {
 		props: {
 			name: 'end'
 		}

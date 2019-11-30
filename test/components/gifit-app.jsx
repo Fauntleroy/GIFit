@@ -1,11 +1,10 @@
 var fs = require('fs');
 var test = require('tape');
 var smock = require('simple-mock');
-var React = require('react/addons');
-var TestUtils = React.addons.TestUtils;
+var TestUtils = require('react-dom/test-utils');
 
-var gifit_events = require('../../src/utils/gifit_events.js');
-var GifitApp = require('../../src/components/GifitApp.jsx');
+var gifit_events = require('../../src/utils/gifit-events.js');
+var GifitApp = require('../../src/components/gifit-app.jsx');
 
 var video_element;
 

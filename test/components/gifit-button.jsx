@@ -1,9 +1,8 @@
 var test = require('tape');
-var React = require('react/addons');
-var TestUtils = React.addons.TestUtils;
+var TestUtils = require('react-dom/test-utils');
 
-var gifit_events = require('../../src/utils/gifit_events.js');
-var GifitButton = require('../../src/components/GifitButton.jsx');
+var gifit_events = require('../../src/utils/gifit-events.js');
+var GifitButton = require('../../src/components/gifit-button.jsx');
 
 test( 'GifitButton emits "toggle" event when clicked', function( t ){
 	t.plan(1);

@@ -1,6 +1,6 @@
 var test = require('tape');
 
-var toSeconds = require('../../src/utils/toSeconds.js');
+var toSeconds = require('../../src/utils/to-seconds.js');
 
 test( 'Converts MM:SS format to seconds integer', function( t ){
 	t.plan(5);
