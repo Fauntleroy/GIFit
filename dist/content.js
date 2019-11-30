@@ -56614,7 +56614,7 @@ function initializeGifit(youtubePlayerApiElement) {
 
 
 function scanPage() {
-  var youtubePlayerApiElements = document.querySelectorAll('#player-api:not(.gifit--initialized):not(.off-screen-target), #movie_player:not(.gifit--initialized)');
+  var youtubePlayerApiElements = document.querySelectorAll('#movie_player:not(.gifit--initialized)');
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;

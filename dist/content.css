@@ -49,6 +49,7 @@
   line-height: inherit;
   color: #eeeeee;
   font-size: 150%;
+  user-select: none;
 }
 .gifit-ytp-2015 .gifit-button:hover {
   color: #ffffff;

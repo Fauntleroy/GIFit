@@ -68,7 +68,7 @@ function initializeGifit (youtubePlayerApiElement) {
 // Inject GIFit into all players found
 // This is super nasty but it's the least brittle way to do things. C'est la vie.
 function scanPage () {
-  const youtubePlayerApiElements = document.querySelectorAll('#player-api:not(.gifit--initialized):not(.off-screen-target), #movie_player:not(.gifit--initialized)');
+  const youtubePlayerApiElements = document.querySelectorAll('#movie_player:not(.gifit--initialized)');
   for (const youtubePlayerApiElement of youtubePlayerApiElements) {
     initializeGifit(youtubePlayerApiElement);
   }
