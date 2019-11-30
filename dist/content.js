@@ -56550,8 +56550,7 @@ var _gifitApp = _interopRequireDefault(require("./components/gifit-app.jsx"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function initializeGifit(youtubePlayerApiElement) {
-  var is2015Player = !!youtubePlayerApiElement.querySelector(':scope .ytp-chrome-controls');
-  var is2018Player = !!document.querySelector('#movie_player'); // Find YouTube elements we'll be injecting into
+  var is2015Player = !!youtubePlayerApiElement.querySelector(':scope .ytp-chrome-controls'); // Find YouTube elements we'll be injecting into
 
   var youtubePlayerChromeElement = youtubePlayerApiElement.querySelector(':scope .html5-player-chrome, :scope .ytp-chrome-bottom');
   var youtubePlayerControlsElement = youtubePlayerApiElement.querySelector(':scope .html5-video-controls, :scope .ytp-chrome-controls');

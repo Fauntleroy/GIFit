@@ -1,6 +1,6 @@
 {
   "name": "gifit-extension",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Make GIFs from YouTube videos in Chrome & Firefox",
   "repository": {
     "type": "git",

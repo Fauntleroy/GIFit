@@ -7,7 +7,6 @@ import GifitApp from './components/gifit-app.jsx';
 
 function initializeGifit (youtubePlayerApiElement) {
   const is2015Player = !!youtubePlayerApiElement.querySelector(':scope .ytp-chrome-controls');
-  const is2018Player = !!document.querySelector('#movie_player');
 
   // Find YouTube elements we'll be injecting into
   var youtubePlayerChromeElement = youtubePlayerApiElement.querySelector(':scope .html5-player-chrome, :scope .ytp-chrome-bottom');
