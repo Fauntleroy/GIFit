@@ -4,6 +4,7 @@
 	--color-system: var(--color-aluminum-blue);
 	--color-highlight: var(--color-intensity-red);
 	--system-interface-opacity: 0.65;
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 input::-webkit-outer-spin-button,
@@ -50,6 +51,7 @@ input[type=number] {
 	}
 
 	button {
+		cursor: pointer;
 		font-family: Inter, sans-serif;
 		font-size: 11px;
 		text-transform: uppercase;
@@ -62,6 +64,19 @@ input[type=number] {
 		background: white;
 		color: rgb(25, 25, 25);
 		padding: 5px 20px;
+
+		transition: all 250ms var(--ease-out-expo);
+
+		&:hover {
+			box-shadow: var(--color-intensity-red) 0 2px 0 0;
+			transform: translateY(-2px);
+		}
+
+		&:disabled {
+			filter: contrast(0.5);
+			opacity: 0.5;
+			transform: scale(0.95);
+		}
 	}
 }
 
@@ -245,4 +260,8 @@ input[type=number] {
 	grid-area: footer;
 	align-self: center;
 	justify-self: center;
+}
+
+.ggs__action {
+	margin: 0 5px;
 }

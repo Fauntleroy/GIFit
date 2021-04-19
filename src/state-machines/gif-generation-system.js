@@ -111,6 +111,12 @@ const gifGenerationSystemMachine = new Machine({
             }
           }
         }
+      },
+      on: {
+        RESET: {
+          target: 'configuring',
+          actions: ['resetData']
+        }
       }
     }
   }
@@ -135,6 +141,11 @@ const gifGenerationSystemMachine = new Machine({
     setGifData: assign((context, event) => {
       return {
         gifData: event.data
+      };
+    }),
+    resetData: assign((context, event) => {
+      return {
+        gifData: null
       };
     })
   },
