@@ -3,9 +3,14 @@
     "name": "GIFit!",
     "description": "Make GIFs from YouTube videos",
     "version": "2.0.2",
-    "permissions": ["activeTab"],
+    "permissions": ["activeTab", "contextMenus"],
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
     "content_scripts": [{
-        "matches": ["*://www.youtube.com/*"],
+        "matches": ["<all_urls>"],
         "css": ["content.css"],
         "js": [
             "vendor/gif.js",

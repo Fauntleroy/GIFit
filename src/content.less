@@ -1,465 +1,248 @@
-@MAXIMUM_Z_INDEX: 2147483647;
+:root {
+	--color-aluminum-blue: hsl(225deg 100% 80%);
+	--color-intensity-red: hsl(350deg, 100%, 60%);
+	--color-system: var(--color-aluminum-blue);
+	--color-highlight: var(--color-intensity-red);
+	--system-interface-opacity: 0.65;
+}
 
-@color_gif: rgb( 255, 255, 255 );
-@color_it: rgb( 255, 255, 255 );
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	/* display: none; <- Crashes Chrome on hover */
+	-webkit-appearance: none;
+	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
 
-@color_youtube_toolbar: rgb( 117, 117, 117 );
-@color_youtube_toolbar_hover: rgb( 164, 164, 164 );
-@color_youtube_toolbar_active: rgb( 255, 255, 255 );
+input[type=number] {
+	-moz-appearance: textfield; /* Firefox */
+}
 
-@color_panel_text: rgb( 125, 125, 125 );
-@color_panel_background: rgba( 255, 255, 255, 0.95 );
-@color_input_text: rgb( 25, 25, 25 );
+.gifit-app {
+	position: fixed;
+	z-index: 5000000;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgba(27, 31, 41, 0.9);
+	box-shadow: inset rgb(0 0 0 / 25%) 0 0 10vw;
+	backdrop-filter: blur(4px);
 
-@color_slider_thumb: rgb( 235, 235, 235 );
-@color_slider_thumb_focus: rgb( 255, 255, 255 );
-@color_slider_background: rgba( 0, 0, 0, 0.06 );
+	font-family: Inter, sans-serif;
+	font-size: 11px;
+	text-transform: uppercase;
+	font-weight: 500;
+	letter-spacing: 3px;
+	color: white;
 
-@color_button: rgb( 235, 235, 235 );
-@color_button_background: rgb( 25, 25, 25 );
-@color_button_primary_background: rgb( 235, 15, 15 );
-@color_subtle_shadow: rgba( 0, 0, 0, 0.25 );
+	display: flex;
+	align-items: center;
+	justify-content: center;
 
-@youtube_controls_height: 36px;
-@youtube_controls_height_fullscreen: 54px;
-@youtube_progress_bar_height: 5px;
-@youtube_progress_bar_height_fullscreen: 8px;
-@label_font_size: 10px;
-@input_horizontal_padding: 12px;
-@input_border_radius: 3px;
-@button_border_radius: 3px;
-
-@ease_in_expo: cubic-bezier( 0.95, 0.05, 0.795, 0.035 );
-@ease_out_expo: cubic-bezier( 0.19, 1, 0.22, 1 );
-
-@import url('https://fonts.googleapis.com/css?family=Arizonia|Roboto+Mono|Roboto:400,400i,700');
-@import 'styles/gifit_icons.less';
-@import 'styles/youtube.less';
-@import 'styles/2015.less';
-
-// General Gifit
-.gifit {
-	font-family: 'Roboto', sans-serif;
-
-	&.gifit-app {
-		a {
-			color: @color_button_primary_background;
-			transition: transform 150ms, color 100ms;
-
-			&:hover,
-			&:focus {
-				transform: scale( 1.05 );
-				color: lighten( @color_button_primary_background, 20% );
-			}
-
-			&:active {
-				transform: scale( 1 );
-				transition: transform 25ms;
-			}
-		}
-	}
-
-	fieldset {
-		position: relative;
-		border: none;
-		margin: 0;
-		padding: 0;
-		line-height: 35px;
-	}
-
-	label {
-		text-transform: uppercase;
-		font-size: @label_font_size;
-		font-family: 'Roboto', sans-serif;
-		font-style: italic;
-		line-height: @label_font_size;
-		letter-spacing: 0.75px;
-	}
-
-	input {
-		outline: none;
-	}
-
-	input[type="text"],
-	input[type="number"] {
-		font-family: 'Roboto Mono', sans-serif;
-		font-size: 22px;
-		color: fadeout( @color_input_text, 15% );
-		background: none;
-		border: none;
-		padding: 20px @input_horizontal_padding 5px @input_horizontal_padding;
-		transition: background-color 550ms, border-color 550ms, box-shadow 550ms;
-
-		&:hover {
-			background-color: rgba(0, 0, 0, 0.05);
-			transition: background-color 0ms;
-		}
-
-		&:focus {
-			color: @color_input_text;
-			background-color: rgba( 255, 255, 255, 0.95 );
-			box-shadow: 0px 0px 7px 1px rgba(255, 255, 255, 0.75);
-			transition: background-color 225ms, box-shadow 225ms;
-		}
-
-		&[type="number"]::-webkit-inner-spin-button,
-		&[type="number"]::-webkit-outer-spin-button {
-			-webkit-appearance: none;
-			margin: 0;
-		}
-	}
-
-	input[type="range"] {
-		-webkit-appearance: none;
-		cursor: -webkit-grab;
-		vertical-align: middle;
-		background: transparent;
-
-		height: 5px;
-		width: 100%;
-		border-radius: 3px;
-		background: @color_slider_background;
-		box-shadow: inset 0 1px 0 0 @color_subtle_shadow;
-		transition: background-color 125ms;
-
-		&::-webkit-slider-thumb {
-			-webkit-appearance: none;
-			position: relative;
-			z-index: 2;
-			height: 14px;
-			width: 14px;
-			border-radius: 50%;
-			background: @color_slider_thumb;
-			border: rgb( 25, 25, 25 ) 2px solid;
-			box-shadow: 0 2px 1px 0 @color_subtle_shadow;
-			transition: border-width 125ms, background-color 125ms;
-		}
-
-		&::-webkit-slider-runnable-track {
-			position: relative;
-
-			&::before {
-				content: 'hello?';
-				display: block;
-			}
-		}
-
-		&:active {
-			cursor: -webkit-grabbing;
-
-			&::-webkit-slider-thumb {
-				border-width: 5px;
-			}
-		}
-
-		&:focus {
-			&::-webkit-slider-thumb {
-				background-color: @color_slider_thumb_focus;
-			}
-		}
-	}
-
-	fieldset {
-		clear: both;
-	}
-
-	progress {
-		&::-webkit-progress-bar {
-			overflow: hidden;
-			border-radius: 3px;
-			background: @color_slider_background;
-			box-shadow: inset 0 1px 1px @color_subtle_shadow;
-		}
-
-		&::-webkit-progress-value {
-			background: rgb( 25, 25, 25 );
-		}
-	}
-
-	// buttons
-	.gifit__button,
-	a.gifit__button {
-		cursor: pointer;
-		display: inline-block;
-		border: none;
-		padding: 5px 25px;
-		font-size: 18px;
-		line-height: 30px;
-		background: @color_button_background;
-		color: @color_button;
-		outline: none;
-		transition: transform 150ms, background 175ms, box-shadow 150ms;
-
-		&:hover,
-		&:focus {
-			color: @color_button;
-			transform: scale( 1.025 );
-			background: lighten( @color_button_background, 10% );
-			box-shadow: 0 2px 5px @color_subtle_shadow;
-		}
-
-		&:active, &:active:hover {
-			transform: scale( 1 );
-			transition: transform 25ms;
-			box-shadow: inset 0px 1px 2px 0px rgba(0,0,0,0.35);
-			background: @color_button_background;
-		}
-	}
-
-	.gifit__button--primary {
-		background: @color_button_primary_background;
-
-		&:hover,
-		&:focus {
-			background: lighten( @color_button_primary_background, 10% );
-		}
-
-		&:active,
-		&:active:focus {
-			background: darken( @color_button_primary_background, 5% );
-		}
-	}
-
-	.gifit__button--large {
-		padding: 0 15px;
-		font-size: 24px;
-		line-height: 35px;
-	}
-
-	// Inputs
-	.gifit__inputs {
-		position: relative;
-		width: 50%;
-
-		&.gifit__inputs--range {
-			box-sizing: border-box;
-			padding: 26px @input_horizontal_padding 5px @input_horizontal_padding;
-		}
-
-		input {
-			display: block;
-			box-sizing: border-box;
-			width: 100%;
-		}
-	}
-
-	.gifit__label {
-		position: absolute;
-		top: 8px;
-		left: @input_horizontal_padding;
-	}
-
-	.gifit__fieldset--horizontal {
-		.gifit__inputs {
-			float: left;
-
-			.gifit__input {
-				border-bottom: rgba(0, 0, 0, 0.1) 1px solid;
-			}
-
-			&:first-child {
-				.gifit__input {
-					border-right: rgba(0, 0, 0, 0.1) 1px solid;
-				}
-			}
-		}
-	}
-
-	// App
-	&.gifit-app {
+	* {
 		box-sizing: border-box;
+	}
+
+	&__close {
 		position: absolute;
-		right: 5px;
-		bottom: @youtube_controls_height + @youtube_progress_bar_height;
-		z-index: 700;
-		width: 300px;
-		margin: 0 0 10px 0;
-		padding: 0;
-		color: @color_panel_text;
-		background: @color_panel_background;
-		box-shadow: 0px 0px 5px 0px @color_subtle_shadow;
-		transform: translate3d( 0, 0, 0 ) scaleX( 1 );
-		transition: transform 400ms @ease_out_expo, opacity 400ms @ease_out_expo;
-
-		&.gifit-app--inactive {
-			visibility: hidden;
-			opacity: 0.75;
-			transform: translate3d( 0, 325px, 0 ) scaleX( 0.8 );
-			transition: transform 250ms @ease_out_expo, opacity 250ms @ease_out_expo, visibility 1ms 250ms;
-		}
-
-		&.gifit-app--status-generating,
-		&.gifit-app--status-generated {
-			.gifit-configuration {
-				-webkit-filter: blur( 1px ) grayscale( 100% );
-				transform: scale(0.975);
-				opacity: 0.1;
-			}
-
-			.gifit-progress {
-				display: flex;
-			}
-		}
-
-		&.gifit-app--status-generated {
-			.gifit-progress__status {
-				display: none;
-			}
-
-			.gifit-progress__result {
-				opacity: 1;
-				-webkit-filter: brightness( 100% );
-			}
-
-			.gifit-progress__save {
-				display: block;
-			}
-		}
+		top: 30px;
+		right: 30px;
 	}
 
-	// Configuration Panel
-	.gifit-configuration {
-		opacity: 1;
-		transition: -webkit-filter 300ms, opacity 300ms, transform 300ms;
-	}
-
-	.gifit-configuration__link-dimensions {
-		-webkit-appearance: none;
-		cursor: pointer;
-		opacity: 0.5;
-		position: absolute;
-		left: 50%;
-		margin: 16px 0 0 -9px;
-		padding: 4px;
-
-		&:after {
-			font-family: 'GIFit Icons';
-			content: '\e802';
-		}
-
-		&:hover {
-			opacity: 0.6;
-		}
-
-		&:checked {
-			opacity: 1;
-		}
-	}
-
-	.gifit-configuration__submit {
-		display: block;
-		width: 100%;
-		margin: 0;
-		padding: 5px;
-	}
-
-	// Progress
-	.gifit-progress {
-		display: none;
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.gifit-progress__close {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		line-height: 1;
-		font-size: 24px;
-		text-decoration: none;
-		cursor: pointer;
-
-		&:after {
-			content: '×';
-		}
-
-		&:hover {
-			text-decoration: none;
-		}
-	}
-
-	.gifit-progress__details {
-		width: 80%;
-		text-align: center;
-	}
-
-	.gifit-progress__status {
-		padding-bottom: 10px;
-		font-family: 'Roboto', sans-serif;
-		font-style: italic;
+	button {
+		font-family: Inter, sans-serif;
+		font-size: 11px;
 		text-transform: uppercase;
-		text-align: center;
+		font-weight: 600;
+		line-height: 1.25;
+		letter-spacing: 3px;
+
+		border: none;
+		border-radius: 3px;
+		background: white;
+		color: rgb(25, 25, 25);
+		padding: 5px 20px;
+	}
+}
+
+.gifit__labelled-input {
+	color: white;
+
+	&:focus-within {
+		color: var(--color-highlight);
 	}
 
-	.gifit-progress__save {
-		&.gifit__button {
-			display: none;
-		}
+	&__label {
+		display: inline-block;
+		margin-bottom: 5px;
+		color: currentColor;
 	}
 
-	.gifit-progress__elements {
-		position: relative;
-		width: 100%;
-		height: 5px;
-		overflow: hidden;
-		transition: width 350ms, height 350ms 250ms;
+	&__data {
+		display: flex;
+		flex-direction: row;
+		align-items: baseline;
 	}
 
-	.gifit-progress__progress {
-		-webkit-appearance: none;
-		display: block;
-		width: 100%;
-		height: 100%;
+	&__input {
+		display: inline-block;
+		width: 0;
+		min-width: 70px;
+		margin-left: -15px;
+		margin-right: -15px;
+		padding: 5px 15px;
+		border-radius: 4px;
+		border: none;
+		color: currentColor;
+		background: rgba(0, 0, 0, 0.15);
+
+		font-family: 'Space Grotesk', sans-serif;
+		font-size: 30px;
+		font-weight: bold;
+		line-height: 1;
 	}
 
-	.gifit-progress__result {
-		opacity: 0;
-		position: absolute;
-		top: 0;
+	&__addendum {
+		font-family: 'Space Grotesk', sans-serif;
+		font-size: 15px;
+		font-weight: bold;
+		text-transform: none;
+		letter-spacing: normal;
+		color: currentColor;
+		opacity: 0.5;
+	}
+
+	&__input-info {
+		opacity: 50%;
+		font-size: 20px;
+		margin-left: -10px;
+	}
+}
+
+.ggs {
+	position: relative;
+	display: grid;
+	grid-gap: 30px;
+	grid-template-columns: 150px minmax(150px, 1fr) 150px;
+	grid-template-rows: 35px 95px minmax(100px, 1fr) 95px 35px;
+	grid-template-areas:
+		"header header header"
+		". width ."
+		"height workspace quality-and-frame-rate"
+		". start-and-end ."
+		"footer footer footer"
+}
+
+.ggs__corner {
+	position: absolute;
+	display: block;
+	width: 5px;
+	height: 5px;
+	border: var(--color-system) 1px solid;
+	border-radius: 50%;
+	opacity: var(--system-interface-opacity);
+	
+	&:nth-child(1) {
+		top: 17px;
 		left: 0;
-		width: 100%;
-		transition: -webkit-filter 1000ms 250ms;
-		-webkit-filter: brightness( 0% );
+	}
+
+	&:nth-child(2) {
+		top: 17px;
+		right: 0;
+	}
+
+	&:nth-child(3) {
+		bottom: 17px;
+		right: 0;
+	}
+
+	&:nth-child(4) {
+		bottom: 17px;
+		left: 0;
 	}
 }
 
-// Logo
-.gifit-logo__gif {
-	font-family: 'Roboto', sans-serif;
-	font-weight: bold;
+.ggs__head {
+	grid-area: header;
+	align-self: center;
+	justify-self: center;
+	padding: 5px 7px;
+	border: var(--color-system) 1px solid;
+	border-radius: 3px;
+	opacity: var(--system-interface-opacity);
+	color: var(--color-system);
+	line-height: 1.25;
+}
 
-	&.gifit-logo__gif--primary {
-		color: @color_gif;
+.ggs__width {
+	grid-area: width;
+	align-self: end;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	&__bar {
+		margin-top: 25px;
+		width: 420px;
+		height: 2px;
+		background: white;
 	}
 }
 
-.gifit-logo__it {
-	font-family: 'Arizonia', sans-serif;
-	font-size: 125%;
+.ggs__height {
+	grid-area: height;
+	align-self: center;
+	justify-self: end;
+	display: flex;
+	align-items: center;
 
-	&.gifit-logo__it--primary {
-		color: @color_it;
+	&__bar {
+		margin-left: 25px;
+		height: 315px;
+		width: 2px;
+		background: white;
 	}
 }
 
-// Button
-.gifit-button {
-	height: @youtube_controls_height;
-	line-height: @youtube_controls_height;
-	color: @color_youtube_toolbar;
-
-	&:hover {
-		color: @color_youtube_toolbar_hover;
-	}
+.ggs__workspace {
+	grid-area: workspace;	
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.ytp-fullscreen {
-	.gifit-app {
-		bottom: @youtube_controls_height_fullscreen + @youtube_progress_bar_height_fullscreen;
-	}
+.ggs__canvas {
+	width: 420px;
+	height: 315px;
+	background: black;
+}
+
+.ggs__quality-and-frame-rate {
+	grid-area: quality-and-frame-rate;
+	display: flex;
+	flex-direction: column;
+	padding-left: 25px;
+	align-self: stretch;
+	justify-content: space-around;
+}
+
+.ggs__start-and-end {
+	grid-area: start-and-end;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.ggs__time__bar {
+	flex-basis: 100%;
+	height: 2px;
+	background: white;
+}
+
+.ggs__footer {
+	grid-area: footer;
+	align-self: center;
+	justify-self: center;
 }
