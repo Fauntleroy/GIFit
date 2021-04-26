@@ -6,6 +6,9 @@ import { useMachine } from '@xstate/react';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
 import useFrameRate from '../hooks/use-frame-rate';
+import ControlBar from './control-bar.jsx';
+import ResizeBar from './resize-bar.jsx';
+import IncrementableInput from './incrementable-input.jsx';
 
 function LabelledInput (props) {
   return (
@@ -33,8 +36,8 @@ LabelledInput.defaultProps = {
 function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
 
-  const [workspaceWidth, setWorkspaceWidth] = useState(420);
-  const [workspaceHeight, setWorkspaceHeight] = useState(315);
+  const [workspaceWidth, setWorkspaceWidth] = useState(0);
+  const [workspaceHeight, setWorkspaceHeight] = useState(0);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const contextRef = useRef(state.context);
@@ -46,7 +49,7 @@ function GifGenerationSystem (props) {
       const context = canvasRef.current.getContext('2d');
       context.drawImage(
         videoRef.current,
-        0, 0, videoRef.current.offsetWidth, videoRef.current.offsetHeight,
+        0, 0, videoRef.current.videoWidth, videoRef.current.videoHeight,
         0, 0, contextRef.current.width, contextRef.current.height
       );
     }
@@ -67,14 +70,26 @@ function GifGenerationSystem (props) {
     });
   }, []);
 
-  useFrameRate(drawFrame, { fps: 60 });
+  // useFrameRate(drawFrame, { fps: 60 });
+
+  useEffect(() => {
+    if (_.isNumber(state.context.start) && !_.isNaN(state.context.start) && state.context.videoElement) {
+      state.context.videoElement.currentTime = state.context.start;
+    }
+  }, [state.context.start]);
+
+  useEffect(() => {
+    if (_.isNumber(state.context.end) && !_.isNaN(state.context.end) && state.context.videoElement) {
+      state.context.videoElement.currentTime = state.context.end;
+    }
+  }, [state.context.end]);
 
   function setWorkspaceSize (_width, _height) {
     setWorkspaceWidth(_width);
     setWorkspaceHeight(_height);
   }
 
-  const debouncedSetWorkspaceSize = useDebouncedCallback(setWorkspaceSize, 1500);
+  const debouncedSetWorkspaceSize = useDebouncedCallback(setWorkspaceSize, 1000);
 
   useEffect(() => {
     debouncedSetWorkspaceSize(state.context.width, state.context.height);
@@ -105,22 +120,41 @@ function GifGenerationSystem (props) {
   }
 
   function handleStartInputChange (event) {
-    const newStart = parseFloat(event.target.value) || 0;
+    const newStart = parseFloat(event?.target?.value || event) || 0;
     send('INPUT', { key: 'start', value: newStart });
-
-    if (_.isNumber(newStart) && !_.isNaN(newStart)) {
-      state.context.videoElement.currentTime = newStart;
-    }
   }
 
   function handleEndInputChange (event) {
-    const newEnd = parseFloat(event.target.value) || 0;
+    const newEnd = parseFloat(event?.target?.value || event) || 0;
     send('INPUT', { key: 'end', value: newEnd });
+  }
 
-    if (_.isNumber(newEnd) && !_.isNaN(newEnd)) {
-      state.context.videoElement.currentTime = newEnd;
+  function handleStartEndControlBarChange ({ start, end, changed }) {
+    send('INPUT', { key: 'start', value: start * videoRef.current.duration });
+    send('INPUT', { key: 'end', value: end * videoRef.current.duration });
+
+    const newTime = (changed === 'start')
+      ? start * videoRef.current.duration
+      : end * videoRef.current.duration;
+
+    if (_.isNumber(newTime) && !_.isNaN(newTime)) {
+      state.context.videoElement.currentTime = newTime;
     }
   }
+
+  const handleWidthControlBarChange = _.throttle(function ({ scale }) {
+    const newWidth = Math.round(scale * state.context.width);
+    const newHeight = Math.round(scale * state.context.height);
+    send('INPUT', { key: 'width', value: newWidth });
+    send('INPUT', { key: 'height', value: newHeight });
+  }, 1000 / 60);
+
+  const handleHeightControlBarChange = _.throttle(function ({ scale }) {
+    const newWidth = Math.round(scale * state.context.width);
+    const newHeight = Math.round(scale * state.context.height);
+    send('INPUT', { key: 'width', value: newWidth });
+    send('INPUT', { key: 'height', value: newHeight });
+  }, 1000 / 60);
 
   function handleFormSubmit (event) {
     event.preventDefault();
@@ -135,6 +169,10 @@ function GifGenerationSystem (props) {
 
   function handleSave () {
     
+  }
+
+  if (state.matches('initializing')) {
+    return <div>Initializing</div>;
   }
 
   return (
@@ -155,7 +193,12 @@ function GifGenerationSystem (props) {
           value={state.context.width}
           onChange={handleWidthInputChange}
           width={100} />
-        <animated.div className="ggs__width__bar" style={{ ...widthProps }} />
+        <div className="ggs__width__bar" style={{ width: `${state.context.width}px` }}>
+          <ResizeBar 
+            value={state.context.width}
+            onChange={handleWidthControlBarChange}
+            disabled={!state.matches('configuring')} />
+        </div>
       </div>
       <div className="ggs__height">
         <LabelledInput
@@ -164,7 +207,13 @@ function GifGenerationSystem (props) {
           value={state.context.height}
           onChange={handleHeightInputChange}
           width={100} />
-        <animated.div className="ggs__height__bar" style={{ ...heightProps }} />
+        <div className="ggs__height__bar" style={{ height: `${state.context.height}px` }}>
+          <ResizeBar
+            orientation="vertical"
+            value={state.context.height}
+            onChange={handleHeightControlBarChange}
+            disabled={!state.matches('configuring')} />
+        </div>
       </div>
       <div className="ggs__workspace">
         {state.matches({ generating: { generatingGif: 'succeeded' }}) &&
@@ -189,15 +238,38 @@ function GifGenerationSystem (props) {
           onChange={handleFrameRateInputChange} />
       </div>
       <div className="ggs__start-and-end">
-        <div className="ggs__time__bar" />
-        <LabelledInput
-          name="Start"
-          value={state.context.start}
-          onChange={handleStartInputChange} />
-        <LabelledInput
-          name="End"
-          value={state.context.end}
-          onChange={handleEndInputChange} />
+        <div className="ggs__time__bar">
+          <ControlBar
+            startValue={state.context.start / videoRef.current.duration}
+            endValue={state.context.end / videoRef.current.duration}
+            onChange={handleStartEndControlBarChange}
+            disabled={!state.matches('configuring')} />
+        </div>
+        <label className="gifit__labelled-input">
+          <span className="gifit__labelled-input__label">Start</span>
+          <div className="gifit__labelled-input__data">
+            <IncrementableInput
+              value={state.context.start}
+              increment={1 / state.context.fps}
+              min={0}
+              max={state.context.end}
+              width="150px"
+              onChange={handleStartInputChange} />
+          </div>
+        </label>
+        
+        <label className="gifit__labelled-input">
+          <span className="gifit__labelled-input__label">End</span>
+          <div className="gifit__labelled-input__data">
+            <IncrementableInput
+              value={state.context.end}
+              increment={1 / state.context.fps}
+              min={state.context.start}
+              max={videoRef.current.duration}
+              width="150px"
+              onChange={handleEndInputChange} />
+          </div>
+        </label>
       </div>
 
       <footer className="ggs__footer">

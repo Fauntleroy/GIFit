@@ -1,19 +1,22 @@
+import _ from 'lodash';
 import { Machine, assign } from 'xstate';
 
 import GifService from '../services/gif-service';
+
+const DEFAULT_WIDTH = 420;
 
 const gifGenerationSystemMachine = new Machine({
   id: 'ggs',
   initial: 'initializing',
   context: {
     videoElement: null,
-    videoAspectRatio: (4 / 3),
+    videoAspectRatio: null,
     gifData: null,
     gifService: new GifService(),
-    width: 420,
-    height: 315,
+    width: 0,
+    height: 0,
     quality: 5,
-    fps: 10,
+    fps: 12,
     start: 0,
     end: 1
   },
@@ -35,7 +38,8 @@ const gifGenerationSystemMachine = new Machine({
         inputting: {
           on: {
             INPUT: {
-              actions: ['updateInput']
+              actions: ['updateInput'],
+              cond: 'inputValidation'
             },
             SUBMIT: 'validating'
           }
@@ -123,19 +127,26 @@ const gifGenerationSystemMachine = new Machine({
 }, {
   actions: {
     setInitialDimensions: assign((context, event) => {
-      const videoRect = event.videoElement.getBoundingClientRect();
-      const videoAspectRatio = videoRect.width / videoRect.height;
-      const aspectCorrectHeight = parseInt(context.width / videoAspectRatio, 10);
+      const { videoElement } = event;
+      const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+      const aspectCorrectHeight = parseInt(DEFAULT_WIDTH / videoAspectRatio, 10);
 
       return {
+        width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
         videoAspectRatio,
-        videoElement: event.videoElement
+        videoElement
       };
     }),
     updateInput: assign((context, event) => {
+      let value = event.value;
+
+      if (event.key === 'start' || event.key === 'end') {
+        value = _.round(event.value, 2);
+      }
+
       return {
-        [event.key]: event.value
+        [event.key]: value
       };
     }),
     setGifData: assign((context, event) => {
@@ -148,6 +159,27 @@ const gifGenerationSystemMachine = new Machine({
         gifData: null
       };
     })
+  },
+
+  guards: {
+    inputValidation (context, event) {
+      const frameTime = (1 / context.fps);
+
+      if (event.key === 'start') {
+        if (
+          (event.value >= (context.end - frameTime)) ||
+          (event.value < 0)
+        ) {
+          return false;
+        }
+      } else if (event.key === 'end') {
+        if (event.value <= (context.start + frameTime)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
   },
 
   services: {

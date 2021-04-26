@@ -1,4 +1,5 @@
 :root {
+  --color-nightshade: hsla(240, 21.6%, 14.5%, 0.9);
   --color-aluminum-blue: hsl(225deg 100% 80%);
   --color-intensity-red: hsl(350, 100%, 60%);
   --color-system: var(--color-aluminum-blue);
@@ -24,7 +25,7 @@ input[type=number] {
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(27, 31, 41, 0.9);
+  background: var(--color-nightshade);
   box-shadow: inset rgb(0 0 0%) 0 0 10vw;
   backdrop-filter: blur(4px);
   font-family: Inter, sans-serif;
@@ -57,12 +58,11 @@ input[type=number] {
   border-radius: 3px;
   background: white;
   color: #191919;
-  padding: 5px 20px;
+  padding: 4px 20px;
   transition: all 250ms var(--ease-out-expo);
 }
 .gifit-app button:hover {
-  box-shadow: var(--color-intensity-red) 0 2px 0 0;
-  transform: translateY(-2px);
+  background: var(--color-highlight);
 }
 .gifit-app button:disabled {
   filter: contrast(0.5);
@@ -71,6 +71,7 @@ input[type=number] {
 }
 .gifit__labelled-input {
   color: white;
+  transition: color 250ms;
 }
 .gifit__labelled-input:focus-within {
   color: var(--color-highlight);
@@ -84,22 +85,6 @@ input[type=number] {
   display: flex;
   flex-direction: row;
   align-items: baseline;
-}
-.gifit__labelled-input__input {
-  display: inline-block;
-  width: 0;
-  min-width: 70px;
-  margin-left: -15px;
-  margin-right: -15px;
-  padding: 5px 15px;
-  border-radius: 4px;
-  border: none;
-  color: currentColor;
-  background: rgba(0, 0, 0, 0.15);
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 30px;
-  font-weight: bold;
-  line-height: 1;
 }
 .gifit__labelled-input__addendum {
   font-family: 'Space Grotesk', sans-serif;
@@ -122,6 +107,34 @@ input[type=number] {
   grid-template-columns: 150px minmax(150px, 1fr) 150px;
   grid-template-rows: 35px 95px minmax(100px, 1fr) 95px 35px;
   grid-template-areas: "header header header" ". width ." "height workspace quality-and-frame-rate" ". start-and-end ." "footer footer footer";
+}
+.ggs input[type="text"],
+.ggs input[type="number"] {
+  display: inline-block;
+  width: 0;
+  min-width: 70px;
+  margin-left: -8px;
+  margin-right: -8px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: none;
+  color: currentColor;
+  background: rgba(0, 0, 0, 0);
+  border: rgba(0, 0, 0, 0.15) 2px solid;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 30px;
+  font-weight: bold;
+  line-height: 1;
+  transition: background 250ms;
+}
+.ggs input[type="text"]:hover,
+.ggs input[type="number"]:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+.ggs input[type="text"]:focus,
+.ggs input[type="number"]:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.25);
 }
 .ggs__corner {
   position: absolute;
@@ -152,7 +165,7 @@ input[type=number] {
   grid-area: header;
   align-self: center;
   justify-self: center;
-  padding: 5px 7px;
+  padding: 4px 20px;
   border: var(--color-system) 1px solid;
   border-radius: 3px;
   opacity: var(--system-interface-opacity);
@@ -168,9 +181,7 @@ input[type=number] {
 }
 .ggs__width__bar {
   margin-top: 25px;
-  width: 420px;
-  height: 2px;
-  background: white;
+  width: 100%;
 }
 .ggs__height {
   grid-area: height;
@@ -213,8 +224,7 @@ input[type=number] {
 }
 .ggs__time__bar {
   flex-basis: 100%;
-  height: 2px;
-  background: white;
+  margin: 0 0 25px 0;
 }
 .ggs__footer {
   grid-area: footer;

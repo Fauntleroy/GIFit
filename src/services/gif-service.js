@@ -39,7 +39,6 @@ class GifService extends EventEmitter {
     const quality = 31 - (config.quality * 3);
 
     // Prepare canvas
-    const videoRect = videoElement.getBoundingClientRect();
     this.canvasElement.setAttribute('width', config.width);
     this.canvasElement.setAttribute('height', config.height);
     this.canvasElement.style.width = `${config.width}px`;

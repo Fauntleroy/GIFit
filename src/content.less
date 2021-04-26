@@ -1,4 +1,5 @@
 :root {
+	--color-nightshade: hsla(240, 21.6%, 14.5%, 0.9);
 	--color-aluminum-blue: hsl(225deg 100% 80%);
 	--color-intensity-red: hsl(350deg, 100%, 60%);
 	--color-system: var(--color-aluminum-blue);
@@ -25,7 +26,7 @@ input[type=number] {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background: rgba(27, 31, 41, 0.9);
+	background: var(--color-nightshade);
 	box-shadow: inset rgb(0 0 0 / 25%) 0 0 10vw;
 	backdrop-filter: blur(4px);
 
@@ -63,13 +64,12 @@ input[type=number] {
 		border-radius: 3px;
 		background: white;
 		color: rgb(25, 25, 25);
-		padding: 5px 20px;
+		padding: 4px 20px;
 
 		transition: all 250ms var(--ease-out-expo);
 
 		&:hover {
-			box-shadow: var(--color-intensity-red) 0 2px 0 0;
-			transform: translateY(-2px);
+			background: var(--color-highlight);
 		}
 
 		&:disabled {
@@ -82,6 +82,7 @@ input[type=number] {
 
 .gifit__labelled-input {
 	color: white;
+	transition: color 250ms;
 
 	&:focus-within {
 		color: var(--color-highlight);
@@ -97,24 +98,6 @@ input[type=number] {
 		display: flex;
 		flex-direction: row;
 		align-items: baseline;
-	}
-
-	&__input {
-		display: inline-block;
-		width: 0;
-		min-width: 70px;
-		margin-left: -15px;
-		margin-right: -15px;
-		padding: 5px 15px;
-		border-radius: 4px;
-		border: none;
-		color: currentColor;
-		background: rgba(0, 0, 0, 0.15);
-
-		font-family: 'Space Grotesk', sans-serif;
-		font-size: 30px;
-		font-weight: bold;
-		line-height: 1;
 	}
 
 	&__addendum {
@@ -145,7 +128,38 @@ input[type=number] {
 		". width ."
 		"height workspace quality-and-frame-rate"
 		". start-and-end ."
-		"footer footer footer"
+		"footer footer footer";
+	
+	input[type="text"],
+	input[type="number"] {
+		display: inline-block;
+		width: 0;
+		min-width: 70px;
+		margin-left: -8px;
+		margin-right: -8px;
+		padding: 5px 12px;
+		border-radius: 4px;
+		border: none;
+		color: currentColor;
+		background: rgba(0, 0, 0, 0.0);
+		border: rgba(0, 0, 0, 0.15) 2px solid;
+
+		font-family: 'Space Grotesk', sans-serif;
+		font-size: 30px;
+		font-weight: bold;
+		line-height: 1;
+
+		transition: background 250ms;
+
+		&:hover {
+			background: rgba(0, 0, 0, 0.15);
+		}
+
+		&:focus {
+			outline: none;
+			background: rgba(0, 0, 0, 0.25);
+		}
+	}
 }
 
 .ggs__corner {
@@ -182,7 +196,7 @@ input[type=number] {
 	grid-area: header;
 	align-self: center;
 	justify-self: center;
-	padding: 5px 7px;
+	padding: 4px 20px;
 	border: var(--color-system) 1px solid;
 	border-radius: 3px;
 	opacity: var(--system-interface-opacity);
@@ -199,9 +213,7 @@ input[type=number] {
 
 	&__bar {
 		margin-top: 25px;
-		width: 420px;
-		height: 2px;
-		background: white;
+		width: 100%;
 	}
 }
 
@@ -252,8 +264,7 @@ input[type=number] {
 
 .ggs__time__bar {
 	flex-basis: 100%;
-	height: 2px;
-	background: white;
+	margin: 0 0 25px 0;
 }
 
 .ggs__footer {
