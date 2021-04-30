@@ -138,7 +138,7 @@ function ControlBar (props) {
   useEffect(() => {
     props.onChange({
       scale: state.context.scale,
-      size: state.context.scale * state.context.initialSize
+      size: state.context.size
     });
   }, [state.context.scale]);
 

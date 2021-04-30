@@ -79,7 +79,16 @@ function createResizeBarMachine ({ id, initialSize, minimumSize }) {
           : context.initialScale + deltaRatio;
         const minimumScale = minimumSize / context.initialSize;
         scale = _.clamp(scale, minimumScale, Infinity);
-        const size = _.clamp(scale * context.initialSize, minimumSize, Infinity);
+        let size = _.clamp(
+          Math.round(scale * context.initialSize),
+          minimumSize,
+          Infinity
+        );
+
+        if (event.precise) {
+          size = Math.round(size - (size % 5));
+          scale = size / context.initialSize;
+        }
 
         return {
           precise: event.precise,

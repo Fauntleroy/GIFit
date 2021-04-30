@@ -63961,7 +63961,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-var controlBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  position: relative;\n  height: 12px;\n  width: 100%;\n  cursor: pointer;\n\n  .total {\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    height: 1px;\n    background: rgba(255, 255, 255, 0.5);\n  }\n  \n  .start,\n  .end {\n    position: absolute;\n    padding: 0;\n    width: 3px;\n    height: 12px;\n\n    &:before {\n      content: '';\n      position: absolute;\n      top: -4px;\n      right: -4px;\n      bottom: -4px;\n      left: -4px;\n    }\n  }\n\n  .start {\n    top: 0;\n    left: 0;\n  }\n\n  .end {\n    top: 0;\n    left: 0;\n  }\n\n  .range {\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    height: 2px;\n    background: white;\n  }\n\n  .start,\n  .end,\n  .range {\n    transition: transform 250ms;\n  }\n"])));
+var controlBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  position: relative;\n  height: 12px;\n  width: 100%;\n  cursor: pointer;\n\n  .total {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 1px;\n    background: rgba(255, 255, 255, 0.5);\n  }\n  \n  .start,\n  .end {\n    position: absolute;\n    padding: 0;\n    width: 3px;\n    height: 12px;\n\n    &:before {\n      content: '';\n      position: absolute;\n      top: -4px;\n      right: -4px;\n      bottom: -4px;\n      left: -4px;\n    }\n  }\n\n  .start {\n    bottom: 0;\n    left: 0;\n  }\n\n  .end {\n    bottom: 0;\n    left: 0;\n  }\n\n  .range {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 2px;\n    background: white;\n  }\n\n  .start,\n  .end,\n  .range {\n    transition: transform 250ms;\n  }\n"])));
 
 function getPosition(controlBarElement, event) {
   var _controlBarElement$ge = controlBarElement.getBoundingClientRect(),
@@ -64084,7 +64084,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-control-bar-machine":225,"@emotion/css":5,"@xstate/react":20,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":166,"prop-types":172,"react":184}],219:[function(require,module,exports){
+},{"../state-machines/create-control-bar-machine":224,"@emotion/css":5,"@xstate/react":20,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":166,"prop-types":172,"react":184}],219:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -64155,8 +64155,6 @@ var _useDebounce = require("use-debounce");
 var _react2 = require("@xstate/react");
 
 var _gifGenerationSystem = _interopRequireDefault(require("../state-machines/gif-generation-system"));
-
-var _useFrameRate = _interopRequireDefault(require("../hooks/use-frame-rate"));
 
 var _controlBar = _interopRequireDefault(require("./control-bar.jsx"));
 
@@ -64242,7 +64240,7 @@ function GifGenerationSystem(props) {
     to: {
       height: workspaceHeight
     }
-  });
+  }); // draw the video to the preview canvas
 
   function drawFrame() {
     if (canvasRef.current && videoRef.current) {
@@ -64251,28 +64249,40 @@ function GifGenerationSystem(props) {
     }
   }
 
+  var debouncedDrawFrame = _lodash["default"].debounce(drawFrame, 250);
+
+  (0, _react.useEffect)(function () {
+    debouncedDrawFrame();
+  }, [state.context.width, state.context.height]); // set a reference to the state machine's context for use in other callbacks
+
   (0, _react.useEffect)(function () {
     contextRef.current = state.context;
-  }, [state.context]);
+  }, [state.context]); // select the video and tell the machine we're ready to go
+
   (0, _react.useEffect)(function () {
     var videoElements = document.querySelectorAll('video');
     videoRef.current = videoElements[0];
     videoRef.current.pause();
+    videoRef.current.addEventListener('seeked', drawFrame);
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
-  }, []); // useFrameRate(drawFrame, { fps: 60 });
+    return function () {
+      videoRef.current.removeEventListener('seekd', drawFrame);
+    };
+  }, []); // scrub the video to the start timecode when it changes
 
   (0, _react.useEffect)(function () {
     if (_lodash["default"].isNumber(state.context.start) && !_lodash["default"].isNaN(state.context.start) && state.context.videoElement) {
       state.context.videoElement.currentTime = state.context.start;
     }
-  }, [state.context.start]);
+  }, [state.context.start]); // scrub the video to the end timecode when it changes
+
   (0, _react.useEffect)(function () {
     if (_lodash["default"].isNumber(state.context.end) && !_lodash["default"].isNaN(state.context.end) && state.context.videoElement) {
       state.context.videoElement.currentTime = state.context.end;
     }
-  }, [state.context.end]);
+  }, [state.context.end]); // change the width of the workspace, but don't do it right away
 
   function setWorkspaceSize(_width, _height) {
     setWorkspaceWidth(_width);
@@ -64282,7 +64292,7 @@ function GifGenerationSystem(props) {
   var debouncedSetWorkspaceSize = (0, _useDebounce.useDebouncedCallback)(setWorkspaceSize, 1000);
   (0, _react.useEffect)(function () {
     debouncedSetWorkspaceSize(state.context.width, state.context.height);
-  }, [state.context.width, state.context.height]);
+  }, [state.context.width, state.context.height]); // input handling
 
   function handleWidthInputChange(event) {
     var newWidth = parseInt(event.target.value, 10) || 0;
@@ -64556,7 +64566,7 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":223,"../state-machines/gif-generation-system":227,"./control-bar.jsx":218,"./incrementable-input.jsx":220,"./resize-bar.jsx":221,"@xstate/react":20,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.for-each.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.date.now.js":140,"core-js/modules/es.date.to-string.js":141,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.get-own-property-descriptors.js":148,"core-js/modules/es.object.keys.js":150,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.parse-float.js":153,"core-js/modules/es.parse-int.js":154,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.for-each.js":161,"core-js/modules/web.dom-collections.iterator.js":162,"core-js/modules/web.url.js":164,"lodash":166,"react":184,"react-spring":181,"use-debounce":192}],220:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":226,"./control-bar.jsx":218,"./incrementable-input.jsx":220,"./resize-bar.jsx":221,"@xstate/react":20,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.for-each.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.date.now.js":140,"core-js/modules/es.date.to-string.js":141,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.get-own-property-descriptors.js":148,"core-js/modules/es.object.keys.js":150,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.parse-float.js":153,"core-js/modules/es.parse-int.js":154,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.for-each.js":161,"core-js/modules/web.dom-collections.iterator.js":162,"core-js/modules/web.url.js":164,"lodash":166,"react":184,"react-spring":181,"use-debounce":192}],220:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -64792,7 +64802,7 @@ function ControlBar(props) {
   (0, _react.useEffect)(function () {
     props.onChange({
       scale: state.context.scale,
-      size: state.context.scale * state.context.initialSize
+      size: state.context.size
     });
   }, [state.context.scale]);
   (0, _react.useEffect)(function () {
@@ -64853,7 +64863,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":226,"@emotion/css":5,"@xstate/react":20,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":166,"prop-types":172,"react":184}],222:[function(require,module,exports){
+},{"../state-machines/create-resize-bar-machine":225,"@emotion/css":5,"@xstate/react":20,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":166,"prop-types":172,"react":184}],222:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -64952,49 +64962,6 @@ document.body.appendChild(gifitElement);
 _reactDom["default"].render( /*#__PURE__*/_react["default"].createElement(TestGifitApp, null), gifitElement);
 
 },{"./components/gif-generation-system.jsx":219,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.is-array.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.slice.js":139,"core-js/modules/es.function.name.js":142,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"react":184,"react-dom":177}],223:[function(require,module,exports){
-"use strict";
-
-require("core-js/modules/es.object.define-property.js");
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = void 0;
-
-var _lodash = _interopRequireDefault(require("lodash"));
-
-var _react = require("react");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function useFrameRate(fn, config) {
-  var _config$fps = config.fps,
-      fps = _config$fps === void 0 ? 60 : _config$fps;
-  var firstTimestamp = performance.now();
-  var timeBetweenFrames = 1000 / fps;
-  var lastFrame = null;
-
-  function rafLoopFn(timestamp) {
-    var timeSinceInit = timestamp - firstTimestamp;
-    var currentFrame = Math.floor(timeSinceInit / timeBetweenFrames);
-
-    if (currentFrame > lastFrame || _lodash["default"].isNull(lastFrame)) {
-      fn(currentFrame, timeSinceInit);
-      lastFrame = currentFrame;
-    }
-
-    requestAnimationFrame(rafLoopFn);
-  }
-
-  (0, _react.useEffect)(function () {
-    requestAnimationFrame(rafLoopFn);
-  }, []);
-}
-
-var _default = useFrameRate;
-exports["default"] = _default;
-
-},{"core-js/modules/es.object.define-property.js":145,"lodash":166,"react":184}],224:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -65198,7 +65165,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.object.create.js":143,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-prototype-of.js":149,"core-js/modules/es.object.set-prototype-of.js":151,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.reflect.construct.js":155,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/web.dom-collections.iterator.js":162,"core-js/modules/web.url.js":164,"events":165}],225:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.object.create.js":143,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-prototype-of.js":149,"core-js/modules/es.object.set-prototype-of.js":151,"core-js/modules/es.object.to-string.js":152,"core-js/modules/es.reflect.construct.js":155,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/web.dom-collections.iterator.js":162,"core-js/modules/web.url.js":164,"events":165}],224:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -65298,7 +65265,7 @@ function createControlBarMachine(_ref) {
 var _default = createControlBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":145,"lodash":166,"xstate":206}],226:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":166,"xstate":206}],225:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -65394,7 +65361,12 @@ function createResizeBarMachine(_ref) {
         var minimumScale = minimumSize / context.initialSize;
         scale = _lodash["default"].clamp(scale, minimumScale, Infinity);
 
-        var size = _lodash["default"].clamp(scale * context.initialSize, minimumSize, Infinity);
+        var size = _lodash["default"].clamp(Math.round(scale * context.initialSize), minimumSize, Infinity);
+
+        if (event.precise) {
+          size = Math.round(size - size % 5);
+          scale = size / context.initialSize;
+        }
 
         return {
           precise: event.precise,
@@ -65416,7 +65388,7 @@ function createResizeBarMachine(_ref) {
 var _default = createResizeBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":145,"lodash":166,"xstate":206}],227:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":166,"xstate":206}],226:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -65574,6 +65546,10 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     updateInput: (0, _xstate.assign)(function (context, event) {
       var value = event.value;
 
+      if (event.key === 'width' || event.key === 'height') {
+        value = _lodash["default"].round(event.value);
+      }
+
       if (event.key === 'start' || event.key === 'end') {
         value = _lodash["default"].round(event.value, 2);
       }
@@ -65699,4 +65675,4 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 var _default = gifGenerationSystemMachine;
 exports["default"] = _default;
 
-},{"../services/gif-service":224,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.parse-int.js":154,"lodash":166,"xstate":206}]},{},[222]);
+},{"../services/gif-service":223,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.parse-int.js":154,"lodash":166,"xstate":206}]},{},[222]);

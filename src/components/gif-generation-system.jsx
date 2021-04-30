@@ -5,7 +5,6 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useMachine } from '@xstate/react';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
-import useFrameRate from '../hooks/use-frame-rate';
 import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
@@ -44,6 +43,7 @@ function GifGenerationSystem (props) {
   const widthProps = useSpring({ to: { width: workspaceWidth }});
   const heightProps = useSpring({ to: { height: workspaceHeight }});
 
+  // draw the video to the preview canvas
   function drawFrame () {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext('2d');
@@ -55,35 +55,49 @@ function GifGenerationSystem (props) {
     }
   }
 
+  const debouncedDrawFrame = _.debounce(drawFrame, 250);
+
+  useEffect(() => {
+    debouncedDrawFrame();
+  }, [state.context.width, state.context.height]);
+
+  // set a reference to the state machine's context for use in other callbacks
   useEffect(() => {
     contextRef.current = state.context;
   }, [state.context]);
 
+  // select the video and tell the machine we're ready to go
   useEffect(() => {
     const videoElements = document.querySelectorAll('video');
     videoRef.current = videoElements[0];
 
     videoRef.current.pause();
+    videoRef.current.addEventListener('seeked', drawFrame);
 
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
+
+    return () => {
+      videoRef.current.removeEventListener('seekd', drawFrame);
+    };
   }, []);
 
-  // useFrameRate(drawFrame, { fps: 60 });
-
+  // scrub the video to the start timecode when it changes
   useEffect(() => {
     if (_.isNumber(state.context.start) && !_.isNaN(state.context.start) && state.context.videoElement) {
       state.context.videoElement.currentTime = state.context.start;
     }
   }, [state.context.start]);
 
+  // scrub the video to the end timecode when it changes
   useEffect(() => {
     if (_.isNumber(state.context.end) && !_.isNaN(state.context.end) && state.context.videoElement) {
       state.context.videoElement.currentTime = state.context.end;
     }
   }, [state.context.end]);
 
+  // change the width of the workspace, but don't do it right away
   function setWorkspaceSize (_width, _height) {
     setWorkspaceWidth(_width);
     setWorkspaceHeight(_height);
@@ -95,6 +109,7 @@ function GifGenerationSystem (props) {
     debouncedSetWorkspaceSize(state.context.width, state.context.height);
   }, [state.context.width, state.context.height]);
 
+  // input handling
   function handleWidthInputChange (event) {
     const newWidth = parseInt(event.target.value, 10) || 0;
     const aspectCorrectHeight = parseInt(newWidth / state.context.videoAspectRatio, 10);

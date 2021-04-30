@@ -141,6 +141,10 @@ const gifGenerationSystemMachine = new Machine({
     updateInput: assign((context, event) => {
       let value = event.value;
 
+      if (event.key === 'width' || event.key === 'height') {
+        value = _.round(event.value);
+      }
+
       if (event.key === 'start' || event.key === 'end') {
         value = _.round(event.value, 2);
       }
