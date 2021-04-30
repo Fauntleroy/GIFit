@@ -1,16 +1,18 @@
 import _ from 'lodash';
 import { Machine, assign } from 'xstate';
 
-function createResizeBarMachine ({ id }) {
+function createResizeBarMachine ({ id, initialSize, minimumSize }) {
   const resizeBarMachine = Machine({
     id: `resize-bar__${id}`,
     initial: 'idle',
     context: {
-      initialSize: 100,
+      activeHandle: null,
+      initialSize: initialSize,
+      initialPosition: null,
+      currentPosition: null,
       scale: 1,
-      precise: false,
-      scaleStart: null,
-      slideStart: null
+      size: initialSize,
+      precise: false
     },
     states: {
       idle: {
@@ -51,43 +53,44 @@ function createResizeBarMachine ({ id }) {
       initializeSlide: assign((context, event) => {
         return {
           activeHandle: event.handle,
-          slideStart: event.position,
-          scaleStart: context.scale
+          currentPosition: event.position,
+          initialPosition: event.position,
+          initialSize: event.initialSize,
+          initialScale: context.scale,
+          precise: false
         };
       }),
-      resetSlide: assign((context, event) => {
+      resetSlide: assign(() => {
         return {
           activeHandle: null,
-          slideStart: null,
-          scaleStart: null
+          currentPosition: null,
+          initialPosition: null,
+          initialSize: null,
+          initialScale: null,
+          scale: 1,
+          precise: false
         };
       }),
       updateScale: assign((context, event) => {
-        const slideStart = (event.precise !== context.precise)
-          ? event.position
-          : context.slideStart || event.position;
-        const scaleStart = (event.precise !== context.precise)
-          ? context.scale
-          : context.scaleStart || context.scale;
-        const delta = context.precise
-          ? ((slideStart - event.position) * -1) / 4
-          : (slideStart - event.position) * -1;
-        const newScale = (context.activeHandle === 'start')
-          ? scaleStart + (delta * -1 * 2)
-          : scaleStart + (delta * 2);
+        const delta = (event.position - context.initialPosition) * 2;
+        const deltaRatio = delta / context.initialSize;
+        let scale = (context.activeHandle === 'start')
+          ? context.initialScale - deltaRatio
+          : context.initialScale + deltaRatio;
+        const minimumScale = minimumSize / context.initialSize;
+        scale = _.clamp(scale, minimumScale, Infinity);
+        const size = _.clamp(scale * context.initialSize, minimumSize, Infinity);
 
         return {
-          scaleStart: scaleStart,
-          slideStart: slideStart,
           precise: event.precise,
-          scale: newScale
+          scale,
+          size
         };
       }),
-      setValue: assign((context, event) => {
+      setValue: assign((event) => {
         return {
           initialSize: event.initialSize,
-          scale: event.scale,
-          scaleStart: event.scale
+          scale: event.scale
         };
       })
     }

@@ -142,19 +142,19 @@ function GifGenerationSystem (props) {
     }
   }
 
-  const handleWidthControlBarChange = _.throttle(function ({ scale }) {
-    const newWidth = Math.round(scale * state.context.width);
-    const newHeight = Math.round(scale * state.context.height);
+  const handleWidthControlBarChange = function ({ scale, size }) {
+    const newWidth = size;
+    const newHeight = size / state.context.videoAspectRatio;
     send('INPUT', { key: 'width', value: newWidth });
     send('INPUT', { key: 'height', value: newHeight });
-  }, 1000 / 60);
+  }
 
-  const handleHeightControlBarChange = _.throttle(function ({ scale }) {
-    const newWidth = Math.round(scale * state.context.width);
-    const newHeight = Math.round(scale * state.context.height);
+  const handleHeightControlBarChange = function ({ scale, size }) {
+    const newWidth = size * state.context.videoAspectRatio;
+    const newHeight = size;
     send('INPUT', { key: 'width', value: newWidth });
     send('INPUT', { key: 'height', value: newHeight });
-  }, 1000 / 60);
+  }
 
   function handleFormSubmit (event) {
     event.preventDefault();

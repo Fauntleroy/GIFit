@@ -64365,10 +64365,11 @@ function GifGenerationSystem(props) {
     }
   }
 
-  var handleWidthControlBarChange = _lodash["default"].throttle(function (_ref2) {
-    var scale = _ref2.scale;
-    var newWidth = Math.round(scale * state.context.width);
-    var newHeight = Math.round(scale * state.context.height);
+  var handleWidthControlBarChange = function handleWidthControlBarChange(_ref2) {
+    var scale = _ref2.scale,
+        size = _ref2.size;
+    var newWidth = size;
+    var newHeight = size / state.context.videoAspectRatio;
     send('INPUT', {
       key: 'width',
       value: newWidth
@@ -64377,12 +64378,13 @@ function GifGenerationSystem(props) {
       key: 'height',
       value: newHeight
     });
-  }, 1000 / 60);
+  };
 
-  var handleHeightControlBarChange = _lodash["default"].throttle(function (_ref3) {
-    var scale = _ref3.scale;
-    var newWidth = Math.round(scale * state.context.width);
-    var newHeight = Math.round(scale * state.context.height);
+  var handleHeightControlBarChange = function handleHeightControlBarChange(_ref3) {
+    var scale = _ref3.scale,
+        size = _ref3.size;
+    var newWidth = size * state.context.videoAspectRatio;
+    var newHeight = size;
     send('INPUT', {
       key: 'width',
       value: newWidth
@@ -64391,7 +64393,7 @@ function GifGenerationSystem(props) {
       key: 'height',
       value: newHeight
     });
-  }, 1000 / 60);
+  };
 
   function handleFormSubmit(event) {
     event.preventDefault();
@@ -64819,26 +64821,25 @@ function generateResizeBarClassName(props) {
     barWidth = '12px';
     barHeight = '100%';
     handleWidth = '12px';
-    handleHeight = '2px';
+    handleHeight = '3px';
     startPosition = 'top: 0; left: 0;';
     endPosition = 'bottom: 0; left: 0;';
   }
 
-  var resizeBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n    position: relative;\n    height: ", ";\n    width: ", ";\n    cursor: pointer;\n\n    .total {\n      position: absolute;\n      top: 0;\n      left: 0;\n      right: 0;\n      height: 1px;\n      background: rgba(255, 255, 255, 0.5);\n    }\n    \n    .start,\n    .end {\n      position: absolute;\n      padding: 0;\n      width: ", ";\n      height: ", ";\n\n      &:before {\n        content: '';\n        position: absolute;\n        top: -4px;\n        right: -4px;\n        bottom: -4px;\n        left: -4px;\n      }\n    }\n\n    .start {\n      ", ";\n    }\n\n    .end {\n      ", ";\n    }\n\n    .range {\n      position: absolute;\n      top: 0;\n      left: 0;\n      right: 0;\n      height: 2px;\n      background: white;\n    }\n\n    .start,\n    .end,\n    .range {\n      transition: transform 250ms;\n    }\n  "])), barHeight, barWidth, handleWidth, handleHeight, startPosition, endPosition);
+  var resizeBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n    position: relative;\n    height: ", ";\n    width: ", ";\n    cursor: pointer;\n\n    .total {\n      position: absolute;\n      top: 0;\n      left: 0;\n      right: 0;\n      height: 1px;\n      background: rgba(255, 255, 255, 0.5);\n    }\n    \n    .start,\n    .end {\n      position: absolute;\n      z-index: 1;\n      padding: 0;\n      width: ", ";\n      height: ", ";\n\n      &:before {\n        content: '';\n        position: absolute;\n        top: -4px;\n        right: -4px;\n        bottom: -4px;\n        left: -4px;\n      }\n    }\n\n    .start {\n      ", ";\n    }\n\n    .end {\n      ", ";\n    }\n\n    .range {\n      position: absolute;\n      top: 0;\n      left: 0;\n      right: 0;\n      height: 2px;\n      background: white;\n    }\n\n    .start,\n    .end,\n    .range {\n      transition: transform 250ms;\n    }\n  "])), barHeight, barWidth, handleWidth, handleHeight, startPosition, endPosition);
   return resizeBarClassName;
 }
 
-function getPosition(controlBarElement, event, orientation) {
-  var rect = controlBarElement.getBoundingClientRect();
-  var position = orientation === 'horizontal' ? (event.clientX - rect.left) / rect.width : (event.clientY - rect.top) / rect.height;
-  return position;
+function getPosition(x, y, orientation) {
+  return orientation === 'horizontal' ? x : y;
 }
 
 function ControlBar(props) {
   var resizeBarClassName = generateResizeBarClassName(props);
   var resizeBarMachine = (0, _createResizeBarMachine["default"])({
     id: 'width',
-    initialSize: props.value
+    initialSize: props.value,
+    minimumSize: props.minimum
   });
 
   var _useMachine = (0, _react2.useMachine)(resizeBarMachine),
@@ -64849,9 +64850,9 @@ function ControlBar(props) {
   var controlBarRef = (0, _react.useRef)(null);
 
   function handleMouseDown(event) {
-    console.log('et', event.target);
-    var position = getPosition(controlBarRef.current, event, props.orientation);
+    var position = getPosition(event.clientX, event.clientY, props.orientation);
     send('START', {
+      initialSize: props.value,
       position: position,
       handle: event.target.dataset.handle,
       precise: event.shiftKey
@@ -64859,7 +64860,7 @@ function ControlBar(props) {
   }
 
   var handleMouseMove = _lodash["default"].throttle(function (event) {
-    var position = getPosition(controlBarRef.current, event, props.orientation);
+    var position = getPosition(event.clientX, event.clientY, props.orientation);
     send('SLIDE', {
       position: position,
       precise: event.shiftKey
@@ -64867,7 +64868,7 @@ function ControlBar(props) {
   }, 1000 / 120);
 
   function handleMouseUp(event) {
-    var position = getPosition(controlBarRef.current, event, props.orientation);
+    var position = getPosition(event.clientX, event.clientY, props.orientation);
     send('END', {
       position: position,
       precise: event.shiftKey
@@ -64933,12 +64934,14 @@ function ControlBar(props) {
 
 ControlBar.propTypes = {
   value: _propTypes["default"].number.isRequired,
+  minimum: _propTypes["default"].number,
   onChange: _propTypes["default"].func.isRequired,
   disabled: _propTypes["default"].bool,
   orientation: _propTypes["default"].oneOf('horizontal', 'vertical')
 };
 ControlBar.defaultProps = {
   disabled: false,
+  minimum: 10,
   orientation: 'horizontal'
 };
 var _default = ControlBar;
@@ -65327,16 +65330,20 @@ var _xstate = require("xstate");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function createResizeBarMachine(_ref) {
-  var id = _ref.id;
+  var id = _ref.id,
+      initialSize = _ref.initialSize,
+      minimumSize = _ref.minimumSize;
   var resizeBarMachine = (0, _xstate.Machine)({
     id: "resize-bar__".concat(id),
     initial: 'idle',
     context: {
-      initialSize: 100,
+      activeHandle: null,
+      initialSize: initialSize,
+      initialPosition: null,
+      currentPosition: null,
       scale: 1,
-      precise: false,
-      scaleStart: null,
-      slideStart: null
+      size: initialSize,
+      precise: false
     },
     states: {
       idle: {
@@ -65377,34 +65384,43 @@ function createResizeBarMachine(_ref) {
       initializeSlide: (0, _xstate.assign)(function (context, event) {
         return {
           activeHandle: event.handle,
-          slideStart: event.position,
-          scaleStart: context.scale
+          currentPosition: event.position,
+          initialPosition: event.position,
+          initialSize: event.initialSize,
+          initialScale: context.scale,
+          precise: false
         };
       }),
-      resetSlide: (0, _xstate.assign)(function (context, event) {
+      resetSlide: (0, _xstate.assign)(function () {
         return {
           activeHandle: null,
-          slideStart: null,
-          scaleStart: null
+          currentPosition: null,
+          initialPosition: null,
+          initialSize: null,
+          initialScale: null,
+          scale: 1,
+          precise: false
         };
       }),
       updateScale: (0, _xstate.assign)(function (context, event) {
-        var slideStart = event.precise !== context.precise ? event.position : context.slideStart || event.position;
-        var scaleStart = event.precise !== context.precise ? context.scale : context.scaleStart || context.scale;
-        var delta = context.precise ? (slideStart - event.position) * -1 / 4 : (slideStart - event.position) * -1;
-        var newScale = context.activeHandle === 'start' ? scaleStart + delta * -1 * 2 : scaleStart + delta * 2;
+        var delta = (event.position - context.initialPosition) * 2;
+        var deltaRatio = delta / context.initialSize;
+        var scale = context.activeHandle === 'start' ? context.initialScale - deltaRatio : context.initialScale + deltaRatio;
+        var minimumScale = minimumSize / context.initialSize;
+        scale = _lodash["default"].clamp(scale, minimumScale, Infinity);
+
+        var size = _lodash["default"].clamp(scale * context.initialSize, minimumSize, Infinity);
+
         return {
-          scaleStart: scaleStart,
-          slideStart: slideStart,
           precise: event.precise,
-          scale: newScale
+          scale: scale,
+          size: size
         };
       }),
-      setValue: (0, _xstate.assign)(function (context, event) {
+      setValue: (0, _xstate.assign)(function (event) {
         return {
           initialSize: event.initialSize,
-          scale: event.scale,
-          scaleStart: event.scale
+          scale: event.scale
         };
       })
     }
@@ -65594,14 +65610,37 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     inputValidation: function inputValidation(context, event) {
       var frameTime = 1 / context.fps;
 
-      if (event.key === 'start') {
-        if (event.value >= context.end - frameTime || event.value < 0) {
-          return false;
-        }
-      } else if (event.key === 'end') {
-        if (event.value <= context.start + frameTime) {
-          return false;
-        }
+      switch (event.key) {
+        case 'start':
+          if (event.value >= context.end - frameTime || event.value < 0) {
+            return false;
+          }
+
+          break;
+
+        case 'end':
+          if (event.value <= context.start + frameTime) {
+            return false;
+          }
+
+          break;
+
+        case 'width':
+          if (event.value < 1) {
+            return false;
+          }
+
+          break;
+
+        case 'height':
+          if (event.value < 1) {
+            return false;
+          }
+
+          break;
+
+        default:
+          return true;
       }
 
       return true;

@@ -165,17 +165,32 @@ const gifGenerationSystemMachine = new Machine({
     inputValidation (context, event) {
       const frameTime = (1 / context.fps);
 
-      if (event.key === 'start') {
-        if (
-          (event.value >= (context.end - frameTime)) ||
-          (event.value < 0)
-        ) {
-          return false;
-        }
-      } else if (event.key === 'end') {
-        if (event.value <= (context.start + frameTime)) {
-          return false;
-        }
+      switch (event.key) {
+        case 'start':
+          if (
+            (event.value >= (context.end - frameTime)) ||
+            (event.value < 0)
+          ) {
+            return false;
+          }
+          break;
+        case 'end':
+          if (event.value <= (context.start + frameTime)) {
+            return false;
+          }
+          break;
+        case 'width':
+          if (event.value < 1) {
+            return false;
+          }
+          break;
+        case 'height':
+          if (event.value < 1) {
+            return false;
+          }
+          break;
+        default:
+          return true;
       }
 
       return true;
