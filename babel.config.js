@@ -1,3 +1,14 @@
+const plugins = [
+  'inline-react-svg',
+  ['module-resolver', {
+    'root': ['./src'],
+    'alias': {
+      '$components': './src/components',
+      '$icons': './src/icons'
+    }
+  }]
+];
+
 const presets = [
   ['@babel/env', {
     corejs: 3,
@@ -6,4 +17,4 @@ const presets = [
   '@babel/preset-react'
 ];
 
-module.exports = { presets };
+module.exports = { plugins, presets };

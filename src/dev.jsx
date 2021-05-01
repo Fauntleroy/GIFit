@@ -5,6 +5,8 @@ import ReactDOM from 'react-dom';
 
 import GifGenerationSystem from './components/gif-generation-system.jsx';
 
+import Times from '$icons/times.svg';
+
 // Set up a false GIFti app to lie to ourselves
 function TestGifitApp (props) {
   const [active, setActive] = useState(false);
@@ -26,7 +28,7 @@ function TestGifitApp (props) {
     <div className="gifit-app" style={{ display: active ? 'flex' : 'none' }}>
       {active &&
         <>
-          <button className="gifit-app__close" type="button" onClick={handleCloseClick}>Close GIFit</button>
+          <button className="gifit-app__close" type="button" onClick={handleCloseClick}>Close GIFit <Times style={{ width: '12px' }} /></button>
           <GifGenerationSystem />
         </>
       }

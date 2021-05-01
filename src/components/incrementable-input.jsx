@@ -2,6 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { css, cx } from '@emotion/css';
 
+import ChevronLeft from '$icons/chevron-left.svg';
+import ChevronRight from '$icons/chevron-right.svg';
+
 const incrementableInputClassName = css`
   display: flex;
   align-items: center;
@@ -9,7 +12,9 @@ const incrementableInputClassName = css`
 
   .decrementor,
   .incrementor {
-    padding: 5px;
+    padding: 8px 4px;
+    background: transparent;
+    color: white;
     z-index: 1;
   }
 `;
@@ -31,7 +36,7 @@ function IncrementableInput (props) {
         className="decrementor"
         type="button"
         onClick={handleDecrement}>
-        -
+        <ChevronLeft style={{ width: '14px' }} />
       </button>
       <input
         className="input"
@@ -46,7 +51,7 @@ function IncrementableInput (props) {
         className="incrementor"
         type="button"
         onClick={handleIncrement}>
-        +
+        <ChevronRight style={{ width: '14px' }} />
       </button>
     </span>
   );

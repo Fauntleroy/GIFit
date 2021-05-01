@@ -18,7 +18,8 @@ const controlBarClassName = css`
     left: 0;
     right: 0;
     height: 1px;
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--color-system);
+    opacity: 0.5;
   }
   
   .start,

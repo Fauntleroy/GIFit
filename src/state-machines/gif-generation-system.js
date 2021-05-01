@@ -18,7 +18,7 @@ const gifGenerationSystemMachine = new Machine({
     quality: 5,
     fps: 12,
     start: 0,
-    end: 1
+    end: 1.5
   },
 
   states: {
@@ -117,6 +117,10 @@ const gifGenerationSystemMachine = new Machine({
         }
       },
       on: {
+        ABORT: {
+          target: 'configuring',
+          actions: ['abortGeneration', 'resetData']
+        },
         RESET: {
           target: 'configuring',
           actions: ['resetData']
@@ -134,6 +138,8 @@ const gifGenerationSystemMachine = new Machine({
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
+        start: videoElement.currentTime,
+        end: videoElement.currentTime + 1.5,
         videoAspectRatio,
         videoElement
       };
@@ -162,6 +168,10 @@ const gifGenerationSystemMachine = new Machine({
       return {
         gifData: null
       };
+    }),
+    abortGeneration: assign((context, event) => {
+      context.gifService.abort();
+      return {};
     })
   },
 

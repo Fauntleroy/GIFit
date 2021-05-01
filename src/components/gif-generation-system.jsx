@@ -9,6 +9,11 @@ import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
 
+import ArrowDown from '$icons/arrow-down.svg';
+import Cancel from '$icons/cancel.svg';
+import MediaPlay from '$icons/media-play.svg';
+import Refresh from '$icons/refresh.svg';
+
 function LabelledInput (props) {
   return (
     <label className="gifit__labelled-input">
@@ -59,7 +64,7 @@ function GifGenerationSystem (props) {
 
   useEffect(() => {
     debouncedDrawFrame();
-  }, [state.context.width, state.context.height]);
+  }, [state.context.width, state.context.height, state.context.gifData]);
 
   // set a reference to the state machine's context for use in other callbacks
   useEffect(() => {
@@ -171,19 +176,23 @@ function GifGenerationSystem (props) {
     send('INPUT', { key: 'height', value: newHeight });
   }
 
+  // form submit now handles:
+  // generate
+  // abort
+  // reset
   function handleFormSubmit (event) {
     event.preventDefault();
-    send('SUBMIT');
-    send('VALIDATION_SUCCESS');
-  }
 
-  function handleReset (event) {
-    event.preventDefault();
-    send('RESET');
-  }
-
-  function handleSave () {
-    
+    if (state.matches('configuring')) {
+      send('SUBMIT');
+      send('VALIDATION_SUCCESS');
+    } else if (state.matches({ generating: { generatingGif: 'succeeded' }})) {
+      // 'Reset'
+      send('RESET');
+    } else if (state.matches('generating')) {
+      // Cancel
+      send('ABORT');
+    }
   }
 
   if (state.matches('initializing')) {
@@ -201,27 +210,30 @@ function GifGenerationSystem (props) {
         GIF Generation System
       </header>
 
-      <div className="ggs__width">
-        <LabelledInput
-          name="Width"
-          addendum="px"
+      <div className="ggs__width__bar" style={{ width: `${state.context.width}px` }}>
+        <ResizeBar 
           value={state.context.width}
-          onChange={handleWidthInputChange}
-          width={100} />
-        <div className="ggs__width__bar" style={{ width: `${state.context.width}px` }}>
-          <ResizeBar 
-            value={state.context.width}
-            onChange={handleWidthControlBarChange}
-            disabled={!state.matches('configuring')} />
-        </div>
+          onChange={handleWidthControlBarChange}
+          disabled={!state.matches('configuring')} />
       </div>
-      <div className="ggs__height">
-        <LabelledInput
-          name="Height"
-          addendum="px"
-          value={state.context.height}
-          onChange={handleHeightInputChange}
-          width={100} />
+
+      <div className="ggs__dimensions">
+        <div className="ggs__width">
+          <LabelledInput
+            name="Width"
+            addendum="px"
+            value={state.context.width}
+            onChange={handleWidthInputChange}
+            width={100} />
+        </div>
+        <div className="ggs__height">
+          <LabelledInput
+            name="Height"
+            addendum="px"
+            value={state.context.height}
+            onChange={handleHeightInputChange}
+            width={100} />
+        </div>
         <div className="ggs__height__bar" style={{ height: `${state.context.height}px` }}>
           <ResizeBar
             orientation="vertical"
@@ -291,27 +303,23 @@ function GifGenerationSystem (props) {
         <div className="ggs__actions">
           <button
             className="ggs__generate ggs__action"
-            type="submit"
-            disabled={!state.matches('configuring')}>
-            Generate GIF
-          </button>
-          <button
-            className="ggs__reset ggs__action"
-            type="reset"
-            onClick={handleReset}
-            disabled={state.matches('configuring')}>
-            Reset
+            type="submit">
+            {state.matches('configuring')
+              && <>Generate GIF <MediaPlay /></>}
+            {state.matches('generating') && !state.matches({ generating: { generatingGif: 'succeeded' }})
+              && <>Cancel <Cancel /></>}
+            {state.matches({ generating: { generatingGif: 'succeeded' }})
+              && <>Reset <Refresh /></>}
           </button>
           <a
-            className="ggs__save ggs__action"
+            className="ggs__save"
             href={state?.context?.gifData?.blob ? URL.createObjectURL(state.context.gifData.blob) : null}
             download={`gifit_${Date.now()}.gif`}>
             <button
-              className="ggs__save__button"
+              className="ggs__save__button ggs__action"
               type="button"
-              onClick={handleSave}
               disabled={!state.matches({ generating: { generatingGif: 'succeeded' }})}>
-              Save GIF
+              Save GIF <ArrowDown/>
             </button>
           </a>
         </div>

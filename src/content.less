@@ -1,4 +1,5 @@
 :root {
+	--color-darkfocus: hsla(0, 0, 0, 0.175);
 	--color-nightshade: hsla(240, 21.6%, 14.5%, 0.9);
 	--color-aluminum-blue: hsl(225deg 100% 80%);
 	--color-intensity-red: hsl(350deg, 100%, 60%);
@@ -49,9 +50,14 @@ input[type=number] {
 		position: absolute;
 		top: 30px;
 		right: 30px;
+		width: 175px;
 	}
 
 	button {
+		display: inline-flex;
+		justify-content: space-around;
+		align-content: center;
+
 		cursor: pointer;
 		font-family: Inter, sans-serif;
 		font-size: 11px;
@@ -64,7 +70,7 @@ input[type=number] {
 		border-radius: 3px;
 		background: white;
 		color: rgb(25, 25, 25);
-		padding: 4px 20px;
+		padding: 4px 10px;
 
 		transition: all 250ms var(--ease-out-expo);
 
@@ -74,13 +80,16 @@ input[type=number] {
 
 		&:disabled {
 			filter: contrast(0.5);
-			opacity: 0.5;
+			background: var(--color-system);
+			opacity: 0.75;
 			transform: scale(0.95);
 		}
 	}
 }
 
 .gifit__labelled-input {
+	display: block;
+	margin: 15px;
 	color: white;
 	transition: color 250ms;
 
@@ -106,7 +115,7 @@ input[type=number] {
 		font-weight: bold;
 		text-transform: none;
 		letter-spacing: normal;
-		color: currentColor;
+		color: var(--color-system);
 		opacity: 0.5;
 	}
 
@@ -120,14 +129,14 @@ input[type=number] {
 .ggs {
 	position: relative;
 	display: grid;
-	grid-gap: 30px;
+	grid-gap: 20px;
 	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: 35px 95px minmax(100px, 1fr) 95px 35px;
+	grid-template-rows: 35px 10px minmax(100px, 1fr) 95px 35px;
 	grid-template-areas:
 		"header header header"
-		". width ."
-		"height workspace quality-and-frame-rate"
-		". start-and-end ."
+		". width-bar ."
+		"dimensions workspace quality-and-frame-rate"
+		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
 	
 	input[type="text"],
@@ -137,16 +146,16 @@ input[type=number] {
 		min-width: 70px;
 		margin-left: -8px;
 		margin-right: -8px;
-		padding: 3px 12px;
+		padding: 5px 12px;
 		border-radius: 4px;
 		border: none;
 		color: currentColor;
-		background: rgba(0, 0, 0, 0.0);
-		border: rgba(0, 0, 0, 0.15) 2px solid;
+		background: var(--color-darkfocus);
 
 		font-family: 'Space Grotesk', sans-serif;
 		font-size: 28px;
 		font-weight: bold;
+		font-variant-numeric: tabular-nums;
 		line-height: 1;
 
 		transition: background 250ms;
@@ -158,6 +167,19 @@ input[type=number] {
 		&:focus {
 			outline: none;
 			background: rgba(0, 0, 0, 0.25);
+		}
+	}
+
+	.icon {
+		width: 1rem;
+		fill: currentColor;
+	}
+
+	.button,
+	button {
+		.icon {
+			width: 1.25rem;
+			margin: -0.3rem .25rem -.125rem .25rem;
 		}
 	}
 }
@@ -172,22 +194,22 @@ input[type=number] {
 	opacity: var(--system-interface-opacity);
 	
 	&:nth-child(1) {
-		top: 17px;
+		top: 0;
 		left: 0;
 	}
 
 	&:nth-child(2) {
-		top: 17px;
+		top: 0;
 		right: 0;
 	}
 
 	&:nth-child(3) {
-		bottom: 17px;
+		bottom: 0;
 		right: 0;
 	}
 
 	&:nth-child(4) {
-		bottom: 17px;
+		bottom: 0;
 		left: 0;
 	}
 }
@@ -196,6 +218,7 @@ input[type=number] {
 	grid-area: header;
 	align-self: center;
 	justify-self: center;
+	margin-bottom: 15px;
 	padding: 4px 20px;
 	border: var(--color-system) 1px solid;
 	border-radius: 3px;
@@ -204,32 +227,37 @@ input[type=number] {
 	line-height: 1.25;
 }
 
+.ggs__width__bar {
+	grid-area: width-bar;
+	justify-self: center;
+	width: 100%;
+}
+
+.ggs__dimensions {
+	grid-area: dimensions;
+	align-self: center;
+	justify-self: end;
+	grid-column-gap: 10px;
+	display: grid;
+	align-items: center;
+	grid-template-rows: 1fr 1fr;
+	grid-template-columns: 1fr 10px;
+	grid-template-areas: "width height-bar" "height height-bar";
+}
+
 .ggs__width {
 	grid-area: width;
-	align-self: end;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-
-	&__bar {
-		margin-top: 25px;
-		width: 100%;
-	}
 }
 
 .ggs__height {
 	grid-area: height;
-	align-self: center;
-	justify-self: end;
-	display: flex;
-	align-items: center;
+}
 
-	&__bar {
-		margin-left: 25px;
-		height: 315px;
-		width: 2px;
-		background: white;
-	}
+.ggs__height__bar {
+	grid-area: height-bar;
+	height: 315px;
+	width: 2px;
+	background: white;
 }
 
 .ggs__workspace {
@@ -237,6 +265,7 @@ input[type=number] {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background: var(--color-darkfocus);
 }
 
 .ggs__canvas {
@@ -249,7 +278,7 @@ input[type=number] {
 	grid-area: quality-and-frame-rate;
 	display: flex;
 	flex-direction: column;
-	padding-left: 25px;
+	padding-left: 10px;
 	align-self: stretch;
 	justify-content: space-around;
 }
@@ -264,15 +293,17 @@ input[type=number] {
 
 .ggs__time__bar {
 	flex-basis: 100%;
-	margin: 0 0 25px 0;
+	margin: 0 0 10px 0;
 }
 
 .ggs__footer {
 	grid-area: footer;
 	align-self: center;
 	justify-self: center;
+	margin-top: 15px;
 }
 
 .ggs__action {
+	width: 175px;
 	margin: 0 5px;
 }

@@ -63961,7 +63961,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-var controlBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  position: relative;\n  height: 12px;\n  width: 100%;\n  cursor: pointer;\n\n  .total {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 1px;\n    background: rgba(255, 255, 255, 0.5);\n  }\n  \n  .start,\n  .end {\n    position: absolute;\n    padding: 0;\n    width: 3px;\n    height: 12px;\n\n    &:before {\n      content: '';\n      position: absolute;\n      top: -4px;\n      right: -4px;\n      bottom: -4px;\n      left: -4px;\n    }\n  }\n\n  .start {\n    bottom: 0;\n    left: 0;\n  }\n\n  .end {\n    bottom: 0;\n    left: 0;\n  }\n\n  .range {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 2px;\n    background: white;\n  }\n\n  .start,\n  .end,\n  .range {\n    transition: transform 250ms;\n  }\n"])));
+var controlBarClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  position: relative;\n  height: 12px;\n  width: 100%;\n  cursor: pointer;\n\n  .total {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 1px;\n    background: var(--color-system);\n    opacity: 0.5;\n  }\n  \n  .start,\n  .end {\n    position: absolute;\n    padding: 0;\n    width: 3px;\n    height: 12px;\n\n    &:before {\n      content: '';\n      position: absolute;\n      top: -4px;\n      right: -4px;\n      bottom: -4px;\n      left: -4px;\n    }\n  }\n\n  .start {\n    bottom: 0;\n    left: 0;\n  }\n\n  .end {\n    bottom: 0;\n    left: 0;\n  }\n\n  .range {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    height: 2px;\n    background: white;\n  }\n\n  .start,\n  .end,\n  .range {\n    transition: transform 250ms;\n  }\n"])));
 
 function getPosition(controlBarElement, event) {
   var _controlBarElement$ge = controlBarElement.getBoundingClientRect(),
@@ -64186,6 +64186,54 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+var ArrowDown = function ArrowDown(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M16.707 13.293a.999.999 0 0 0-1.414 0L13 15.586V8a1 1 0 1 0-2 0v7.586l-2.293-2.293a.999.999 0 1 0-1.414 1.414L12 19.414l4.707-4.707a.999.999 0 0 0 0-1.414z"
+  }));
+};
+
+ArrowDown.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+
+var Cancel = function Cancel(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M12 4c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8zm-5 8c0-.832.224-1.604.584-2.295l6.711 6.711A4.943 4.943 0 0 1 12 17c-2.757 0-5-2.243-5-5zm9.416 2.295L9.705 7.584A4.943 4.943 0 0 1 12 7c2.757 0 5 2.243 5 5 0 .832-.224 1.604-.584 2.295z"
+  }));
+};
+
+Cancel.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+
+var MediaPlay = function MediaPlay(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M10.396 18.433 17 12l-6.604-6.433A2 2 0 0 0 7 7v10a2 2 0 0 0 3.396 1.433z"
+  }));
+};
+
+MediaPlay.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+
+var Refresh = function Refresh(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M12.872 13.191H18V8.064c-.008-1.135-.671-1.408-1.473-.605l-1.154 1.158a5.756 5.756 0 0 0-3.566-1.23c-1.55 0-3.009.604-4.104 1.701A5.748 5.748 0 0 0 6 13.191c0 1.553.604 3.012 1.701 4.107A5.77 5.77 0 0 0 11.807 19c1.55 0 3.009-.605 4.106-1.703.296-.297.558-.621.78-.965a1.16 1.16 0 1 0-1.954-1.255c-.133.207-.292.4-.468.58-.659.658-1.534 1.02-2.464 1.02s-1.805-.361-2.464-1.02a3.466 3.466 0 0 1-1.02-2.465c0-.93.362-1.805 1.02-2.461a3.466 3.466 0 0 1 2.464-1.021c.688 0 1.346.201 1.909.572l-1.448 1.451c-.803.802-.53 1.458.604 1.458z"
+  }));
+};
+
+Refresh.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+
 function LabelledInput(props) {
   return /*#__PURE__*/_react["default"].createElement("label", {
     className: "gifit__labelled-input"
@@ -64253,7 +64301,7 @@ function GifGenerationSystem(props) {
 
   (0, _react.useEffect)(function () {
     debouncedDrawFrame();
-  }, [state.context.width, state.context.height]); // set a reference to the state machine's context for use in other callbacks
+  }, [state.context.width, state.context.height, state.context.gifData]); // set a reference to the state machine's context for use in other callbacks
 
   (0, _react.useEffect)(function () {
     contextRef.current = state.context;
@@ -64403,20 +64451,30 @@ function GifGenerationSystem(props) {
       key: 'height',
       value: newHeight
     });
-  };
+  }; // form submit now handles:
+  // generate
+  // abort
+  // reset
+
 
   function handleFormSubmit(event) {
     event.preventDefault();
-    send('SUBMIT');
-    send('VALIDATION_SUCCESS');
-  }
 
-  function handleReset(event) {
-    event.preventDefault();
-    send('RESET');
+    if (state.matches('configuring')) {
+      send('SUBMIT');
+      send('VALIDATION_SUCCESS');
+    } else if (state.matches({
+      generating: {
+        generatingGif: 'succeeded'
+      }
+    })) {
+      // 'Reset'
+      send('RESET');
+    } else if (state.matches('generating')) {
+      // Cancel
+      send('ABORT');
+    }
   }
-
-  function handleSave() {}
 
   if (state.matches('initializing')) {
     return /*#__PURE__*/_react["default"].createElement("div", null, "Initializing");
@@ -64436,14 +64494,6 @@ function GifGenerationSystem(props) {
   }), /*#__PURE__*/_react["default"].createElement("header", {
     className: "ggs__head"
   }, "GIF Generation System"), /*#__PURE__*/_react["default"].createElement("div", {
-    className: "ggs__width"
-  }, /*#__PURE__*/_react["default"].createElement(LabelledInput, {
-    name: "Width",
-    addendum: "px",
-    value: state.context.width,
-    onChange: handleWidthInputChange,
-    width: 100
-  }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__width__bar",
     style: {
       width: "".concat(state.context.width, "px")
@@ -64452,7 +64502,17 @@ function GifGenerationSystem(props) {
     value: state.context.width,
     onChange: handleWidthControlBarChange,
     disabled: !state.matches('configuring')
-  }))), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: "ggs__dimensions"
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "ggs__width"
+  }, /*#__PURE__*/_react["default"].createElement(LabelledInput, {
+    name: "Width",
+    addendum: "px",
+    value: state.context.width,
+    onChange: handleWidthInputChange,
+    width: 100
+  })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__height"
   }, /*#__PURE__*/_react["default"].createElement(LabelledInput, {
     name: "Height",
@@ -64460,7 +64520,7 @@ function GifGenerationSystem(props) {
     value: state.context.height,
     onChange: handleHeightInputChange,
     width: 100
-  }), /*#__PURE__*/_react["default"].createElement("div", {
+  })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__height__bar",
     style: {
       height: "".concat(state.context.height, "px")
@@ -64540,27 +64600,28 @@ function GifGenerationSystem(props) {
     className: "ggs__actions"
   }, /*#__PURE__*/_react["default"].createElement("button", {
     className: "ggs__generate ggs__action",
-    type: "submit",
-    disabled: !state.matches('configuring')
-  }, "Generate GIF"), /*#__PURE__*/_react["default"].createElement("button", {
-    className: "ggs__reset ggs__action",
-    type: "reset",
-    onClick: handleReset,
-    disabled: state.matches('configuring')
-  }, "Reset"), /*#__PURE__*/_react["default"].createElement("a", {
-    className: "ggs__save ggs__action",
+    type: "submit"
+  }, state.matches('configuring') && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Generate GIF ", /*#__PURE__*/_react["default"].createElement(MediaPlay, null)), state.matches('generating') && !state.matches({
+    generating: {
+      generatingGif: 'succeeded'
+    }
+  }) && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Cancel ", /*#__PURE__*/_react["default"].createElement(Cancel, null)), state.matches({
+    generating: {
+      generatingGif: 'succeeded'
+    }
+  }) && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Reset ", /*#__PURE__*/_react["default"].createElement(Refresh, null))), /*#__PURE__*/_react["default"].createElement("a", {
+    className: "ggs__save",
     href: state !== null && state !== void 0 && (_state$context = state.context) !== null && _state$context !== void 0 && (_state$context$gifDat = _state$context.gifData) !== null && _state$context$gifDat !== void 0 && _state$context$gifDat.blob ? URL.createObjectURL(state.context.gifData.blob) : null,
     download: "gifit_".concat(Date.now(), ".gif")
   }, /*#__PURE__*/_react["default"].createElement("button", {
-    className: "ggs__save__button",
+    className: "ggs__save__button ggs__action",
     type: "button",
-    onClick: handleSave,
     disabled: !state.matches({
       generating: {
         generatingGif: 'succeeded'
       }
     })
-  }, "Save GIF")))));
+  }, "Save GIF ", /*#__PURE__*/_react["default"].createElement(ArrowDown, null))))));
 }
 
 var _default = GifGenerationSystem;
@@ -64594,7 +64655,30 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-var incrementableInputClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  position: relative;\n\n  .decrementor,\n  .incrementor {\n    padding: 5px;\n    z-index: 1;\n  }\n"])));
+var ChevronLeft = function ChevronLeft(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M14.414 5.586a2 2 0 0 0-2.828 0L5.171 12l6.415 6.414c.39.391.902.586 1.414.586s1.024-.195 1.414-.586a2 2 0 0 0 0-2.828L10.829 12l3.585-3.586a2 2 0 0 0 0-2.828z"
+  }));
+};
+
+ChevronLeft.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+
+var ChevronRight = function ChevronRight(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M8.586 5.586a2 2 0 0 0 0 2.828L12.171 12l-3.585 3.586a2 2 0 1 0 2.828 2.828L17.829 12l-6.415-6.414a2 2 0 0 0-2.828 0z"
+  }));
+};
+
+ChevronRight.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+};
+var incrementableInputClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  position: relative;\n\n  .decrementor,\n  .incrementor {\n    padding: 8px 4px;\n    background: transparent;\n    color: white;\n    z-index: 1;\n  }\n"])));
 
 function IncrementableInput(props) {
   function handleIncrement() {
@@ -64613,7 +64697,11 @@ function IncrementableInput(props) {
     className: "decrementor",
     type: "button",
     onClick: handleDecrement
-  }, "-"), /*#__PURE__*/_react["default"].createElement("input", {
+  }, /*#__PURE__*/_react["default"].createElement(ChevronLeft, {
+    style: {
+      width: '14px'
+    }
+  })), /*#__PURE__*/_react["default"].createElement("input", {
     className: "input",
     type: "text",
     inputMode: "numeric",
@@ -64626,7 +64714,11 @@ function IncrementableInput(props) {
     className: "incrementor",
     type: "button",
     onClick: handleIncrement
-  }, "+"));
+  }, /*#__PURE__*/_react["default"].createElement(ChevronRight, {
+    style: {
+      width: '14px'
+    }
+  })));
 }
 
 IncrementableInput.propTypes = {
@@ -64922,7 +65014,18 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var startButtonElement = document.querySelector('#start');
 
-// Set up a false GIFti app to lie to ourselves
+var Times = function Times(props) {
+  return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
+    d: "M17.414 6.586a2 2 0 0 0-2.828 0L12 9.172 9.414 6.586a2 2 0 1 0-2.828 2.828L9.171 12l-2.585 2.586a2 2 0 1 0 2.828 2.828L12 14.828l2.586 2.586c.39.391.902.586 1.414.586s1.024-.195 1.414-.586a2 2 0 0 0 0-2.828L14.829 12l2.585-2.586a2 2 0 0 0 0-2.828z"
+  }));
+};
+
+Times.defaultProps = {
+  className: "icon",
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24"
+}; // Set up a false GIFti app to lie to ourselves
+
 function TestGifitApp(props) {
   var _useState = (0, _react.useState)(false),
       _useState2 = _slicedToArray(_useState, 2),
@@ -64950,7 +65053,11 @@ function TestGifitApp(props) {
     className: "gifit-app__close",
     type: "button",
     onClick: handleCloseClick
-  }, "Close GIFit"), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null)));
+  }, "Close GIFit ", /*#__PURE__*/_react["default"].createElement(Times, {
+    style: {
+      width: '12px'
+    }
+  })), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null)));
 } // Engage party mode
 // Party mode = initialize React apps in DOM
 
@@ -65424,7 +65531,7 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     quality: 5,
     fps: 12,
     start: 0,
-    end: 1
+    end: 1.5
   },
   states: {
     // initialization animation
@@ -65523,6 +65630,10 @@ var gifGenerationSystemMachine = new _xstate.Machine({
         }
       },
       on: {
+        ABORT: {
+          target: 'configuring',
+          actions: ['abortGeneration', 'resetData']
+        },
         RESET: {
           target: 'configuring',
           actions: ['resetData']
@@ -65539,6 +65650,8 @@ var gifGenerationSystemMachine = new _xstate.Machine({
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
+        start: videoElement.currentTime,
+        end: videoElement.currentTime + 1.5,
         videoAspectRatio: videoAspectRatio,
         videoElement: videoElement
       };
@@ -65565,6 +65678,10 @@ var gifGenerationSystemMachine = new _xstate.Machine({
       return {
         gifData: null
       };
+    }),
+    abortGeneration: (0, _xstate.assign)(function (context, event) {
+      context.gifService.abort();
+      return {};
     })
   },
   guards: {
