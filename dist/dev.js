@@ -64714,7 +64714,9 @@ function GifGenerationSystem(props) {
     return /*#__PURE__*/_react["default"].createElement("span", {
       className: "gifit__frames-viz__frame"
     });
-  })), /*#__PURE__*/_react["default"].createElement("label", {
+  }), /*#__PURE__*/_react["default"].createElement("span", {
+    className: "gifit__frames-viz__count"
+  }, frameCount)), /*#__PURE__*/_react["default"].createElement("label", {
     className: "gifit__labelled-input"
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "gifit__labelled-input__label"

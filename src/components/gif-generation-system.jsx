@@ -301,6 +301,7 @@ function GifGenerationSystem (props) {
           {_.times(frameCount, () => (
             <span className="gifit__frames-viz__frame"></span>
           ))}
+          <span className="gifit__frames-viz__count">{frameCount}</span>
         </div>
         
         <label className="gifit__labelled-input">
