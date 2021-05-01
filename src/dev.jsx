@@ -3,12 +3,10 @@ const startButtonElement = document.querySelector('#start');
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import GifGenerationSystem from './components/gif-generation-system.jsx';
-
-import Times from '$icons/times.svg';
+import GifitApp from '$components/gifit-app.jsx';
 
 // Set up a false GIFti app to lie to ourselves
-function TestGifitApp (props) {
+function TestGifitApp () {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
@@ -19,20 +17,12 @@ function TestGifitApp (props) {
     });
   }, []);
 
-  function handleCloseClick (event) {
-    event.preventDefault();
+  function handleClose () {
     setActive(false);
   }
 
   return (
-    <div className="gifit-app" style={{ display: active ? 'flex' : 'none' }}>
-      {active &&
-        <>
-          <button className="gifit-app__close" type="button" onClick={handleCloseClick}>Close GIFit <Times style={{ width: '12px' }} /></button>
-          <GifGenerationSystem />
-        </>
-      }
-    </div>
+    <GifitApp active={active} onClose={handleClose} />
   );
 }
 

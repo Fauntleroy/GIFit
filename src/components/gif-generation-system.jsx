@@ -5,6 +5,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useMachine } from '@xstate/react';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
+import Button from './button.jsx';
 import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
@@ -47,6 +48,7 @@ function GifGenerationSystem (props) {
   const contextRef = useRef(state.context);
   const widthProps = useSpring({ to: { width: workspaceWidth }});
   const heightProps = useSpring({ to: { height: workspaceHeight }});
+  const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
 
   // draw the video to the preview canvas
   function drawFrame () {
@@ -199,6 +201,16 @@ function GifGenerationSystem (props) {
     return <div>Initializing</div>;
   }
 
+  let submitButtonContents = [];
+
+  if (state.matches('configuring')) {
+    submitButtonContents = ['Generate GIF', <MediaPlay />];
+  } else if (state.matches('generating') && !state.matches({ generating: { generatingGif: 'succeeded' }})) {
+    submitButtonContents = ['Cancel', <Cancel />];
+  } else if (state.matches({ generating: { generatingGif: 'succeeded' }})) {
+    submitButtonContents = ['Reset', <Refresh />];
+  }
+
   return (
     <form className="gif-generation-system ggs" onSubmit={handleFormSubmit}>
       <span className="ggs__corner" />
@@ -280,10 +292,16 @@ function GifGenerationSystem (props) {
               increment={1 / state.context.fps}
               min={0}
               max={state.context.end}
-              width="150px"
+              width="200px"
               onChange={handleStartInputChange} />
           </div>
         </label>
+
+        <div className="gifit__frames-viz">
+          {_.times(frameCount, () => (
+            <span className="gifit__frames-viz__frame"></span>
+          ))}
+        </div>
         
         <label className="gifit__labelled-input">
           <span className="gifit__labelled-input__label">End</span>
@@ -293,7 +311,7 @@ function GifGenerationSystem (props) {
               increment={1 / state.context.fps}
               min={state.context.start}
               max={videoRef.current.duration}
-              width="150px"
+              width="200px"
               onChange={handleEndInputChange} />
           </div>
         </label>
@@ -301,26 +319,23 @@ function GifGenerationSystem (props) {
 
       <footer className="ggs__footer">
         <div className="ggs__actions">
-          <button
-            className="ggs__generate ggs__action"
-            type="submit">
-            {state.matches('configuring')
-              && <>Generate GIF <MediaPlay /></>}
-            {state.matches('generating') && !state.matches({ generating: { generatingGif: 'succeeded' }})
-              && <>Cancel <Cancel /></>}
-            {state.matches({ generating: { generatingGif: 'succeeded' }})
-              && <>Reset <Refresh /></>}
-          </button>
+          <span className="ggs__action">
+            <Button
+              type="submit"
+              icon={submitButtonContents[1]}>
+              {submitButtonContents[0]}
+            </Button>
+          </span>
           <a
-            className="ggs__save"
+            className="ggs__save ggs__action"
             href={state?.context?.gifData?.blob ? URL.createObjectURL(state.context.gifData.blob) : null}
             download={`gifit_${Date.now()}.gif`}>
-            <button
-              className="ggs__save__button ggs__action"
+            <Button
               type="button"
+              icon={<ArrowDown />}
               disabled={!state.matches({ generating: { generatingGif: 'succeeded' }})}>
-              Save GIF <ArrowDown/>
-            </button>
+              Save GIF
+            </Button>
           </a>
         </div>
       </footer>

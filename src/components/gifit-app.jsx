@@ -1,32 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import GifGenerationSystem from './gif-generation-system.jsx';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { css, cx } from '@emotion/css';
 
-const browser = window.browser || window.chrome;
+import Button from '$components/button.jsx';
+import GifGenerationSystem from '$components/gif-generation-system.jsx';
+
+import Times from '$icons/times.svg';
+
+const gifitAppClassName = css`
+  .actions {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+  }
+`;
 
 function GifitApp (props) {
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    browser.runtime.onMessage.addListener((request, sender) => {
-      setActive(true);
-    });
-  }, []);
-
   function handleCloseClick (event) {
     event.preventDefault();
-    setActive(false);
+    props.onClose();
   }
 
   return (
-    <div className="gifit-app" style={{ display: active ? 'flex' : 'none' }}>
-      {active &&
+    <div
+      className={cx(gifitAppClassName, 'gifit-app')}
+      style={{ display: props.active ? 'flex' : 'none' }}>
+      {props.active &&
         <>
-          <button className="gifit-app__close" type="button" onClick={handleCloseClick}>Close GIFit</button>
+          <div className="actions">
+            <Button
+              type="button"
+              onClick={handleCloseClick}
+              icon={<Times />}>
+              Close GIFit
+            </Button>
+          </div>
           <GifGenerationSystem />
         </>
       }
     </div>
   );
 }
+
+GifitApp.propTypes = {
+  active: PropTypes.bool,
+  onClose: PropTypes.func.isRequired
+};
+
+GifitApp.defaultProps = {
+  active: false
+};
 
 export default GifitApp;

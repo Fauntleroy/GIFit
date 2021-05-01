@@ -56,6 +56,7 @@ class GifService extends EventEmitter {
       repeat: 0,
       width: config.width,
       height: config.height,
+      dither: 'FloydSteinberg-serpentine',
       workerScript: URL.createObjectURL(gifJsWorkerBlob)
     });
 

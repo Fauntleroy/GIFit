@@ -10,12 +10,31 @@ const incrementableInputClassName = css`
   align-items: center;
   position: relative;
 
+  .input[type="text"] {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
   .decrementor,
   .incrementor {
-    padding: 8px 4px;
-    background: transparent;
-    color: white;
+    display: flex;
+    position: absolute;
+    padding: 7px 1px;
+    color: currentColor;
     z-index: 1;
+    background: transparent;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+
+  .decrementor {
+    left: 0;
+  }
+
+  .incrementor {
+    right: 0;
   }
 `;
 

@@ -11,6 +11,7 @@ const controlBarClassName = css`
   height: 12px;
   width: 100%;
   cursor: pointer;
+  user-select: none;
 
   .total {
     position: absolute;

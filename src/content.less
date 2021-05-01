@@ -1,12 +1,17 @@
 :root {
-	--color-darkfocus: hsla(0, 0, 0, 0.175);
+	--color-shade: hsla(0, 0%, 0%, 0.175);
+	--color-shadeactive: hsla(0, 0%, 0%, 0.35);
 	--color-nightshade: hsla(240, 21.6%, 14.5%, 0.9);
 	--color-aluminum-blue: hsl(225deg 100% 80%);
 	--color-intensity-red: hsl(350deg, 100%, 60%);
 	--color-system: var(--color-aluminum-blue);
 	--color-highlight: var(--color-intensity-red);
+
 	--system-interface-opacity: 0.65;
+
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+	--ggs-font-numeric: 'Space Grotesk', sans-serif;
 }
 
 input::-webkit-outer-spin-button,
@@ -46,44 +51,14 @@ input[type=number] {
 		box-sizing: border-box;
 	}
 
-	&__close {
-		position: absolute;
-		top: 30px;
-		right: 30px;
-		width: 175px;
+	button {
+		border: none;
+		cursor: pointer;
 	}
 
-	button {
-		display: inline-flex;
-		justify-content: space-around;
-		align-content: center;
-
-		cursor: pointer;
-		font-family: Inter, sans-serif;
-		font-size: 11px;
-		text-transform: uppercase;
-		font-weight: 600;
-		line-height: 1.25;
-		letter-spacing: 3px;
-
-		border: none;
-		border-radius: 3px;
-		background: white;
-		color: rgb(25, 25, 25);
-		padding: 4px 10px;
-
-		transition: all 250ms var(--ease-out-expo);
-
-		&:hover {
-			background: var(--color-highlight);
-		}
-
-		&:disabled {
-			filter: contrast(0.5);
-			background: var(--color-system);
-			opacity: 0.75;
-			transform: scale(0.95);
-		}
+	.icon {
+		width: 1rem;
+		fill: currentColor;
 	}
 }
 
@@ -110,7 +85,7 @@ input[type=number] {
 	}
 
 	&__addendum {
-		font-family: 'Space Grotesk', sans-serif;
+		font-family: var(--ggs-font-numeric);
 		font-size: 15px;
 		font-weight: bold;
 		text-transform: none;
@@ -131,7 +106,7 @@ input[type=number] {
 	display: grid;
 	grid-gap: 20px;
 	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: 35px 10px minmax(100px, 1fr) 95px 35px;
+	grid-template-rows: 35px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
 		"header header header"
 		". width-bar ."
@@ -150,7 +125,7 @@ input[type=number] {
 		border-radius: 4px;
 		border: none;
 		color: currentColor;
-		background: var(--color-darkfocus);
+		background: var(--color-shade);
 
 		font-family: 'Space Grotesk', sans-serif;
 		font-size: 28px;
@@ -160,26 +135,10 @@ input[type=number] {
 
 		transition: background 250ms;
 
-		&:hover {
-			background: rgba(0, 0, 0, 0.15);
-		}
-
+		&:hover,
 		&:focus {
 			outline: none;
-			background: rgba(0, 0, 0, 0.25);
-		}
-	}
-
-	.icon {
-		width: 1rem;
-		fill: currentColor;
-	}
-
-	.button,
-	button {
-		.icon {
-			width: 1.25rem;
-			margin: -0.3rem .25rem -.125rem .25rem;
+			background: var(--color-shadeactive);
 		}
 	}
 }
@@ -231,11 +190,12 @@ input[type=number] {
 	grid-area: width-bar;
 	justify-self: center;
 	width: 100%;
+	margin-top: 25px;
 }
 
 .ggs__dimensions {
 	grid-area: dimensions;
-	align-self: center;
+	align-self: stretch;
 	justify-self: end;
 	grid-column-gap: 10px;
 	display: grid;
@@ -265,7 +225,7 @@ input[type=number] {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--color-darkfocus);
+	background: var(--color-shade);
 }
 
 .ggs__canvas {
@@ -289,6 +249,8 @@ input[type=number] {
 	flex-direction: row;
 	flex-wrap: wrap;
 	justify-content: space-between;
+	align-items: center;
+	padding-top: 25px;
 }
 
 .ggs__time__bar {
@@ -306,4 +268,20 @@ input[type=number] {
 .ggs__action {
 	width: 175px;
 	margin: 0 5px;
+}
+
+.gifit__frames-viz {
+	margin: 10px;
+	max-width: 150px;
+	line-height: 1px;
+}
+
+.gifit__frames-viz__frame {
+	display: inline-block;
+	width: 1px;
+	height: 2px;
+	margin: 1px;
+	background: var(--color-system);
+	border-radius: 50%;
+	opacity: 0.25;
 }

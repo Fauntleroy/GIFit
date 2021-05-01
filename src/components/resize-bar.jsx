@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { range } from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { css, cx } from '@emotion/css';
@@ -8,7 +8,7 @@ import createResizeBarMachine from '../state-machines/create-resize-bar-machine'
 
 function generateResizeBarClassName (props) {
   const { orientation } = props;
-  let barWidth, barHeight, handleWidth, handleHeight, startPosition, endPosition;
+  let barWidth, barHeight, handleWidth, handleHeight, startPosition, endPosition, rangeDimensions;
   if (orientation === 'horizontal') {
     barWidth = '100%';
     barHeight = '12px';
@@ -16,6 +16,7 @@ function generateResizeBarClassName (props) {
     handleHeight = '12px';
     startPosition = 'top: 0; left: 0;';
     endPosition = 'top: 0; right: 0;';
+    rangeDimensions = 'height: 2px;';
   } else {
     barWidth = '12px';
     barHeight = '100%';
@@ -23,6 +24,7 @@ function generateResizeBarClassName (props) {
     handleHeight = '3px';
     startPosition = 'top: 0; left: 0;';
     endPosition = 'bottom: 0; left: 0;';
+    rangeDimensions = 'width: 2px;';
   }
 
   const resizeBarClassName = css`
@@ -30,6 +32,7 @@ function generateResizeBarClassName (props) {
     height: ${barHeight};
     width: ${barWidth};
     cursor: pointer;
+    user-select: none;
 
     .total {
       position: absolute;
@@ -71,7 +74,7 @@ function generateResizeBarClassName (props) {
       top: 0;
       left: 0;
       right: 0;
-      height: 2px;
+      ${rangeDimensions}
       background: white;
     }
 
