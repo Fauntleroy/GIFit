@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
-import { animated, useSpring } from 'react-spring';
 import { motion } from 'framer-motion';
 import { useDebouncedCallback } from 'use-debounce';
 import { useMachine } from '@xstate/react';
@@ -44,8 +43,6 @@ LabelledInput.defaultProps = {
 function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
 
-  const [workspaceWidth, setWorkspaceWidth] = useState(0);
-  const [workspaceHeight, setWorkspaceHeight] = useState(0);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const widthRef = useRef(null);
@@ -57,8 +54,6 @@ function GifGenerationSystem (props) {
   const endRef = useRef(null);
   const formRef = useRef(null);
   const contextRef = useRef(state.context);
-  const widthProps = useSpring({ to: { width: workspaceWidth }});
-  const heightProps = useSpring({ to: { height: workspaceHeight }});
   const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
 
   // draw the video to the preview canvas
@@ -114,18 +109,6 @@ function GifGenerationSystem (props) {
       state.context.videoElement.currentTime = state.context.end;
     }
   }, [state.context.end]);
-
-  // change the width of the workspace, but don't do it right away
-  function setWorkspaceSize (_width, _height) {
-    setWorkspaceWidth(_width);
-    setWorkspaceHeight(_height);
-  }
-
-  const debouncedSetWorkspaceSize = useDebouncedCallback(setWorkspaceSize, 1000);
-
-  useEffect(() => {
-    debouncedSetWorkspaceSize(state.context.width, state.context.height);
-  }, [state.context.width, state.context.height]);
 
   // input handling
   function handleWidthInputChange (event) {
@@ -277,10 +260,12 @@ function GifGenerationSystem (props) {
           {state.matches({ generating: { generatingGif: 'succeeded' }}) &&
           <img src={URL.createObjectURL(state.context.gifData.blob)} />}
           {!state.matches({ generating: { generatingGif: 'succeeded' }}) &&
-          <animated.canvas
+          <motion.canvas
             className="ggs__canvas"
             ref={canvasRef}
-            style={{ ...widthProps, ...heightProps, willChange: 'width, height' }}
+            style={{ width: state.context.width, height: state.context.height, willChange: 'width, height' }}
+            animate={{ width: state.context.width, height: state.context.height }}
+            transition={{ bounce: 0, delay: 0.75 }}
             height={state.context.height}
             width={state.context.width} />}
         </div>

@@ -303,7 +303,7 @@ var createCache = function createCache(options) {
 exports.default = createCache;
 
 }).call(this)}).call(this,require('_process'))
-},{"@emotion/memoize":10,"@emotion/sheet":12,"@emotion/weak-memoize":15,"_process":183,"stylis":208}],2:[function(require,module,exports){
+},{"@emotion/memoize":10,"@emotion/sheet":12,"@emotion/weak-memoize":15,"_process":172,"stylis":195}],2:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -459,7 +459,7 @@ var classnames = function classnames(args) {
 exports.default = createEmotion;
 
 }).call(this)}).call(this,require('_process'))
-},{"@emotion/cache":1,"@emotion/serialize":11,"@emotion/utils":14,"_process":183}],3:[function(require,module,exports){
+},{"@emotion/cache":1,"@emotion/serialize":11,"@emotion/utils":14,"_process":172}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -598,7 +598,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./emotion-css.cjs.dev.js":4,"./emotion-css.cjs.prod.js":6,"_process":183}],6:[function(require,module,exports){
+},{"./emotion-css.cjs.dev.js":4,"./emotion-css.cjs.prod.js":6,"_process":172}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1055,7 +1055,7 @@ var serializeStyles = function serializeStyles(args, registered, mergedProps) {
 exports.serializeStyles = serializeStyles;
 
 }).call(this)}).call(this,require('_process'))
-},{"@emotion/hash":7,"@emotion/memoize":10,"@emotion/unitless":13,"_process":183}],12:[function(require,module,exports){
+},{"@emotion/hash":7,"@emotion/memoize":10,"@emotion/unitless":13,"_process":172}],12:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -1209,7 +1209,7 @@ var StyleSheet = /*#__PURE__*/function () {
 exports.StyleSheet = StyleSheet;
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":183}],13:[function(require,module,exports){
+},{"_process":172}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -1335,3293 +1335,6 @@ var weakMemoize = function weakMemoize(func) {
 exports.default = weakMemoize;
 
 },{}],16:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var shared = require('@react-spring/shared');
-var React = require('react');
-
-const $node = Symbol.for("Animated:node");
-const isAnimated = (value) => !!value && value[$node] === value;
-const getAnimated = (owner) => owner && owner[$node];
-const setAnimated = (owner, node) => shared.defineHidden(owner, $node, node);
-const getPayload = (owner) => owner && owner[$node] && owner[$node].getPayload();
-class Animated {
-  constructor() {
-    setAnimated(this, this);
-  }
-  getPayload() {
-    return this.payload || [];
-  }
-}
-
-class AnimatedValue extends Animated {
-  constructor(_value) {
-    super();
-    this._value = _value;
-    this.done = true;
-    this.durationProgress = 0;
-    if (shared.is.num(this._value)) {
-      this.lastPosition = this._value;
-    }
-  }
-  static create(value) {
-    return new AnimatedValue(value);
-  }
-  getPayload() {
-    return [this];
-  }
-  getValue() {
-    return this._value;
-  }
-  setValue(value, step) {
-    if (shared.is.num(value)) {
-      this.lastPosition = value;
-      if (step) {
-        value = Math.round(value / step) * step;
-        if (this.done) {
-          this.lastPosition = value;
-        }
-      }
-    }
-    if (this._value === value) {
-      return false;
-    }
-    this._value = value;
-    return true;
-  }
-  reset() {
-    const {done} = this;
-    this.done = false;
-    if (shared.is.num(this._value)) {
-      this.elapsedTime = 0;
-      this.durationProgress = 0;
-      this.lastPosition = this._value;
-      if (done)
-        this.lastVelocity = null;
-      this.v0 = null;
-    }
-  }
-}
-
-class AnimatedString extends AnimatedValue {
-  constructor(value) {
-    super(0);
-    this._string = null;
-    this._toString = shared.createInterpolator({
-      output: [value, value]
-    });
-  }
-  static create(value) {
-    return new AnimatedString(value);
-  }
-  getValue() {
-    let value = this._string;
-    return value == null ? this._string = this._toString(this._value) : value;
-  }
-  setValue(value) {
-    if (shared.is.str(value)) {
-      if (value == this._string) {
-        return false;
-      }
-      this._string = value;
-      this._value = 1;
-    } else if (super.setValue(value)) {
-      this._string = null;
-    } else {
-      return false;
-    }
-    return true;
-  }
-  reset(goal) {
-    if (goal) {
-      this._toString = shared.createInterpolator({
-        output: [this.getValue(), goal]
-      });
-    }
-    this._value = 0;
-    super.reset();
-  }
-}
-
-const TreeContext = {dependencies: null};
-
-class AnimatedObject extends Animated {
-  constructor(source) {
-    super();
-    this.source = source;
-    this.setValue(source);
-  }
-  getValue(animated) {
-    const values = {};
-    shared.eachProp(this.source, (source, key) => {
-      if (isAnimated(source)) {
-        values[key] = source.getValue(animated);
-      } else if (shared.hasFluidValue(source)) {
-        values[key] = shared.getFluidValue(source);
-      } else if (!animated) {
-        values[key] = source;
-      }
-    });
-    return values;
-  }
-  setValue(source) {
-    this.source = source;
-    this.payload = this._makePayload(source);
-  }
-  reset() {
-    if (this.payload) {
-      shared.each(this.payload, (node) => node.reset());
-    }
-  }
-  _makePayload(source) {
-    if (source) {
-      const payload = new Set();
-      shared.eachProp(source, this._addToPayload, payload);
-      return Array.from(payload);
-    }
-  }
-  _addToPayload(source) {
-    if (TreeContext.dependencies && shared.hasFluidValue(source)) {
-      TreeContext.dependencies.add(source);
-    }
-    const payload = getPayload(source);
-    if (payload) {
-      shared.each(payload, (node) => this.add(node));
-    }
-  }
-}
-
-class AnimatedArray extends AnimatedObject {
-  constructor(source) {
-    super(source);
-  }
-  static create(source) {
-    return new AnimatedArray(source);
-  }
-  getValue() {
-    return this.source.map((node) => node.getValue());
-  }
-  setValue(source) {
-    const payload = this.getPayload();
-    if (source.length == payload.length) {
-      return payload.some((node, i) => node.setValue(source[i]));
-    }
-    super.setValue(source.map(makeAnimated));
-    return true;
-  }
-}
-function makeAnimated(value) {
-  const nodeType = shared.isAnimatedString(value) ? AnimatedString : AnimatedValue;
-  return nodeType.create(value);
-}
-
-function getAnimatedType(value) {
-  const parentNode = getAnimated(value);
-  return parentNode ? parentNode.constructor : shared.is.arr(value) ? AnimatedArray : shared.isAnimatedString(value) ? AnimatedString : AnimatedValue;
-}
-
-const withAnimated = (Component, host) => {
-  const hasInstance = !shared.is.fun(Component) || Component.prototype && Component.prototype.isReactComponent;
-  return React.forwardRef((givenProps, givenRef) => {
-    const instanceRef = React.useRef(null);
-    const ref = hasInstance && React.useCallback((value) => {
-      instanceRef.current = updateRef(givenRef, value);
-    }, [givenRef]);
-    const [props, deps] = getAnimatedState(givenProps, host);
-    const forceUpdate = shared.useForceUpdate();
-    const callback = () => {
-      const instance = instanceRef.current;
-      if (hasInstance && !instance) {
-        return;
-      }
-      const didUpdate = instance ? host.applyAnimatedValues(instance, props.getValue(true)) : false;
-      if (didUpdate === false) {
-        forceUpdate();
-      }
-    };
-    const observer = new PropsObserver(callback, deps);
-    const observerRef = React.useRef();
-    shared.useLayoutEffect(() => {
-      const lastObserver = observerRef.current;
-      observerRef.current = observer;
-      shared.each(deps, (dep) => shared.addFluidObserver(dep, observer));
-      if (lastObserver) {
-        shared.each(lastObserver.deps, (dep) => shared.removeFluidObserver(dep, lastObserver));
-        shared.raf.cancel(lastObserver.update);
-      }
-    });
-    React.useEffect(callback, []);
-    shared.useOnce(() => () => {
-      const observer2 = observerRef.current;
-      shared.each(observer2.deps, (dep) => shared.removeFluidObserver(dep, observer2));
-    });
-    const usedProps = host.getComponentProps(props.getValue());
-    return /* @__PURE__ */ React.createElement(Component, {
-      ...usedProps,
-      ref
-    });
-  });
-};
-class PropsObserver {
-  constructor(update, deps) {
-    this.update = update;
-    this.deps = deps;
-  }
-  eventObserved(event) {
-    if (event.type == "change") {
-      shared.raf.write(this.update);
-    }
-  }
-}
-function getAnimatedState(props, host) {
-  const dependencies = new Set();
-  TreeContext.dependencies = dependencies;
-  if (props.style)
-    props = {
-      ...props,
-      style: host.createAnimatedStyle(props.style)
-    };
-  props = new AnimatedObject(props);
-  TreeContext.dependencies = null;
-  return [props, dependencies];
-}
-function updateRef(ref, value) {
-  if (ref) {
-    if (shared.is.fun(ref))
-      ref(value);
-    else
-      ref.current = value;
-  }
-  return value;
-}
-
-const cacheKey = Symbol.for("AnimatedComponent");
-const createHost = (components, {
-  applyAnimatedValues = () => false,
-  createAnimatedStyle = (style) => new AnimatedObject(style),
-  getComponentProps = (props) => props
-} = {}) => {
-  const hostConfig = {
-    applyAnimatedValues,
-    createAnimatedStyle,
-    getComponentProps
-  };
-  const animated = (Component) => {
-    const displayName = getDisplayName(Component) || "Anonymous";
-    if (shared.is.str(Component)) {
-      Component = animated[Component] || (animated[Component] = withAnimated(Component, hostConfig));
-    } else {
-      Component = Component[cacheKey] || (Component[cacheKey] = withAnimated(Component, hostConfig));
-    }
-    Component.displayName = `Animated(${displayName})`;
-    return Component;
-  };
-  shared.eachProp(components, (Component, key) => {
-    if (shared.is.arr(components)) {
-      key = getDisplayName(Component);
-    }
-    animated[key] = animated(Component);
-  });
-  return {
-    animated
-  };
-};
-const getDisplayName = (arg) => shared.is.str(arg) ? arg : arg && shared.is.str(arg.displayName) ? arg.displayName : shared.is.fun(arg) && arg.name || null;
-
-exports.Animated = Animated;
-exports.AnimatedArray = AnimatedArray;
-exports.AnimatedObject = AnimatedObject;
-exports.AnimatedString = AnimatedString;
-exports.AnimatedValue = AnimatedValue;
-exports.createHost = createHost;
-exports.getAnimated = getAnimated;
-exports.getAnimatedType = getAnimatedType;
-exports.getPayload = getPayload;
-exports.isAnimated = isAnimated;
-exports.setAnimated = setAnimated;
-
-
-},{"@react-spring/shared":18,"react":199}],17:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var shared = require('@react-spring/shared');
-var React = require('react');
-var animated$1 = require('@react-spring/animated');
-var animated = require('@react-spring/types/animated');
-var interpolation = require('@react-spring/types/interpolation');
-
-function callProp(value, ...args) {
-  return shared.is.fun(value) ? value(...args) : value;
-}
-const matchProp = (value, key) => value === true || !!(key && value && (shared.is.fun(value) ? value(key) : shared.toArray(value).includes(key)));
-const resolveProp = (prop, key) => shared.is.obj(prop) ? key && prop[key] : prop;
-const getDefaultProp = (props, key) => props.default === true ? props[key] : props.default ? props.default[key] : void 0;
-const noopTransform = (value) => value;
-const getDefaultProps = (props, transform = noopTransform) => {
-  let keys = DEFAULT_PROPS;
-  if (props.default && props.default !== true) {
-    props = props.default;
-    keys = Object.keys(props);
-  }
-  const defaults = {};
-  for (const key of keys) {
-    const value = transform(props[key], key);
-    if (!shared.is.und(value)) {
-      defaults[key] = value;
-    }
-  }
-  return defaults;
-};
-const DEFAULT_PROPS = [
-  "config",
-  "onProps",
-  "onStart",
-  "onChange",
-  "onPause",
-  "onResume",
-  "onRest"
-];
-const RESERVED_PROPS = {
-  config: 1,
-  from: 1,
-  to: 1,
-  ref: 1,
-  loop: 1,
-  reset: 1,
-  pause: 1,
-  cancel: 1,
-  reverse: 1,
-  immediate: 1,
-  default: 1,
-  delay: 1,
-  onProps: 1,
-  onStart: 1,
-  onChange: 1,
-  onPause: 1,
-  onResume: 1,
-  onRest: 1,
-  onResolve: 1,
-  items: 1,
-  trail: 1,
-  sort: 1,
-  expires: 1,
-  initial: 1,
-  enter: 1,
-  update: 1,
-  leave: 1,
-  children: 1,
-  onDestroyed: 1,
-  keys: 1,
-  callId: 1,
-  parentId: 1
-};
-function getForwardProps(props) {
-  const forward = {};
-  let count = 0;
-  shared.eachProp(props, (value, prop) => {
-    if (!RESERVED_PROPS[prop]) {
-      forward[prop] = value;
-      count++;
-    }
-  });
-  if (count) {
-    return forward;
-  }
-}
-function inferTo(props) {
-  const to = getForwardProps(props);
-  if (to) {
-    const out = {to};
-    shared.eachProp(props, (val, key) => key in to || (out[key] = val));
-    return out;
-  }
-  return {...props};
-}
-function computeGoal(value) {
-  value = shared.getFluidValue(value);
-  return shared.is.arr(value) ? value.map(computeGoal) : shared.isAnimatedString(value) ? shared.Globals.createStringInterpolator({
-    range: [0, 1],
-    output: [value, value]
-  })(1) : value;
-}
-function hasProps(props) {
-  for (const _ in props)
-    return true;
-  return false;
-}
-function isAsyncTo(to) {
-  return shared.is.fun(to) || shared.is.arr(to) && shared.is.obj(to[0]);
-}
-function detachRefs(ctrl, ref) {
-  var _a;
-  (_a = ctrl.ref) == null ? void 0 : _a.delete(ctrl);
-  ref == null ? void 0 : ref.delete(ctrl);
-}
-function replaceRef(ctrl, ref) {
-  var _a;
-  if (ref && ctrl.ref !== ref) {
-    (_a = ctrl.ref) == null ? void 0 : _a.delete(ctrl);
-    ref.add(ctrl);
-    ctrl.ref = ref;
-  }
-}
-
-function useChain(refs, timeSteps, timeFrame = 1e3) {
-  shared.useLayoutEffect(() => {
-    if (timeSteps) {
-      let prevDelay = 0;
-      shared.each(refs, (ref, i) => {
-        const controllers = ref.current;
-        if (controllers.length) {
-          let delay = timeFrame * timeSteps[i];
-          if (isNaN(delay))
-            delay = prevDelay;
-          else
-            prevDelay = delay;
-          shared.each(controllers, (ctrl) => {
-            shared.each(ctrl.queue, (props) => {
-              const memoizedDelayProp = props.delay;
-              props.delay = (key) => delay + callProp(memoizedDelayProp || 0, key);
-            });
-            ctrl.start();
-          });
-        }
-      });
-    } else {
-      let p = Promise.resolve();
-      shared.each(refs, (ref) => {
-        const controllers = ref.current;
-        if (controllers.length) {
-          const queues = controllers.map((ctrl) => {
-            const q = ctrl.queue;
-            ctrl.queue = [];
-            return q;
-          });
-          p = p.then(() => {
-            shared.each(controllers, (ctrl, i) => shared.each(queues[i] || [], (update) => ctrl.queue.push(update)));
-            return ref.start();
-          });
-        }
-      });
-    }
-  });
-}
-
-const config = {
-  default: {tension: 170, friction: 26},
-  gentle: {tension: 120, friction: 14},
-  wobbly: {tension: 180, friction: 12},
-  stiff: {tension: 210, friction: 20},
-  slow: {tension: 280, friction: 60},
-  molasses: {tension: 280, friction: 120}
-};
-
-const linear = (t) => t;
-const defaults = {
-  ...config.default,
-  mass: 1,
-  damping: 1,
-  easing: linear,
-  clamp: false
-};
-class AnimationConfig {
-  constructor() {
-    this.velocity = 0;
-    Object.assign(this, defaults);
-  }
-}
-function mergeConfig(config, newConfig, defaultConfig) {
-  if (defaultConfig) {
-    defaultConfig = {...defaultConfig};
-    sanitizeConfig(defaultConfig, newConfig);
-    newConfig = {...defaultConfig, ...newConfig};
-  }
-  sanitizeConfig(config, newConfig);
-  Object.assign(config, newConfig);
-  for (const key in defaults) {
-    if (config[key] == null) {
-      config[key] = defaults[key];
-    }
-  }
-  let {mass, frequency, damping} = config;
-  if (!shared.is.und(frequency)) {
-    if (frequency < 0.01)
-      frequency = 0.01;
-    if (damping < 0)
-      damping = 0;
-    config.tension = Math.pow(2 * Math.PI / frequency, 2) * mass;
-    config.friction = 4 * Math.PI * damping * mass / frequency;
-  }
-  return config;
-}
-function sanitizeConfig(config, props) {
-  if (!shared.is.und(props.decay)) {
-    config.duration = void 0;
-  } else {
-    const isTensionConfig = !shared.is.und(props.tension) || !shared.is.und(props.friction);
-    if (isTensionConfig || !shared.is.und(props.frequency) || !shared.is.und(props.damping) || !shared.is.und(props.mass)) {
-      config.duration = void 0;
-      config.decay = void 0;
-    }
-    if (isTensionConfig) {
-      config.frequency = void 0;
-    }
-  }
-}
-
-const emptyArray = [];
-class Animation {
-  constructor() {
-    this.changed = false;
-    this.values = emptyArray;
-    this.toValues = null;
-    this.fromValues = emptyArray;
-    this.config = new AnimationConfig();
-    this.immediate = false;
-  }
-}
-
-function scheduleProps(callId, {key, props, defaultProps, state, actions}) {
-  return new Promise((resolve, reject) => {
-    var _a;
-    let delay;
-    let timeout;
-    let cancel = matchProp((_a = props.cancel) != null ? _a : defaultProps == null ? void 0 : defaultProps.cancel, key);
-    if (cancel) {
-      onStart();
-    } else {
-      if (!shared.is.und(props.pause)) {
-        state.paused = matchProp(props.pause, key);
-      }
-      let pause = defaultProps == null ? void 0 : defaultProps.pause;
-      if (pause !== true) {
-        pause = state.paused || matchProp(pause, key);
-      }
-      delay = callProp(props.delay || 0, key);
-      if (pause) {
-        state.resumeQueue.add(onResume);
-        actions.pause();
-      } else {
-        actions.resume();
-        onResume();
-      }
-    }
-    function onPause() {
-      state.resumeQueue.add(onResume);
-      state.timeouts.delete(timeout);
-      timeout.cancel();
-      delay = timeout.time - shared.raf.now();
-    }
-    function onResume() {
-      if (delay > 0) {
-        timeout = shared.raf.setTimeout(onStart, delay);
-        state.pauseQueue.add(onPause);
-        state.timeouts.add(timeout);
-      } else {
-        onStart();
-      }
-    }
-    function onStart() {
-      state.pauseQueue.delete(onPause);
-      state.timeouts.delete(timeout);
-      if (callId <= (state.cancelId || 0)) {
-        cancel = true;
-      }
-      try {
-        actions.start({...props, callId, cancel}, resolve);
-      } catch (err) {
-        reject(err);
-      }
-    }
-  });
-}
-
-const getCombinedResult = (target, results) => results.length == 1 ? results[0] : results.some((result) => result.cancelled) ? getCancelledResult(target.get()) : results.every((result) => result.noop) ? getNoopResult(target.get()) : getFinishedResult(target.get(), results.every((result) => result.finished));
-const getNoopResult = (value) => ({
-  value,
-  noop: true,
-  finished: true,
-  cancelled: false
-});
-const getFinishedResult = (value, finished, cancelled = false) => ({
-  value,
-  finished,
-  cancelled
-});
-const getCancelledResult = (value) => ({
-  value,
-  cancelled: true,
-  finished: false
-});
-
-function runAsync(to, props, state, target) {
-  const {callId, parentId, onRest} = props;
-  const {asyncTo: prevTo, promise: prevPromise} = state;
-  if (!parentId && to === prevTo && !props.reset) {
-    return prevPromise;
-  }
-  return state.promise = (async () => {
-    state.asyncId = callId;
-    state.asyncTo = to;
-    const defaultProps = getDefaultProps(props, (value, key) => key === "onRest" ? void 0 : value);
-    let preventBail;
-    let bail;
-    const bailPromise = new Promise((resolve, reject) => (preventBail = resolve, bail = reject));
-    const bailIfEnded = (bailSignal) => {
-      const bailResult = callId <= (state.cancelId || 0) && getCancelledResult(target) || callId !== state.asyncId && getFinishedResult(target, false);
-      if (bailResult) {
-        bailSignal.result = bailResult;
-        bail(bailSignal);
-        throw bailSignal;
-      }
-    };
-    const animate = (arg1, arg2) => {
-      const bailSignal = new BailSignal();
-      const skipAnimationSignal = new SkipAniamtionSignal();
-      return (async () => {
-        if (shared.Globals.skipAnimation) {
-          stopAsync(state);
-          skipAnimationSignal.result = getFinishedResult(target, false);
-          bail(skipAnimationSignal);
-          throw skipAnimationSignal;
-        }
-        bailIfEnded(bailSignal);
-        const props2 = shared.is.obj(arg1) ? {...arg1} : {...arg2, to: arg1};
-        props2.parentId = callId;
-        shared.eachProp(defaultProps, (value, key) => {
-          if (shared.is.und(props2[key])) {
-            props2[key] = value;
-          }
-        });
-        const result2 = await target.start(props2);
-        bailIfEnded(bailSignal);
-        if (state.paused) {
-          await new Promise((resume) => {
-            state.resumeQueue.add(resume);
-          });
-        }
-        return result2;
-      })();
-    };
-    let result;
-    if (shared.Globals.skipAnimation) {
-      stopAsync(state);
-      return getFinishedResult(target, false);
-    }
-    try {
-      let animating;
-      if (shared.is.arr(to)) {
-        animating = (async (queue) => {
-          for (const props2 of queue) {
-            await animate(props2);
-          }
-        })(to);
-      } else {
-        animating = Promise.resolve(to(animate, target.stop.bind(target)));
-      }
-      await Promise.all([animating.then(preventBail), bailPromise]);
-      result = getFinishedResult(target.get(), true, false);
-    } catch (err) {
-      if (err instanceof BailSignal) {
-        result = err.result;
-      } else if (err instanceof SkipAniamtionSignal) {
-        result = err.result;
-      } else {
-        throw err;
-      }
-    } finally {
-      if (callId == state.asyncId) {
-        state.asyncId = parentId;
-        state.asyncTo = parentId ? prevTo : void 0;
-        state.promise = parentId ? prevPromise : void 0;
-      }
-    }
-    if (shared.is.fun(onRest)) {
-      shared.raf.batchedUpdates(() => {
-        onRest(result, target, target.item);
-      });
-    }
-    return result;
-  })();
-}
-function stopAsync(state, cancelId) {
-  shared.flush(state.timeouts, (t) => t.cancel());
-  state.pauseQueue.clear();
-  state.resumeQueue.clear();
-  state.asyncId = state.asyncTo = state.promise = void 0;
-  if (cancelId)
-    state.cancelId = cancelId;
-}
-class BailSignal extends Error {
-  constructor() {
-    super("An async animation has been interrupted. You see this error because you forgot to use `await` or `.catch(...)` on its returned promise.");
-  }
-}
-class SkipAniamtionSignal extends Error {
-  constructor() {
-    super("SkipAnimationSignal");
-  }
-}
-
-const isFrameValue = (value) => value instanceof FrameValue;
-let nextId = 1;
-class FrameValue extends shared.FluidValue {
-  constructor() {
-    super(...arguments);
-    this.id = nextId++;
-    this._priority = 0;
-  }
-  get priority() {
-    return this._priority;
-  }
-  set priority(priority) {
-    if (this._priority != priority) {
-      this._priority = priority;
-      this._onPriorityChange(priority);
-    }
-  }
-  get() {
-    const node = animated$1.getAnimated(this);
-    return node && node.getValue();
-  }
-  to(...args) {
-    return shared.Globals.to(this, args);
-  }
-  interpolate(...args) {
-    shared.deprecateInterpolate();
-    return shared.Globals.to(this, args);
-  }
-  toJSON() {
-    return this.get();
-  }
-  observerAdded(count) {
-    if (count == 1)
-      this._attach();
-  }
-  observerRemoved(count) {
-    if (count == 0)
-      this._detach();
-  }
-  _attach() {
-  }
-  _detach() {
-  }
-  _onChange(value, idle = false) {
-    shared.callFluidObservers(this, {
-      type: "change",
-      parent: this,
-      value,
-      idle
-    });
-  }
-  _onPriorityChange(priority) {
-    if (!this.idle) {
-      shared.frameLoop.sort(this);
-    }
-    shared.callFluidObservers(this, {
-      type: "priority",
-      parent: this,
-      priority
-    });
-  }
-}
-
-const $P = Symbol.for("SpringPhase");
-const HAS_ANIMATED = 1;
-const IS_ANIMATING = 2;
-const IS_PAUSED = 4;
-const hasAnimated = (target) => (target[$P] & HAS_ANIMATED) > 0;
-const isAnimating = (target) => (target[$P] & IS_ANIMATING) > 0;
-const isPaused = (target) => (target[$P] & IS_PAUSED) > 0;
-const setActiveBit = (target, active) => active ? target[$P] |= IS_ANIMATING | HAS_ANIMATED : target[$P] &= ~IS_ANIMATING;
-const setPausedBit = (target, paused) => paused ? target[$P] |= IS_PAUSED : target[$P] &= ~IS_PAUSED;
-
-class SpringValue extends FrameValue {
-  constructor(arg1, arg2) {
-    super();
-    this.animation = new Animation();
-    this.defaultProps = {};
-    this._state = {
-      paused: false,
-      pauseQueue: new Set(),
-      resumeQueue: new Set(),
-      timeouts: new Set()
-    };
-    this._pendingCalls = new Set();
-    this._lastCallId = 0;
-    this._lastToId = 0;
-    this._memoizedDuration = 0;
-    if (!shared.is.und(arg1) || !shared.is.und(arg2)) {
-      const props = shared.is.obj(arg1) ? {...arg1} : {...arg2, from: arg1};
-      if (shared.is.und(props.default)) {
-        props.default = true;
-      }
-      this.start(props);
-    }
-  }
-  get idle() {
-    return !(isAnimating(this) || this._state.asyncTo) || isPaused(this);
-  }
-  get goal() {
-    return shared.getFluidValue(this.animation.to);
-  }
-  get velocity() {
-    const node = animated$1.getAnimated(this);
-    return node instanceof animated$1.AnimatedValue ? node.lastVelocity || 0 : node.getPayload().map((node2) => node2.lastVelocity || 0);
-  }
-  get hasAnimated() {
-    return hasAnimated(this);
-  }
-  get isAnimating() {
-    return isAnimating(this);
-  }
-  get isPaused() {
-    return isPaused(this);
-  }
-  advance(dt) {
-    let idle = true;
-    let changed = false;
-    const anim = this.animation;
-    let {config, toValues} = anim;
-    const payload = animated$1.getPayload(anim.to);
-    if (!payload && shared.hasFluidValue(anim.to)) {
-      toValues = shared.toArray(shared.getFluidValue(anim.to));
-    }
-    anim.values.forEach((node2, i) => {
-      if (node2.done)
-        return;
-      const to = node2.constructor == animated$1.AnimatedString ? 1 : payload ? payload[i].lastPosition : toValues[i];
-      let finished = anim.immediate;
-      let position = to;
-      if (!finished) {
-        position = node2.lastPosition;
-        if (config.tension <= 0) {
-          node2.done = true;
-          return;
-        }
-        let elapsed = node2.elapsedTime += dt;
-        const from = anim.fromValues[i];
-        const v0 = node2.v0 != null ? node2.v0 : node2.v0 = shared.is.arr(config.velocity) ? config.velocity[i] : config.velocity;
-        let velocity;
-        if (!shared.is.und(config.duration)) {
-          let p = 1;
-          if (config.duration > 0) {
-            if (this._memoizedDuration !== config.duration) {
-              this._memoizedDuration = config.duration;
-              if (node2.durationProgress > 0) {
-                node2.elapsedTime = config.duration * node2.durationProgress;
-                elapsed = node2.elapsedTime += dt;
-              }
-            }
-            p = (config.progress || 0) + elapsed / this._memoizedDuration;
-            p = p > 1 ? 1 : p < 0 ? 0 : p;
-            node2.durationProgress = p;
-          }
-          position = from + config.easing(p) * (to - from);
-          velocity = (position - node2.lastPosition) / dt;
-          finished = p == 1;
-        } else if (config.decay) {
-          const decay = config.decay === true ? 0.998 : config.decay;
-          const e = Math.exp(-(1 - decay) * elapsed);
-          position = from + v0 / (1 - decay) * (1 - e);
-          finished = Math.abs(node2.lastPosition - position) < 0.1;
-          velocity = v0 * e;
-        } else {
-          velocity = node2.lastVelocity == null ? v0 : node2.lastVelocity;
-          const precision = config.precision || (from == to ? 5e-3 : Math.min(1, Math.abs(to - from) * 1e-3));
-          const restVelocity = config.restVelocity || precision / 10;
-          const bounceFactor = config.clamp ? 0 : config.bounce;
-          const canBounce = !shared.is.und(bounceFactor);
-          const isGrowing = from == to ? node2.v0 > 0 : from < to;
-          let isMoving;
-          let isBouncing = false;
-          const step = 1;
-          const numSteps = Math.ceil(dt / step);
-          for (let n = 0; n < numSteps; ++n) {
-            isMoving = Math.abs(velocity) > restVelocity;
-            if (!isMoving) {
-              finished = Math.abs(to - position) <= precision;
-              if (finished) {
-                break;
-              }
-            }
-            if (canBounce) {
-              isBouncing = position == to || position > to == isGrowing;
-              if (isBouncing) {
-                velocity = -velocity * bounceFactor;
-                position = to;
-              }
-            }
-            const springForce = -config.tension * 1e-6 * (position - to);
-            const dampingForce = -config.friction * 1e-3 * velocity;
-            const acceleration = (springForce + dampingForce) / config.mass;
-            velocity = velocity + acceleration * step;
-            position = position + velocity * step;
-          }
-        }
-        node2.lastVelocity = velocity;
-        if (Number.isNaN(position)) {
-          console.warn(`Got NaN while animating:`, this);
-          finished = true;
-        }
-      }
-      if (payload && !payload[i].done) {
-        finished = false;
-      }
-      if (finished) {
-        node2.done = true;
-      } else {
-        idle = false;
-      }
-      if (node2.setValue(position, config.round)) {
-        changed = true;
-      }
-    });
-    const node = animated$1.getAnimated(this);
-    if (idle) {
-      const value = shared.getFluidValue(anim.to);
-      if (node.setValue(value) || changed) {
-        this._onChange(value);
-      }
-      this._stop();
-    } else if (changed) {
-      this._onChange(node.getValue());
-    }
-  }
-  set(value) {
-    shared.raf.batchedUpdates(() => {
-      this._stop();
-      this._focus(value);
-      this._set(value);
-    });
-    return this;
-  }
-  pause() {
-    this._update({pause: true});
-  }
-  resume() {
-    this._update({pause: false});
-  }
-  finish() {
-    if (isAnimating(this)) {
-      const {to, config} = this.animation;
-      shared.raf.batchedUpdates(() => {
-        this._onStart();
-        if (!config.decay) {
-          this._set(to, false);
-        }
-        this._stop();
-      });
-    }
-    return this;
-  }
-  update(props) {
-    const queue = this.queue || (this.queue = []);
-    queue.push(props);
-    return this;
-  }
-  start(to, arg2) {
-    let queue;
-    if (!shared.is.und(to)) {
-      queue = [shared.is.obj(to) ? to : {...arg2, to}];
-    } else {
-      queue = this.queue || [];
-      this.queue = [];
-    }
-    return Promise.all(queue.map((props) => this._update(props))).then((results) => getCombinedResult(this, results));
-  }
-  stop(cancel) {
-    const {to} = this.animation;
-    this._focus(this.get());
-    stopAsync(this._state, cancel && this._lastCallId);
-    shared.raf.batchedUpdates(() => this._stop(to, cancel));
-    return this;
-  }
-  reset() {
-    this._update({reset: true});
-  }
-  eventObserved(event) {
-    if (event.type == "change") {
-      this._start();
-    } else if (event.type == "priority") {
-      this.priority = event.priority + 1;
-    }
-  }
-  _prepareNode(props) {
-    const key = this.key || "";
-    let {to, from} = props;
-    to = shared.is.obj(to) ? to[key] : to;
-    if (to == null || isAsyncTo(to)) {
-      to = void 0;
-    }
-    from = shared.is.obj(from) ? from[key] : from;
-    if (from == null) {
-      from = void 0;
-    }
-    const range = {to, from};
-    if (!hasAnimated(this)) {
-      if (props.reverse)
-        [to, from] = [from, to];
-      from = shared.getFluidValue(from);
-      if (!shared.is.und(from)) {
-        this._set(from);
-      } else if (!animated$1.getAnimated(this)) {
-        this._set(to);
-      }
-    }
-    return range;
-  }
-  _update({...props}, isLoop) {
-    const {key, defaultProps} = this;
-    if (props.default)
-      Object.assign(defaultProps, getDefaultProps(props, (value, prop) => /^on/.test(prop) ? resolveProp(value, key) : value));
-    mergeActiveFn(this, props, "onProps");
-    sendEvent(this, "onProps", props, this);
-    const range = this._prepareNode(props);
-    if (Object.isFrozen(this)) {
-      throw Error("Cannot animate a `SpringValue` object that is frozen. Did you forget to pass your component to `animated(...)` before animating its props?");
-    }
-    const state = this._state;
-    return scheduleProps(++this._lastCallId, {
-      key,
-      props,
-      defaultProps,
-      state,
-      actions: {
-        pause: () => {
-          if (!isPaused(this)) {
-            setPausedBit(this, true);
-            shared.flushCalls(state.pauseQueue);
-            sendEvent(this, "onPause", getFinishedResult(this, checkFinished(this, this.animation.to)), this);
-          }
-        },
-        resume: () => {
-          if (isPaused(this)) {
-            setPausedBit(this, false);
-            if (isAnimating(this)) {
-              this._resume();
-            }
-            shared.flushCalls(state.resumeQueue);
-            sendEvent(this, "onResume", getFinishedResult(this, checkFinished(this, this.animation.to)), this);
-          }
-        },
-        start: this._merge.bind(this, range)
-      }
-    }).then((result) => {
-      if (props.loop && result.finished && !(isLoop && result.noop)) {
-        const nextProps = createLoopUpdate(props);
-        if (nextProps) {
-          return this._update(nextProps, true);
-        }
-      }
-      return result;
-    });
-  }
-  _merge(range, props, resolve) {
-    if (props.cancel) {
-      this.stop(true);
-      return resolve(getCancelledResult(this));
-    }
-    const hasToProp = !shared.is.und(range.to);
-    const hasFromProp = !shared.is.und(range.from);
-    if (hasToProp || hasFromProp) {
-      if (props.callId > this._lastToId) {
-        this._lastToId = props.callId;
-      } else {
-        return resolve(getCancelledResult(this));
-      }
-    }
-    const {key, defaultProps, animation: anim} = this;
-    const {to: prevTo, from: prevFrom} = anim;
-    let {to = prevTo, from = prevFrom} = range;
-    if (hasFromProp && !hasToProp && (!props.default || shared.is.und(to))) {
-      to = from;
-    }
-    if (props.reverse)
-      [to, from] = [from, to];
-    const hasFromChanged = !shared.isEqual(from, prevFrom);
-    if (hasFromChanged) {
-      anim.from = from;
-    }
-    from = shared.getFluidValue(from);
-    const hasToChanged = !shared.isEqual(to, prevTo);
-    if (hasToChanged) {
-      this._focus(to);
-    }
-    const hasAsyncTo = isAsyncTo(props.to);
-    const {config} = anim;
-    const {decay, velocity} = config;
-    if (hasToProp || hasFromProp) {
-      config.velocity = 0;
-    }
-    if (props.config && !hasAsyncTo) {
-      mergeConfig(config, callProp(props.config, key), props.config !== defaultProps.config ? callProp(defaultProps.config, key) : void 0);
-    }
-    let node = animated$1.getAnimated(this);
-    if (!node || shared.is.und(to)) {
-      return resolve(getFinishedResult(this, true));
-    }
-    const reset = shared.is.und(props.reset) ? hasFromProp && !props.default : !shared.is.und(from) && matchProp(props.reset, key);
-    const value = reset ? from : this.get();
-    const goal = computeGoal(to);
-    const isAnimatable = shared.is.num(goal) || shared.is.arr(goal) || shared.isAnimatedString(goal);
-    const immediate = !hasAsyncTo && (!isAnimatable || matchProp(defaultProps.immediate || props.immediate, key));
-    if (hasToChanged) {
-      const nodeType = animated$1.getAnimatedType(to);
-      if (nodeType !== node.constructor) {
-        if (immediate) {
-          node = this._set(goal);
-        } else
-          throw Error(`Cannot animate between ${node.constructor.name} and ${nodeType.name}, as the "to" prop suggests`);
-      }
-    }
-    const goalType = node.constructor;
-    let started = shared.hasFluidValue(to);
-    let finished = false;
-    if (!started) {
-      const hasValueChanged = reset || !hasAnimated(this) && hasFromChanged;
-      if (hasToChanged || hasValueChanged) {
-        finished = shared.isEqual(computeGoal(value), goal);
-        started = !finished;
-      }
-      if (!shared.isEqual(config.decay, decay) || !shared.isEqual(config.velocity, velocity)) {
-        started = true;
-      }
-    }
-    if (finished && isAnimating(this)) {
-      if (anim.changed && !reset) {
-        started = true;
-      } else if (!started) {
-        this._stop(prevTo);
-      }
-    }
-    if (!hasAsyncTo) {
-      if (started || shared.hasFluidValue(prevTo)) {
-        anim.values = node.getPayload();
-        anim.toValues = shared.hasFluidValue(to) ? null : goalType == animated$1.AnimatedString ? [1] : shared.toArray(goal);
-      }
-      if (anim.immediate != immediate) {
-        anim.immediate = immediate;
-        if (!immediate && !reset) {
-          this._set(prevTo);
-        }
-      }
-      if (started) {
-        const {onRest} = anim;
-        shared.each(ACTIVE_EVENTS, (type) => mergeActiveFn(this, props, type));
-        const result = getFinishedResult(this, checkFinished(this, prevTo));
-        shared.flushCalls(this._pendingCalls, result);
-        this._pendingCalls.add(resolve);
-        if (anim.changed)
-          shared.raf.batchedUpdates(() => {
-            var _a;
-            anim.changed = !reset;
-            onRest == null ? void 0 : onRest(result, this);
-            if (reset) {
-              callProp(defaultProps.onRest, result);
-            } else {
-              (_a = anim.onStart) == null ? void 0 : _a.call(anim, result, this);
-            }
-          });
-      }
-    }
-    if (reset) {
-      this._set(value);
-    }
-    if (hasAsyncTo) {
-      resolve(runAsync(props.to, props, this._state, this));
-    } else if (started) {
-      this._start();
-    } else if (isAnimating(this) && !hasToChanged) {
-      this._pendingCalls.add(resolve);
-    } else {
-      resolve(getNoopResult(value));
-    }
-  }
-  _focus(value) {
-    const anim = this.animation;
-    if (value !== anim.to) {
-      if (shared.getFluidObservers(this)) {
-        this._detach();
-      }
-      anim.to = value;
-      if (shared.getFluidObservers(this)) {
-        this._attach();
-      }
-    }
-  }
-  _attach() {
-    let priority = 0;
-    const {to} = this.animation;
-    if (shared.hasFluidValue(to)) {
-      shared.addFluidObserver(to, this);
-      if (isFrameValue(to)) {
-        priority = to.priority + 1;
-      }
-    }
-    this.priority = priority;
-  }
-  _detach() {
-    const {to} = this.animation;
-    if (shared.hasFluidValue(to)) {
-      shared.removeFluidObserver(to, this);
-    }
-  }
-  _set(arg, idle = true) {
-    const value = shared.getFluidValue(arg);
-    if (!shared.is.und(value)) {
-      const oldNode = animated$1.getAnimated(this);
-      if (!oldNode || !shared.isEqual(value, oldNode.getValue())) {
-        const nodeType = animated$1.getAnimatedType(value);
-        if (!oldNode || oldNode.constructor != nodeType) {
-          animated$1.setAnimated(this, nodeType.create(value));
-        } else {
-          oldNode.setValue(value);
-        }
-        if (oldNode) {
-          shared.raf.batchedUpdates(() => {
-            this._onChange(value, idle);
-          });
-        }
-      }
-    }
-    return animated$1.getAnimated(this);
-  }
-  _onStart() {
-    const anim = this.animation;
-    if (!anim.changed) {
-      anim.changed = true;
-      sendEvent(this, "onStart", getFinishedResult(this, checkFinished(this, anim.to)), this);
-    }
-  }
-  _onChange(value, idle) {
-    if (!idle) {
-      this._onStart();
-      callProp(this.animation.onChange, value, this);
-    }
-    callProp(this.defaultProps.onChange, value, this);
-    super._onChange(value, idle);
-  }
-  _start() {
-    const anim = this.animation;
-    animated$1.getAnimated(this).reset(shared.getFluidValue(anim.to));
-    if (!anim.immediate) {
-      anim.fromValues = anim.values.map((node) => node.lastPosition);
-    }
-    if (!isAnimating(this)) {
-      setActiveBit(this, true);
-      if (!isPaused(this)) {
-        this._resume();
-      }
-    }
-  }
-  _resume() {
-    if (shared.Globals.skipAnimation) {
-      this.finish();
-    } else {
-      shared.frameLoop.start(this);
-    }
-  }
-  _stop(goal, cancel) {
-    if (isAnimating(this)) {
-      setActiveBit(this, false);
-      const anim = this.animation;
-      shared.each(anim.values, (node) => {
-        node.done = true;
-      });
-      if (anim.toValues) {
-        anim.onChange = anim.onPause = anim.onResume = void 0;
-      }
-      shared.callFluidObservers(this, {
-        type: "idle",
-        parent: this
-      });
-      const result = cancel ? getCancelledResult(this.get()) : getFinishedResult(this.get(), checkFinished(this, goal != null ? goal : anim.to));
-      shared.flushCalls(this._pendingCalls, result);
-      if (anim.changed) {
-        anim.changed = false;
-        sendEvent(this, "onRest", result, this);
-      }
-    }
-  }
-}
-function checkFinished(target, to) {
-  const goal = computeGoal(to);
-  const value = computeGoal(target.get());
-  return shared.isEqual(value, goal);
-}
-function createLoopUpdate(props, loop = props.loop, to = props.to) {
-  let loopRet = callProp(loop);
-  if (loopRet) {
-    const overrides = loopRet !== true && inferTo(loopRet);
-    const reverse = (overrides || props).reverse;
-    const reset = !overrides || overrides.reset;
-    return createUpdate({
-      ...props,
-      loop,
-      default: false,
-      pause: void 0,
-      to: !reverse || isAsyncTo(to) ? to : void 0,
-      from: reset ? props.from : void 0,
-      reset,
-      ...overrides
-    });
-  }
-}
-function createUpdate(props) {
-  const {to, from} = props = inferTo(props);
-  const keys = new Set();
-  if (shared.is.obj(to))
-    findDefined(to, keys);
-  if (shared.is.obj(from))
-    findDefined(from, keys);
-  props.keys = keys.size ? Array.from(keys) : null;
-  return props;
-}
-function declareUpdate(props) {
-  const update = createUpdate(props);
-  if (shared.is.und(update.default)) {
-    update.default = getDefaultProps(update);
-  }
-  return update;
-}
-function findDefined(values, keys) {
-  shared.eachProp(values, (value, key) => value != null && keys.add(key));
-}
-const ACTIVE_EVENTS = [
-  "onStart",
-  "onRest",
-  "onChange",
-  "onPause",
-  "onResume"
-];
-function mergeActiveFn(target, props, type) {
-  target.animation[type] = props[type] !== getDefaultProp(props, type) ? resolveProp(props[type], target.key) : void 0;
-}
-function sendEvent(target, type, ...args) {
-  var _a, _b, _c, _d;
-  (_b = (_a = target.animation)[type]) == null ? void 0 : _b.call(_a, ...args);
-  (_d = (_c = target.defaultProps)[type]) == null ? void 0 : _d.call(_c, ...args);
-}
-
-const BATCHED_EVENTS = ["onStart", "onChange", "onRest"];
-let nextId$1 = 1;
-class Controller {
-  constructor(props, flush2) {
-    this.id = nextId$1++;
-    this.springs = {};
-    this.queue = [];
-    this._lastAsyncId = 0;
-    this._active = new Set();
-    this._changed = new Set();
-    this._started = false;
-    this._state = {
-      paused: false,
-      pauseQueue: new Set(),
-      resumeQueue: new Set(),
-      timeouts: new Set()
-    };
-    this._events = {
-      onStart: new Map(),
-      onChange: new Map(),
-      onRest: new Map()
-    };
-    this._onFrame = this._onFrame.bind(this);
-    if (flush2) {
-      this._flush = flush2;
-    }
-    if (props) {
-      this.start({default: true, ...props});
-    }
-  }
-  get idle() {
-    return !this._state.asyncTo && Object.values(this.springs).every((spring) => spring.idle);
-  }
-  get item() {
-    return this._item;
-  }
-  set item(item) {
-    this._item = item;
-  }
-  get() {
-    const values = {};
-    this.each((spring, key) => values[key] = spring.get());
-    return values;
-  }
-  set(values) {
-    for (const key in values) {
-      const value = values[key];
-      if (!shared.is.und(value)) {
-        this.springs[key].set(value);
-      }
-    }
-  }
-  update(props) {
-    if (props) {
-      this.queue.push(createUpdate(props));
-    }
-    return this;
-  }
-  start(props) {
-    let {queue} = this;
-    if (props) {
-      queue = shared.toArray(props).map(createUpdate);
-    } else {
-      this.queue = [];
-    }
-    if (this._flush) {
-      return this._flush(this, queue);
-    }
-    prepareKeys(this, queue);
-    return flushUpdateQueue(this, queue);
-  }
-  stop(arg, keys) {
-    if (arg !== !!arg) {
-      keys = arg;
-    }
-    if (keys) {
-      const springs = this.springs;
-      shared.each(shared.toArray(keys), (key) => springs[key].stop(!!arg));
-    } else {
-      stopAsync(this._state, this._lastAsyncId);
-      this.each((spring) => spring.stop(!!arg));
-    }
-    return this;
-  }
-  pause(keys) {
-    if (shared.is.und(keys)) {
-      this.start({pause: true});
-    } else {
-      const springs = this.springs;
-      shared.each(shared.toArray(keys), (key) => springs[key].pause());
-    }
-    return this;
-  }
-  resume(keys) {
-    if (shared.is.und(keys)) {
-      this.start({pause: false});
-    } else {
-      const springs = this.springs;
-      shared.each(shared.toArray(keys), (key) => springs[key].resume());
-    }
-    return this;
-  }
-  each(iterator) {
-    shared.eachProp(this.springs, iterator);
-  }
-  _onFrame() {
-    const {onStart, onChange, onRest} = this._events;
-    const active = this._active.size > 0;
-    if (active && !this._started) {
-      this._started = true;
-      shared.flush(onStart, ([onStart2, result]) => {
-        result.value = this.get();
-        onStart2(result, this, this._item);
-      });
-    }
-    const idle = !active && this._started;
-    const changed = this._changed.size > 0 && onChange.size;
-    const values = changed || idle && onRest.size ? this.get() : null;
-    if (changed) {
-      shared.flush(onChange, ([onChange2, result]) => {
-        result.value = values;
-        onChange2(result, this, this._item);
-      });
-    }
-    if (idle) {
-      this._started = false;
-      shared.flush(onRest, ([onRest2, result]) => {
-        result.value = values;
-        onRest2(result, this, this._item);
-      });
-    }
-  }
-  eventObserved(event) {
-    if (event.type == "change") {
-      this._changed.add(event.parent);
-      if (!event.idle) {
-        this._active.add(event.parent);
-      }
-    } else if (event.type == "idle") {
-      this._active.delete(event.parent);
-    } else
-      return;
-    shared.raf.onFrame(this._onFrame);
-  }
-}
-function flushUpdateQueue(ctrl, queue) {
-  return Promise.all(queue.map((props) => flushUpdate(ctrl, props))).then((results) => getCombinedResult(ctrl, results));
-}
-async function flushUpdate(ctrl, props, isLoop) {
-  const {keys, to, from, loop, onRest, onResolve} = props;
-  const defaults = shared.is.obj(props.default) && props.default;
-  if (loop) {
-    props.loop = false;
-  }
-  if (to === false)
-    props.to = null;
-  if (from === false)
-    props.from = null;
-  const asyncTo = shared.is.arr(to) || shared.is.fun(to) ? to : void 0;
-  if (asyncTo) {
-    props.to = void 0;
-    props.onRest = void 0;
-    if (defaults) {
-      defaults.onRest = void 0;
-    }
-  } else {
-    shared.each(BATCHED_EVENTS, (key) => {
-      const handler = props[key];
-      if (shared.is.fun(handler)) {
-        const queue = ctrl["_events"][key];
-        props[key] = ({finished, cancelled}) => {
-          const result2 = queue.get(handler);
-          if (result2) {
-            if (!finished)
-              result2.finished = false;
-            if (cancelled)
-              result2.cancelled = true;
-          } else {
-            queue.set(handler, {
-              value: null,
-              finished: finished || false,
-              cancelled: cancelled || false
-            });
-          }
-        };
-        if (defaults) {
-          defaults[key] = props[key];
-        }
-      }
-    });
-  }
-  const state = ctrl["_state"];
-  if (props.pause === !state.paused) {
-    state.paused = props.pause;
-    shared.flushCalls(props.pause ? state.pauseQueue : state.resumeQueue);
-  } else if (state.paused) {
-    props.pause = true;
-  }
-  const promises = (keys || Object.keys(ctrl.springs)).map((key) => ctrl.springs[key].start(props));
-  const cancel = props.cancel === true || getDefaultProp(props, "cancel") === true;
-  if (asyncTo || cancel && state.asyncId) {
-    promises.push(scheduleProps(++ctrl["_lastAsyncId"], {
-      props,
-      state,
-      actions: {
-        pause: shared.noop,
-        resume: shared.noop,
-        start(props2, resolve) {
-          if (cancel) {
-            stopAsync(state, ctrl["_lastAsyncId"]);
-            resolve(getCancelledResult(ctrl));
-          } else {
-            props2.onRest = onRest;
-            resolve(runAsync(asyncTo, props2, state, ctrl));
-          }
-        }
-      }
-    }));
-  }
-  if (state.paused) {
-    await new Promise((resume) => {
-      state.resumeQueue.add(resume);
-    });
-  }
-  const result = getCombinedResult(ctrl, await Promise.all(promises));
-  if (loop && result.finished && !(isLoop && result.noop)) {
-    const nextProps = createLoopUpdate(props, loop, to);
-    if (nextProps) {
-      prepareKeys(ctrl, [nextProps]);
-      return flushUpdate(ctrl, nextProps, true);
-    }
-  }
-  if (onResolve) {
-    shared.raf.batchedUpdates(() => onResolve(result, ctrl, ctrl.item));
-  }
-  return result;
-}
-function getSprings(ctrl, props) {
-  const springs = {...ctrl.springs};
-  if (props) {
-    shared.each(shared.toArray(props), (props2) => {
-      if (shared.is.und(props2.keys)) {
-        props2 = createUpdate(props2);
-      }
-      if (!shared.is.obj(props2.to)) {
-        props2 = {...props2, to: void 0};
-      }
-      prepareSprings(springs, props2, (key) => {
-        return createSpring(key);
-      });
-    });
-  }
-  return springs;
-}
-function setSprings(ctrl, springs) {
-  shared.eachProp(springs, (spring, key) => {
-    if (!ctrl.springs[key]) {
-      ctrl.springs[key] = spring;
-      shared.addFluidObserver(spring, ctrl);
-    }
-  });
-}
-function createSpring(key, observer) {
-  const spring = new SpringValue();
-  spring.key = key;
-  if (observer) {
-    shared.addFluidObserver(spring, observer);
-  }
-  return spring;
-}
-function prepareSprings(springs, props, create) {
-  if (props.keys) {
-    shared.each(props.keys, (key) => {
-      const spring = springs[key] || (springs[key] = create(key));
-      spring["_prepareNode"](props);
-    });
-  }
-}
-function prepareKeys(ctrl, queue) {
-  shared.each(queue, (props) => {
-    prepareSprings(ctrl.springs, props, (key) => {
-      return createSpring(key, ctrl);
-    });
-  });
-}
-
-const SpringContext = ({
-  children,
-  ...props
-}) => {
-  const inherited = React.useContext(ctx);
-  const pause = props.pause || !!inherited.pause, immediate = props.immediate || !!inherited.immediate;
-  props = shared.useMemoOne(() => ({pause, immediate}), [pause, immediate]);
-  const {Provider} = ctx;
-  return /* @__PURE__ */ React.createElement(Provider, {
-    value: props
-  }, children);
-};
-const ctx = makeContext(SpringContext, {});
-SpringContext.Provider = ctx.Provider;
-SpringContext.Consumer = ctx.Consumer;
-function makeContext(target, init) {
-  Object.assign(target, React.createContext(init));
-  target.Provider._context = target;
-  target.Consumer._context = target;
-  return target;
-}
-
-class SpringRef extends Function {
-  constructor() {
-    super("return arguments.callee._call.apply(arguments.callee, arguments)");
-    this.current = [];
-  }
-  _call(props) {
-    shared.deprecateDirectCall();
-    this.start(props);
-  }
-  set(values) {
-    shared.each(this.current, (ctrl) => ctrl.set(values));
-  }
-  start(props) {
-    const results = [];
-    shared.each(this.current, (ctrl, i) => {
-      if (shared.is.und(props)) {
-        results.push(ctrl.start());
-      } else {
-        const update = this._getProps(props, ctrl, i);
-        if (update) {
-          results.push(ctrl.start(update));
-        }
-      }
-    });
-    return results;
-  }
-  update(props) {
-    shared.each(this.current, (ctrl, i) => ctrl.update(this._getProps(props, ctrl, i)));
-    return this;
-  }
-  add(ctrl) {
-    if (!this.current.includes(ctrl)) {
-      this.current.push(ctrl);
-    }
-  }
-  delete(ctrl) {
-    const i = this.current.indexOf(ctrl);
-    if (~i)
-      this.current.splice(i, 1);
-  }
-  _getProps(arg, ctrl, index) {
-    return shared.is.fun(arg) ? arg(index, ctrl) : arg;
-  }
-}
-shared.each(["stop", "pause", "resume"], (key) => {
-  SpringRef.prototype[key] = function() {
-    shared.each(this.current, (ctrl) => ctrl[key](...arguments));
-    return this;
-  };
-});
-
-function useSprings(length, props, deps) {
-  const propsFn = shared.is.fun(props) && props;
-  if (propsFn && !deps)
-    deps = [];
-  const ref = React.useMemo(() => propsFn || arguments.length == 3 ? new SpringRef() : void 0, []);
-  const layoutId = React.useRef(0);
-  const forceUpdate = shared.useForceUpdate();
-  const state = React.useMemo(() => ({
-    ctrls: [],
-    queue: [],
-    flush(ctrl, updates2) {
-      const springs2 = getSprings(ctrl, updates2);
-      const canFlushSync = layoutId.current > 0 && !state.queue.length && !Object.keys(springs2).some((key) => !ctrl.springs[key]);
-      return canFlushSync ? flushUpdateQueue(ctrl, updates2) : new Promise((resolve) => {
-        setSprings(ctrl, springs2);
-        state.queue.push(() => {
-          resolve(flushUpdateQueue(ctrl, updates2));
-        });
-        forceUpdate();
-      });
-    }
-  }), []);
-  const ctrls = [...state.ctrls];
-  const updates = [];
-  const prevLength = shared.usePrev(length) || 0;
-  const oldCtrls = ctrls.slice(length, prevLength);
-  React.useMemo(() => {
-    ctrls.length = length;
-    declareUpdates(prevLength, length);
-  }, [length]);
-  React.useMemo(() => {
-    declareUpdates(0, Math.min(prevLength, length));
-  }, deps);
-  function declareUpdates(startIndex, endIndex) {
-    for (let i = startIndex; i < endIndex; i++) {
-      const ctrl = ctrls[i] || (ctrls[i] = new Controller(null, state.flush));
-      const update = propsFn ? propsFn(i, ctrl) : props[i];
-      if (update) {
-        updates[i] = declareUpdate(update);
-      }
-    }
-  }
-  const springs = ctrls.map((ctrl, i) => getSprings(ctrl, updates[i]));
-  const context = React.useContext(SpringContext);
-  const prevContext = shared.usePrev(context);
-  const hasContext = context !== prevContext && hasProps(context);
-  shared.useLayoutEffect(() => {
-    layoutId.current++;
-    state.ctrls = ctrls;
-    const {queue} = state;
-    if (queue.length) {
-      state.queue = [];
-      shared.each(queue, (cb) => cb());
-    }
-    shared.each(oldCtrls, (ctrl) => {
-      detachRefs(ctrl, ref);
-      ctrl.stop(true);
-    });
-    shared.each(ctrls, (ctrl, i) => {
-      const values2 = springs[i];
-      setSprings(ctrl, values2);
-      ref == null ? void 0 : ref.add(ctrl);
-      if (hasContext) {
-        ctrl.start({default: context});
-      }
-      const update = updates[i];
-      if (update) {
-        replaceRef(ctrl, update.ref);
-        if (ctrl.ref) {
-          ctrl.queue.push(update);
-        } else {
-          ctrl.start(update);
-        }
-      }
-    });
-  });
-  shared.useOnce(() => () => {
-    shared.each(state.ctrls, (ctrl) => ctrl.stop(true));
-  });
-  const values = springs.map((x) => ({...x}));
-  return ref ? [values, ref] : values;
-}
-
-function useSpring(props, deps) {
-  const isFn = shared.is.fun(props);
-  const [[values], ref] = useSprings(1, isFn ? props : [props], isFn ? deps || [] : deps);
-  return isFn || arguments.length == 2 ? [values, ref] : values;
-}
-
-const initSpringRef = () => new SpringRef();
-const useSpringRef = () => React.useState(initSpringRef)[0];
-
-function useTrail(length, propsArg, deps) {
-  const propsFn = shared.is.fun(propsArg) && propsArg;
-  if (propsFn && !deps)
-    deps = [];
-  let reverse = true;
-  const result = useSprings(length, (i, ctrl) => {
-    const props = propsFn ? propsFn(i, ctrl) : propsArg;
-    reverse = reverse && props.reverse;
-    return props;
-  }, deps || [{}]);
-  const ref = result[1];
-  shared.useLayoutEffect(() => {
-    shared.each(ref.current, (ctrl, i) => {
-      const parent = ref.current[i + (reverse ? 1 : -1)];
-      if (parent)
-        ctrl.start({to: parent.springs});
-    });
-  }, deps);
-  if (propsFn || arguments.length == 3) {
-    ref["_getProps"] = (propsArg2, ctrl, i) => {
-      const props = shared.is.fun(propsArg2) ? propsArg2(i, ctrl) : propsArg2;
-      if (props) {
-        const parent = ref.current[i + (props.reverse ? 1 : -1)];
-        if (parent)
-          props.to = parent.springs;
-        return props;
-      }
-    };
-    return result;
-  }
-  return result[0];
-}
-
-const MOUNT = "mount";
-const ENTER = "enter";
-const UPDATE = "update";
-const LEAVE = "leave";
-
-function useTransition(data, props, deps) {
-  const {reset, sort, trail = 0, expires = true, onDestroyed} = props;
-  const ref = React.useMemo(() => arguments.length == 3 ? new SpringRef() : void 0, []);
-  const items = shared.toArray(data);
-  const transitions = [];
-  const usedTransitions = React.useRef(null);
-  const prevTransitions = reset ? null : usedTransitions.current;
-  shared.useLayoutEffect(() => {
-    usedTransitions.current = transitions;
-  });
-  shared.useOnce(() => () => shared.each(usedTransitions.current, (t) => {
-    if (t.expired) {
-      clearTimeout(t.expirationId);
-    }
-    detachRefs(t.ctrl, ref);
-    t.ctrl.stop(true);
-  }));
-  const keys = getKeys(items, props, prevTransitions);
-  const expired = reset && usedTransitions.current || [];
-  shared.useLayoutEffect(() => shared.each(expired, ({ctrl, item, key}) => {
-    detachRefs(ctrl, ref);
-    callProp(onDestroyed, item, key);
-  }));
-  const reused = [];
-  if (prevTransitions)
-    shared.each(prevTransitions, (t, i) => {
-      if (t.expired) {
-        clearTimeout(t.expirationId);
-        expired.push(t);
-      } else {
-        i = reused[i] = keys.indexOf(t.key);
-        if (~i)
-          transitions[i] = t;
-      }
-    });
-  shared.each(items, (item, i) => {
-    if (!transitions[i]) {
-      transitions[i] = {
-        key: keys[i],
-        item,
-        phase: MOUNT,
-        ctrl: new Controller()
-      };
-      transitions[i].ctrl.item = item;
-    }
-  });
-  if (reused.length) {
-    let i = -1;
-    shared.each(reused, (keyIndex, prevIndex) => {
-      const t = prevTransitions[prevIndex];
-      if (~keyIndex) {
-        i = transitions.indexOf(t);
-        transitions[i] = {...t, item: items[keyIndex]};
-      } else if (props.leave) {
-        transitions.splice(++i, 0, t);
-      }
-    });
-  }
-  if (shared.is.fun(sort)) {
-    transitions.sort((a, b) => sort(a.item, b.item));
-  }
-  let delay = -trail;
-  const forceUpdate = shared.useForceUpdate();
-  const defaultProps = getDefaultProps(props);
-  const changes = new Map();
-  shared.each(transitions, (t, i) => {
-    const key = t.key;
-    const prevPhase = t.phase;
-    let to;
-    let phase;
-    if (prevPhase == MOUNT) {
-      to = props.enter;
-      phase = ENTER;
-    } else {
-      const isLeave = keys.indexOf(key) < 0;
-      if (prevPhase != LEAVE) {
-        if (isLeave) {
-          to = props.leave;
-          phase = LEAVE;
-        } else if (to = props.update) {
-          phase = UPDATE;
-        } else
-          return;
-      } else if (!isLeave) {
-        to = props.enter;
-        phase = ENTER;
-      } else
-        return;
-    }
-    to = callProp(to, t.item, i);
-    to = shared.is.obj(to) ? inferTo(to) : {to};
-    if (!to.config) {
-      const config = props.config || defaultProps.config;
-      to.config = callProp(config, t.item, i, phase);
-    }
-    const payload = {
-      ...defaultProps,
-      delay: delay += trail,
-      reset: false,
-      ...to
-    };
-    if (phase == ENTER && shared.is.und(payload.from)) {
-      const from = shared.is.und(props.initial) || prevTransitions ? props.from : props.initial;
-      payload.from = callProp(from, t.item, i);
-    }
-    const {onResolve} = payload;
-    payload.onResolve = (result) => {
-      callProp(onResolve, result);
-      const transitions2 = usedTransitions.current;
-      const t2 = transitions2.find((t3) => t3.key === key);
-      if (!t2)
-        return;
-      if (result.cancelled && t2.phase != UPDATE) {
-        return;
-      }
-      if (t2.ctrl.idle) {
-        const idle = transitions2.every((t3) => t3.ctrl.idle);
-        if (t2.phase == LEAVE) {
-          const expiry = callProp(expires, t2.item);
-          if (expiry !== false) {
-            const expiryMs = expiry === true ? 0 : expiry;
-            t2.expired = true;
-            if (!idle && expiryMs > 0) {
-              if (expiryMs <= 2147483647)
-                t2.expirationId = setTimeout(forceUpdate, expiryMs);
-              return;
-            }
-          }
-        }
-        if (idle && transitions2.some((t3) => t3.expired)) {
-          forceUpdate();
-        }
-      }
-    };
-    const springs = getSprings(t.ctrl, payload);
-    changes.set(t, {phase, springs, payload});
-  });
-  const context = React.useContext(SpringContext);
-  const prevContext = shared.usePrev(context);
-  const hasContext = context !== prevContext && hasProps(context);
-  shared.useLayoutEffect(() => {
-    if (hasContext)
-      shared.each(transitions, (t) => {
-        t.ctrl.start({default: context});
-      });
-  }, [context]);
-  shared.useLayoutEffect(() => {
-    shared.each(changes, ({phase, springs, payload}, t) => {
-      const {ctrl} = t;
-      t.phase = phase;
-      ref == null ? void 0 : ref.add(ctrl);
-      replaceRef(ctrl, payload.ref);
-      setSprings(ctrl, springs);
-      if (hasContext && phase == ENTER) {
-        ctrl.start({default: context});
-      }
-      ctrl[ctrl.ref ? "update" : "start"](payload);
-    });
-  }, reset ? void 0 : deps);
-  const renderTransitions = (render) => /* @__PURE__ */ React.createElement(React.Fragment, null, transitions.map((t, i) => {
-    const {springs} = changes.get(t) || t.ctrl;
-    const elem = render({...springs}, t.item, t, i);
-    return elem && elem.type ? /* @__PURE__ */ React.createElement(elem.type, {
-      ...elem.props,
-      key: shared.is.str(t.key) || shared.is.num(t.key) ? t.key : t.ctrl.id,
-      ref: elem.ref
-    }) : elem;
-  }));
-  return ref ? [renderTransitions, ref] : renderTransitions;
-}
-let nextKey = 1;
-function getKeys(items, {key, keys = key}, prevTransitions) {
-  if (keys === null) {
-    const reused = new Set();
-    return items.map((item) => {
-      const t = prevTransitions && prevTransitions.find((t2) => t2.item === item && t2.phase !== LEAVE && !reused.has(t2));
-      if (t) {
-        reused.add(t);
-        return t.key;
-      }
-      return nextKey++;
-    });
-  }
-  return shared.is.und(keys) ? items : shared.is.fun(keys) ? items.map(keys) : shared.toArray(keys);
-}
-
-function Spring({children, ...props}) {
-  return children(useSpring(props));
-}
-
-function Trail({
-  items,
-  children,
-  ...props
-}) {
-  const trails = useTrail(items.length, props);
-  return items.map((item, index) => {
-    const result = children(item, index);
-    return shared.is.fun(result) ? result(trails[index]) : result;
-  });
-}
-
-function Transition({
-  items,
-  children,
-  ...props
-}) {
-  return useTransition(items, props)(children);
-}
-
-class Interpolation extends FrameValue {
-  constructor(source, args) {
-    super();
-    this.source = source;
-    this.idle = true;
-    this._active = new Set();
-    this.calc = shared.createInterpolator(...args);
-    const value = this._get();
-    const nodeType = animated$1.getAnimatedType(value);
-    animated$1.setAnimated(this, nodeType.create(value));
-  }
-  advance(_dt) {
-    const value = this._get();
-    const oldValue = this.get();
-    if (!shared.isEqual(value, oldValue)) {
-      animated$1.getAnimated(this).setValue(value);
-      this._onChange(value, this.idle);
-    }
-    if (!this.idle && checkIdle(this._active)) {
-      becomeIdle(this);
-    }
-  }
-  _get() {
-    const inputs = shared.is.arr(this.source) ? this.source.map(shared.getFluidValue) : shared.toArray(shared.getFluidValue(this.source));
-    return this.calc(...inputs);
-  }
-  _start() {
-    if (this.idle && !checkIdle(this._active)) {
-      this.idle = false;
-      shared.each(animated$1.getPayload(this), (node) => {
-        node.done = false;
-      });
-      if (shared.Globals.skipAnimation) {
-        shared.raf.batchedUpdates(() => this.advance());
-        becomeIdle(this);
-      } else {
-        shared.frameLoop.start(this);
-      }
-    }
-  }
-  _attach() {
-    let priority = 1;
-    shared.each(shared.toArray(this.source), (source) => {
-      if (shared.hasFluidValue(source)) {
-        shared.addFluidObserver(source, this);
-      }
-      if (isFrameValue(source)) {
-        if (!source.idle) {
-          this._active.add(source);
-        }
-        priority = Math.max(priority, source.priority + 1);
-      }
-    });
-    this.priority = priority;
-    this._start();
-  }
-  _detach() {
-    shared.each(shared.toArray(this.source), (source) => {
-      if (shared.hasFluidValue(source)) {
-        shared.removeFluidObserver(source, this);
-      }
-    });
-    this._active.clear();
-    becomeIdle(this);
-  }
-  eventObserved(event) {
-    if (event.type == "change") {
-      if (event.idle) {
-        this.advance();
-      } else {
-        this._active.add(event.parent);
-        this._start();
-      }
-    } else if (event.type == "idle") {
-      this._active.delete(event.parent);
-    } else if (event.type == "priority") {
-      this.priority = shared.toArray(this.source).reduce((highest, parent) => Math.max(highest, (isFrameValue(parent) ? parent.priority : 0) + 1), 0);
-    }
-  }
-}
-function isIdle(source) {
-  return source.idle !== false;
-}
-function checkIdle(active) {
-  return !active.size || Array.from(active).every(isIdle);
-}
-function becomeIdle(self) {
-  if (!self.idle) {
-    self.idle = true;
-    shared.each(animated$1.getPayload(self), (node) => {
-      node.done = true;
-    });
-    shared.callFluidObservers(self, {
-      type: "idle",
-      parent: self
-    });
-  }
-}
-
-const to = (source, ...args) => new Interpolation(source, args);
-const interpolate = (source, ...args) => (shared.deprecateInterpolate(), new Interpolation(source, args));
-
-shared.Globals.assign({
-  createStringInterpolator: shared.createStringInterpolator,
-  to: (source, args) => new Interpolation(source, args)
-});
-const update = shared.frameLoop.advance;
-
-Object.keys(animated).forEach(function (k) {
-  if (k !== 'default') Object.defineProperty(exports, k, {
-    enumerable: true,
-    get: function () {
-      return animated[k];
-    }
-  });
-});
-Object.keys(interpolation).forEach(function (k) {
-  if (k !== 'default') Object.defineProperty(exports, k, {
-    enumerable: true,
-    get: function () {
-      return interpolation[k];
-    }
-  });
-});
-Object.defineProperty(exports, 'Globals', {
-  enumerable: true,
-  get: function () {
-    return shared.Globals;
-  }
-});
-Object.defineProperty(exports, 'createInterpolator', {
-  enumerable: true,
-  get: function () {
-    return shared.createInterpolator;
-  }
-});
-exports.BailSignal = BailSignal;
-exports.Controller = Controller;
-exports.FrameValue = FrameValue;
-exports.Interpolation = Interpolation;
-exports.Spring = Spring;
-exports.SpringContext = SpringContext;
-exports.SpringRef = SpringRef;
-exports.SpringValue = SpringValue;
-exports.Trail = Trail;
-exports.Transition = Transition;
-exports.config = config;
-exports.inferTo = inferTo;
-exports.interpolate = interpolate;
-exports.to = to;
-exports.update = update;
-exports.useChain = useChain;
-exports.useSpring = useSpring;
-exports.useSpringRef = useSpringRef;
-exports.useSprings = useSprings;
-exports.useTrail = useTrail;
-exports.useTransition = useTransition;
-
-
-},{"@react-spring/animated":16,"@react-spring/shared":18,"@react-spring/types/animated":19,"@react-spring/types/interpolation":20,"react":199}],18:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var rafz = require('rafz');
-var React = require('react');
-
-function noop() {
-}
-const defineHidden = (obj, key, value) => Object.defineProperty(obj, key, {value, writable: true, configurable: true});
-const is = {
-  arr: Array.isArray,
-  obj: (a) => !!a && a.constructor.name === "Object",
-  fun: (a) => typeof a === "function",
-  str: (a) => typeof a === "string",
-  num: (a) => typeof a === "number",
-  und: (a) => a === void 0
-};
-function isEqual(a, b) {
-  if (is.arr(a)) {
-    if (!is.arr(b) || a.length !== b.length)
-      return false;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i])
-        return false;
-    }
-    return true;
-  }
-  return a === b;
-}
-const each = (obj, fn) => obj.forEach(fn);
-function eachProp(obj, fn, ctx) {
-  for (const key in obj) {
-    fn.call(ctx, obj[key], key);
-  }
-}
-const toArray = (a) => is.und(a) ? [] : is.arr(a) ? a : [a];
-function flush(queue, iterator) {
-  if (queue.size) {
-    const items = Array.from(queue);
-    queue.clear();
-    each(items, iterator);
-  }
-}
-const flushCalls = (queue, ...args) => flush(queue, (fn) => fn(...args));
-
-let createStringInterpolator;
-let to;
-let colors = null;
-let skipAnimation = false;
-let willAdvance = noop;
-const assign = (globals) => {
-  if (globals.to)
-    to = globals.to;
-  if (globals.now)
-    rafz.raf.now = globals.now;
-  if (globals.colors !== void 0)
-    colors = globals.colors;
-  if (globals.skipAnimation != null)
-    skipAnimation = globals.skipAnimation;
-  if (globals.createStringInterpolator)
-    createStringInterpolator = globals.createStringInterpolator;
-  if (globals.requestAnimationFrame)
-    rafz.raf.use(globals.requestAnimationFrame);
-  if (globals.batchedUpdates)
-    rafz.raf.batchedUpdates = globals.batchedUpdates;
-  if (globals.willAdvance)
-    willAdvance = globals.willAdvance;
-};
-
-var globals = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  get createStringInterpolator () { return createStringInterpolator; },
-  get to () { return to; },
-  get colors () { return colors; },
-  get skipAnimation () { return skipAnimation; },
-  get willAdvance () { return willAdvance; },
-  assign: assign
-});
-
-const startQueue = new Set();
-let currentFrame = [];
-let prevFrame = [];
-let priority = 0;
-const frameLoop = {
-  get idle() {
-    return !startQueue.size && !currentFrame.length;
-  },
-  start(animation) {
-    if (priority > animation.priority) {
-      startQueue.add(animation);
-      rafz.raf.onStart(flushStartQueue);
-    } else {
-      startSafely(animation);
-      rafz.raf(advance);
-    }
-  },
-  advance,
-  sort(animation) {
-    if (priority) {
-      rafz.raf.onFrame(() => frameLoop.sort(animation));
-    } else {
-      const prevIndex = currentFrame.indexOf(animation);
-      if (~prevIndex) {
-        currentFrame.splice(prevIndex, 1);
-        startUnsafely(animation);
-      }
-    }
-  },
-  clear() {
-    currentFrame = [];
-    startQueue.clear();
-  }
-};
-function flushStartQueue() {
-  startQueue.forEach(startSafely);
-  startQueue.clear();
-  rafz.raf(advance);
-}
-function startSafely(animation) {
-  if (!currentFrame.includes(animation))
-    startUnsafely(animation);
-}
-function startUnsafely(animation) {
-  currentFrame.splice(findIndex(currentFrame, (other) => other.priority > animation.priority), 0, animation);
-}
-function advance(dt) {
-  const nextFrame = prevFrame;
-  for (let i = 0; i < currentFrame.length; i++) {
-    const animation = currentFrame[i];
-    priority = animation.priority;
-    if (!animation.idle) {
-      willAdvance(animation);
-      animation.advance(dt);
-      if (!animation.idle) {
-        nextFrame.push(animation);
-      }
-    }
-  }
-  priority = 0;
-  prevFrame = currentFrame;
-  prevFrame.length = 0;
-  currentFrame = nextFrame;
-  return currentFrame.length > 0;
-}
-function findIndex(arr, test) {
-  const index = arr.findIndex(test);
-  return index < 0 ? arr.length : index;
-}
-
-const colors$1 = {
-  transparent: 0,
-  aliceblue: 4042850303,
-  antiquewhite: 4209760255,
-  aqua: 16777215,
-  aquamarine: 2147472639,
-  azure: 4043309055,
-  beige: 4126530815,
-  bisque: 4293182719,
-  black: 255,
-  blanchedalmond: 4293643775,
-  blue: 65535,
-  blueviolet: 2318131967,
-  brown: 2771004159,
-  burlywood: 3736635391,
-  burntsienna: 3934150143,
-  cadetblue: 1604231423,
-  chartreuse: 2147418367,
-  chocolate: 3530104575,
-  coral: 4286533887,
-  cornflowerblue: 1687547391,
-  cornsilk: 4294499583,
-  crimson: 3692313855,
-  cyan: 16777215,
-  darkblue: 35839,
-  darkcyan: 9145343,
-  darkgoldenrod: 3095792639,
-  darkgray: 2846468607,
-  darkgreen: 6553855,
-  darkgrey: 2846468607,
-  darkkhaki: 3182914559,
-  darkmagenta: 2332068863,
-  darkolivegreen: 1433087999,
-  darkorange: 4287365375,
-  darkorchid: 2570243327,
-  darkred: 2332033279,
-  darksalmon: 3918953215,
-  darkseagreen: 2411499519,
-  darkslateblue: 1211993087,
-  darkslategray: 793726975,
-  darkslategrey: 793726975,
-  darkturquoise: 13554175,
-  darkviolet: 2483082239,
-  deeppink: 4279538687,
-  deepskyblue: 12582911,
-  dimgray: 1768516095,
-  dimgrey: 1768516095,
-  dodgerblue: 512819199,
-  firebrick: 2988581631,
-  floralwhite: 4294635775,
-  forestgreen: 579543807,
-  fuchsia: 4278255615,
-  gainsboro: 3705462015,
-  ghostwhite: 4177068031,
-  gold: 4292280575,
-  goldenrod: 3668254975,
-  gray: 2155905279,
-  green: 8388863,
-  greenyellow: 2919182335,
-  grey: 2155905279,
-  honeydew: 4043305215,
-  hotpink: 4285117695,
-  indianred: 3445382399,
-  indigo: 1258324735,
-  ivory: 4294963455,
-  khaki: 4041641215,
-  lavender: 3873897215,
-  lavenderblush: 4293981695,
-  lawngreen: 2096890111,
-  lemonchiffon: 4294626815,
-  lightblue: 2916673279,
-  lightcoral: 4034953471,
-  lightcyan: 3774873599,
-  lightgoldenrodyellow: 4210742015,
-  lightgray: 3553874943,
-  lightgreen: 2431553791,
-  lightgrey: 3553874943,
-  lightpink: 4290167295,
-  lightsalmon: 4288707327,
-  lightseagreen: 548580095,
-  lightskyblue: 2278488831,
-  lightslategray: 2005441023,
-  lightslategrey: 2005441023,
-  lightsteelblue: 2965692159,
-  lightyellow: 4294959359,
-  lime: 16711935,
-  limegreen: 852308735,
-  linen: 4210091775,
-  magenta: 4278255615,
-  maroon: 2147483903,
-  mediumaquamarine: 1724754687,
-  mediumblue: 52735,
-  mediumorchid: 3126187007,
-  mediumpurple: 2473647103,
-  mediumseagreen: 1018393087,
-  mediumslateblue: 2070474495,
-  mediumspringgreen: 16423679,
-  mediumturquoise: 1221709055,
-  mediumvioletred: 3340076543,
-  midnightblue: 421097727,
-  mintcream: 4127193855,
-  mistyrose: 4293190143,
-  moccasin: 4293178879,
-  navajowhite: 4292783615,
-  navy: 33023,
-  oldlace: 4260751103,
-  olive: 2155872511,
-  olivedrab: 1804477439,
-  orange: 4289003775,
-  orangered: 4282712319,
-  orchid: 3664828159,
-  palegoldenrod: 4008225535,
-  palegreen: 2566625535,
-  paleturquoise: 2951671551,
-  palevioletred: 3681588223,
-  papayawhip: 4293907967,
-  peachpuff: 4292524543,
-  peru: 3448061951,
-  pink: 4290825215,
-  plum: 3718307327,
-  powderblue: 2967529215,
-  purple: 2147516671,
-  rebeccapurple: 1714657791,
-  red: 4278190335,
-  rosybrown: 3163525119,
-  royalblue: 1097458175,
-  saddlebrown: 2336560127,
-  salmon: 4202722047,
-  sandybrown: 4104413439,
-  seagreen: 780883967,
-  seashell: 4294307583,
-  sienna: 2689740287,
-  silver: 3233857791,
-  skyblue: 2278484991,
-  slateblue: 1784335871,
-  slategray: 1887473919,
-  slategrey: 1887473919,
-  snow: 4294638335,
-  springgreen: 16744447,
-  steelblue: 1182971135,
-  tan: 3535047935,
-  teal: 8421631,
-  thistle: 3636451583,
-  tomato: 4284696575,
-  turquoise: 1088475391,
-  violet: 4001558271,
-  wheat: 4125012991,
-  white: 4294967295,
-  whitesmoke: 4126537215,
-  yellow: 4294902015,
-  yellowgreen: 2597139199
-};
-
-const NUMBER = "[-+]?\\d*\\.?\\d+";
-const PERCENTAGE = NUMBER + "%";
-function call(...parts) {
-  return "\\(\\s*(" + parts.join(")\\s*,\\s*(") + ")\\s*\\)";
-}
-const rgb = new RegExp("rgb" + call(NUMBER, NUMBER, NUMBER));
-const rgba = new RegExp("rgba" + call(NUMBER, NUMBER, NUMBER, NUMBER));
-const hsl = new RegExp("hsl" + call(NUMBER, PERCENTAGE, PERCENTAGE));
-const hsla = new RegExp("hsla" + call(NUMBER, PERCENTAGE, PERCENTAGE, NUMBER));
-const hex3 = /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/;
-const hex4 = /^#([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/;
-const hex6 = /^#([0-9a-fA-F]{6})$/;
-const hex8 = /^#([0-9a-fA-F]{8})$/;
-
-function normalizeColor(color) {
-  let match;
-  if (typeof color === "number") {
-    return color >>> 0 === color && color >= 0 && color <= 4294967295 ? color : null;
-  }
-  if (match = hex6.exec(color))
-    return parseInt(match[1] + "ff", 16) >>> 0;
-  if (colors && colors[color] !== void 0) {
-    return colors[color];
-  }
-  if (match = rgb.exec(color)) {
-    return (parse255(match[1]) << 24 | parse255(match[2]) << 16 | parse255(match[3]) << 8 | 255) >>> 0;
-  }
-  if (match = rgba.exec(color)) {
-    return (parse255(match[1]) << 24 | parse255(match[2]) << 16 | parse255(match[3]) << 8 | parse1(match[4])) >>> 0;
-  }
-  if (match = hex3.exec(color)) {
-    return parseInt(match[1] + match[1] + match[2] + match[2] + match[3] + match[3] + "ff", 16) >>> 0;
-  }
-  if (match = hex8.exec(color))
-    return parseInt(match[1], 16) >>> 0;
-  if (match = hex4.exec(color)) {
-    return parseInt(match[1] + match[1] + match[2] + match[2] + match[3] + match[3] + match[4] + match[4], 16) >>> 0;
-  }
-  if (match = hsl.exec(color)) {
-    return (hslToRgb(parse360(match[1]), parsePercentage(match[2]), parsePercentage(match[3])) | 255) >>> 0;
-  }
-  if (match = hsla.exec(color)) {
-    return (hslToRgb(parse360(match[1]), parsePercentage(match[2]), parsePercentage(match[3])) | parse1(match[4])) >>> 0;
-  }
-  return null;
-}
-function hue2rgb(p, q, t) {
-  if (t < 0)
-    t += 1;
-  if (t > 1)
-    t -= 1;
-  if (t < 1 / 6)
-    return p + (q - p) * 6 * t;
-  if (t < 1 / 2)
-    return q;
-  if (t < 2 / 3)
-    return p + (q - p) * (2 / 3 - t) * 6;
-  return p;
-}
-function hslToRgb(h, s, l) {
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r = hue2rgb(p, q, h + 1 / 3);
-  const g = hue2rgb(p, q, h);
-  const b = hue2rgb(p, q, h - 1 / 3);
-  return Math.round(r * 255) << 24 | Math.round(g * 255) << 16 | Math.round(b * 255) << 8;
-}
-function parse255(str) {
-  const int = parseInt(str, 10);
-  if (int < 0)
-    return 0;
-  if (int > 255)
-    return 255;
-  return int;
-}
-function parse360(str) {
-  const int = parseFloat(str);
-  return (int % 360 + 360) % 360 / 360;
-}
-function parse1(str) {
-  const num = parseFloat(str);
-  if (num < 0)
-    return 0;
-  if (num > 1)
-    return 255;
-  return Math.round(num * 255);
-}
-function parsePercentage(str) {
-  const int = parseFloat(str);
-  if (int < 0)
-    return 0;
-  if (int > 100)
-    return 1;
-  return int / 100;
-}
-
-function colorToRgba(input) {
-  let int32Color = normalizeColor(input);
-  if (int32Color === null)
-    return input;
-  int32Color = int32Color || 0;
-  let r = (int32Color & 4278190080) >>> 24;
-  let g = (int32Color & 16711680) >>> 16;
-  let b = (int32Color & 65280) >>> 8;
-  let a = (int32Color & 255) / 255;
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
-
-const createInterpolator = (range, output, extrapolate) => {
-  if (is.fun(range)) {
-    return range;
-  }
-  if (is.arr(range)) {
-    return createInterpolator({
-      range,
-      output,
-      extrapolate
-    });
-  }
-  if (is.str(range.output[0])) {
-    return createStringInterpolator(range);
-  }
-  const config = range;
-  const outputRange = config.output;
-  const inputRange = config.range || [0, 1];
-  const extrapolateLeft = config.extrapolateLeft || config.extrapolate || "extend";
-  const extrapolateRight = config.extrapolateRight || config.extrapolate || "extend";
-  const easing = config.easing || ((t) => t);
-  return (input) => {
-    const range2 = findRange(input, inputRange);
-    return interpolate(input, inputRange[range2], inputRange[range2 + 1], outputRange[range2], outputRange[range2 + 1], easing, extrapolateLeft, extrapolateRight, config.map);
-  };
-};
-function interpolate(input, inputMin, inputMax, outputMin, outputMax, easing, extrapolateLeft, extrapolateRight, map) {
-  let result = map ? map(input) : input;
-  if (result < inputMin) {
-    if (extrapolateLeft === "identity")
-      return result;
-    else if (extrapolateLeft === "clamp")
-      result = inputMin;
-  }
-  if (result > inputMax) {
-    if (extrapolateRight === "identity")
-      return result;
-    else if (extrapolateRight === "clamp")
-      result = inputMax;
-  }
-  if (outputMin === outputMax)
-    return outputMin;
-  if (inputMin === inputMax)
-    return input <= inputMin ? outputMin : outputMax;
-  if (inputMin === -Infinity)
-    result = -result;
-  else if (inputMax === Infinity)
-    result = result - inputMin;
-  else
-    result = (result - inputMin) / (inputMax - inputMin);
-  result = easing(result);
-  if (outputMin === -Infinity)
-    result = -result;
-  else if (outputMax === Infinity)
-    result = result + outputMin;
-  else
-    result = result * (outputMax - outputMin) + outputMin;
-  return result;
-}
-function findRange(input, inputRange) {
-  for (var i = 1; i < inputRange.length - 1; ++i)
-    if (inputRange[i] >= input)
-      break;
-  return i - 1;
-}
-
-const $get = Symbol.for("FluidValue.get");
-const $observers = Symbol.for("FluidValue.observers");
-const hasFluidValue = (arg) => Boolean(arg && arg[$get]);
-const getFluidValue = (arg) => arg && arg[$get] ? arg[$get]() : arg;
-const getFluidObservers = (target) => target[$observers] || null;
-function callFluidObserver(observer, event) {
-  if (observer.eventObserved) {
-    observer.eventObserved(event);
-  } else {
-    observer(event);
-  }
-}
-function callFluidObservers(target, event) {
-  let observers = target[$observers];
-  if (observers) {
-    observers.forEach((observer) => {
-      callFluidObserver(observer, event);
-    });
-  }
-}
-class FluidValue {
-  constructor(get) {
-    if (!get && !(get = this.get)) {
-      throw Error("Unknown getter");
-    }
-    setFluidGetter(this, get);
-  }
-}
-const setFluidGetter = (target, get) => setHidden(target, $get, get);
-function addFluidObserver(target, observer) {
-  if (target[$get]) {
-    let observers = target[$observers];
-    if (!observers) {
-      setHidden(target, $observers, observers = new Set());
-    }
-    if (!observers.has(observer)) {
-      observers.add(observer);
-      if (target.observerAdded) {
-        target.observerAdded(observers.size, observer);
-      }
-    }
-  }
-  return observer;
-}
-function removeFluidObserver(target, observer) {
-  let observers = target[$observers];
-  if (observers && observers.has(observer)) {
-    const count = observers.size - 1;
-    if (count) {
-      observers.delete(observer);
-    } else {
-      target[$observers] = null;
-    }
-    if (target.observerRemoved) {
-      target.observerRemoved(count, observer);
-    }
-  }
-}
-const setHidden = (target, key, value) => Object.defineProperty(target, key, {
-  value,
-  writable: true,
-  configurable: true
-});
-
-const numberRegex = /[+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
-const colorRegex = /(#(?:[0-9a-f]{2}){2,4}|(#[0-9a-f]{3})|(rgb|hsl)a?\((-?\d+%?[,\s]+){2,3}\s*[\d\.]+%?\))/gi;
-let namedColorRegex;
-const rgbaRegex = /rgba\(([0-9\.-]+), ([0-9\.-]+), ([0-9\.-]+), ([0-9\.-]+)\)/gi;
-const rgbaRound = (_, p1, p2, p3, p4) => `rgba(${Math.round(p1)}, ${Math.round(p2)}, ${Math.round(p3)}, ${p4})`;
-const createStringInterpolator$1 = (config) => {
-  if (!namedColorRegex)
-    namedColorRegex = colors ? new RegExp(`(${Object.keys(colors).join("|")})`, "g") : /^\b$/;
-  const output = config.output.map((value) => getFluidValue(value).replace(colorRegex, colorToRgba).replace(namedColorRegex, colorToRgba));
-  const keyframes = output.map((value) => value.match(numberRegex).map(Number));
-  const outputRanges = keyframes[0].map((_, i) => keyframes.map((values) => {
-    if (!(i in values)) {
-      throw Error('The arity of each "output" value must be equal');
-    }
-    return values[i];
-  }));
-  const interpolators = outputRanges.map((output2) => createInterpolator({...config, output: output2}));
-  return (input) => {
-    let i = 0;
-    return output[0].replace(numberRegex, () => String(interpolators[i++](input))).replace(rgbaRegex, rgbaRound);
-  };
-};
-
-const prefix = "react-spring: ";
-const once = (fn) => {
-  const func = fn;
-  let called = false;
-  if (typeof func != "function") {
-    throw new TypeError(`${prefix}once requires a function parameter`);
-  }
-  return (...args) => {
-    if (!called) {
-      func(...args);
-      called = true;
-    }
-  };
-};
-const warnInterpolate = once(console.warn);
-function deprecateInterpolate() {
-  warnInterpolate(`${prefix}The "interpolate" function is deprecated in v9 (use "to" instead)`);
-}
-const warnDirectCall = once(console.warn);
-function deprecateDirectCall() {
-  warnDirectCall(`${prefix}Directly calling start instead of using the api object is deprecated in v9 (use ".start" instead)`);
-}
-
-function isAnimatedString(value) {
-  return is.str(value) && (value[0] == "#" || /\d/.test(value) || value in (colors || {}));
-}
-
-const useOnce = (effect) => React.useEffect(effect, emptyDeps);
-const emptyDeps = [];
-
-function useForceUpdate() {
-  const update = React.useState()[1];
-  const mounted = React.useState(makeMountedRef)[0];
-  useOnce(mounted.unmount);
-  return () => {
-    if (mounted.current) {
-      update({});
-    }
-  };
-}
-function makeMountedRef() {
-  const mounted = {
-    current: true,
-    unmount: () => () => {
-      mounted.current = false;
-    }
-  };
-  return mounted;
-}
-
-function useMemoOne(getResult, inputs) {
-  const [initial] = React.useState(() => ({
-    inputs,
-    result: getResult()
-  }));
-  const committed = React.useRef();
-  const prevCache = committed.current;
-  let cache = prevCache;
-  if (cache) {
-    const useCache = Boolean(inputs && cache.inputs && areInputsEqual(inputs, cache.inputs));
-    if (!useCache) {
-      cache = {
-        inputs,
-        result: getResult()
-      };
-    }
-  } else {
-    cache = initial;
-  }
-  React.useEffect(() => {
-    committed.current = cache;
-    if (prevCache == initial) {
-      initial.inputs = initial.result = void 0;
-    }
-  }, [cache]);
-  return cache.result;
-}
-function areInputsEqual(next, prev) {
-  if (next.length !== prev.length) {
-    return false;
-  }
-  for (let i = 0; i < next.length; i++) {
-    if (next[i] !== prev[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function usePrev(value) {
-  const prevRef = React.useRef();
-  React.useEffect(() => {
-    prevRef.current = value;
-  });
-  return prevRef.current;
-}
-
-const useLayoutEffect = typeof window !== "undefined" && window.document && window.document.createElement ? React.useLayoutEffect : React.useEffect;
-
-Object.defineProperty(exports, 'raf', {
-  enumerable: true,
-  get: function () {
-    return rafz.raf;
-  }
-});
-exports.FluidValue = FluidValue;
-exports.Globals = globals;
-exports.addFluidObserver = addFluidObserver;
-exports.callFluidObserver = callFluidObserver;
-exports.callFluidObservers = callFluidObservers;
-exports.colorToRgba = colorToRgba;
-exports.colors = colors$1;
-exports.createInterpolator = createInterpolator;
-exports.createStringInterpolator = createStringInterpolator$1;
-exports.defineHidden = defineHidden;
-exports.deprecateDirectCall = deprecateDirectCall;
-exports.deprecateInterpolate = deprecateInterpolate;
-exports.each = each;
-exports.eachProp = eachProp;
-exports.flush = flush;
-exports.flushCalls = flushCalls;
-exports.frameLoop = frameLoop;
-exports.getFluidObservers = getFluidObservers;
-exports.getFluidValue = getFluidValue;
-exports.hasFluidValue = hasFluidValue;
-exports.hex3 = hex3;
-exports.hex4 = hex4;
-exports.hex6 = hex6;
-exports.hex8 = hex8;
-exports.hsl = hsl;
-exports.hsla = hsla;
-exports.is = is;
-exports.isAnimatedString = isAnimatedString;
-exports.isEqual = isEqual;
-exports.noop = noop;
-exports.removeFluidObserver = removeFluidObserver;
-exports.rgb = rgb;
-exports.rgba = rgba;
-exports.setFluidGetter = setFluidGetter;
-exports.toArray = toArray;
-exports.useForceUpdate = useForceUpdate;
-exports.useLayoutEffect = useLayoutEffect;
-exports.useMemoOne = useMemoOne;
-exports.useOnce = useOnce;
-exports.usePrev = usePrev;
-
-
-},{"rafz":189,"react":199}],19:[function(require,module,exports){
-
-},{}],20:[function(require,module,exports){
-arguments[4][19][0].apply(exports,arguments)
-},{"dup":19}],21:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var core = require('@react-spring/core');
-var reactDom = require('react-dom');
-var shared = require('@react-spring/shared');
-var animated$1 = require('@react-spring/animated');
-
-const isCustomPropRE = /^--/;
-function dangerousStyleValue(name, value) {
-  if (value == null || typeof value === "boolean" || value === "")
-    return "";
-  if (typeof value === "number" && value !== 0 && !isCustomPropRE.test(name) && !(isUnitlessNumber.hasOwnProperty(name) && isUnitlessNumber[name]))
-    return value + "px";
-  return ("" + value).trim();
-}
-const attributeCache = {};
-function applyAnimatedValues(instance, props) {
-  if (!instance.nodeType || !instance.setAttribute) {
-    return false;
-  }
-  const isFilterElement = instance.nodeName === "filter" || instance.parentNode && instance.parentNode.nodeName === "filter";
-  const {style, children, scrollTop, scrollLeft, ...attributes} = props;
-  const values = Object.values(attributes);
-  const names = Object.keys(attributes).map((name) => isFilterElement || instance.hasAttribute(name) ? name : attributeCache[name] || (attributeCache[name] = name.replace(/([A-Z])/g, (n) => "-" + n.toLowerCase())));
-  if (children !== void 0) {
-    instance.textContent = children;
-  }
-  for (let name in style) {
-    if (style.hasOwnProperty(name)) {
-      const value = dangerousStyleValue(name, style[name]);
-      if (name === "float")
-        name = "cssFloat";
-      else if (isCustomPropRE.test(name)) {
-        instance.style.setProperty(name, value);
-      } else {
-        instance.style[name] = value;
-      }
-    }
-  }
-  names.forEach((name, i) => {
-    instance.setAttribute(name, values[i]);
-  });
-  if (scrollTop !== void 0) {
-    instance.scrollTop = scrollTop;
-  }
-  if (scrollLeft !== void 0) {
-    instance.scrollLeft = scrollLeft;
-  }
-}
-let isUnitlessNumber = {
-  animationIterationCount: true,
-  borderImageOutset: true,
-  borderImageSlice: true,
-  borderImageWidth: true,
-  boxFlex: true,
-  boxFlexGroup: true,
-  boxOrdinalGroup: true,
-  columnCount: true,
-  columns: true,
-  flex: true,
-  flexGrow: true,
-  flexPositive: true,
-  flexShrink: true,
-  flexNegative: true,
-  flexOrder: true,
-  gridRow: true,
-  gridRowEnd: true,
-  gridRowSpan: true,
-  gridRowStart: true,
-  gridColumn: true,
-  gridColumnEnd: true,
-  gridColumnSpan: true,
-  gridColumnStart: true,
-  fontWeight: true,
-  lineClamp: true,
-  lineHeight: true,
-  opacity: true,
-  order: true,
-  orphans: true,
-  tabSize: true,
-  widows: true,
-  zIndex: true,
-  zoom: true,
-  fillOpacity: true,
-  floodOpacity: true,
-  stopOpacity: true,
-  strokeDasharray: true,
-  strokeDashoffset: true,
-  strokeMiterlimit: true,
-  strokeOpacity: true,
-  strokeWidth: true
-};
-const prefixKey = (prefix, key) => prefix + key.charAt(0).toUpperCase() + key.substring(1);
-const prefixes = ["Webkit", "Ms", "Moz", "O"];
-isUnitlessNumber = Object.keys(isUnitlessNumber).reduce((acc, prop) => {
-  prefixes.forEach((prefix) => acc[prefixKey(prefix, prop)] = acc[prop]);
-  return acc;
-}, isUnitlessNumber);
-
-const domTransforms = /^(matrix|translate|scale|rotate|skew)/;
-const pxTransforms = /^(translate)/;
-const degTransforms = /^(rotate|skew)/;
-const addUnit = (value, unit) => shared.is.num(value) && value !== 0 ? value + unit : value;
-const isValueIdentity = (value, id) => shared.is.arr(value) ? value.every((v) => isValueIdentity(v, id)) : shared.is.num(value) ? value === id : parseFloat(value) === id;
-class AnimatedStyle extends animated$1.AnimatedObject {
-  constructor({x, y, z, ...style}) {
-    const inputs = [];
-    const transforms = [];
-    if (x || y || z) {
-      inputs.push([x || 0, y || 0, z || 0]);
-      transforms.push((xyz) => [
-        `translate3d(${xyz.map((v) => addUnit(v, "px")).join(",")})`,
-        isValueIdentity(xyz, 0)
-      ]);
-    }
-    shared.eachProp(style, (value, key) => {
-      if (key === "transform") {
-        inputs.push([value || ""]);
-        transforms.push((transform) => [transform, transform === ""]);
-      } else if (domTransforms.test(key)) {
-        delete style[key];
-        if (shared.is.und(value))
-          return;
-        const unit = pxTransforms.test(key) ? "px" : degTransforms.test(key) ? "deg" : "";
-        inputs.push(shared.toArray(value));
-        transforms.push(key === "rotate3d" ? ([x2, y2, z2, deg]) => [
-          `rotate3d(${x2},${y2},${z2},${addUnit(deg, unit)})`,
-          isValueIdentity(deg, 0)
-        ] : (input) => [
-          `${key}(${input.map((v) => addUnit(v, unit)).join(",")})`,
-          isValueIdentity(input, key.startsWith("scale") ? 1 : 0)
-        ]);
-      }
-    });
-    if (inputs.length) {
-      style.transform = new FluidTransform(inputs, transforms);
-    }
-    super(style);
-  }
-}
-class FluidTransform extends shared.FluidValue {
-  constructor(inputs, transforms) {
-    super();
-    this.inputs = inputs;
-    this.transforms = transforms;
-    this._value = null;
-  }
-  get() {
-    return this._value || (this._value = this._get());
-  }
-  _get() {
-    let transform = "";
-    let identity = true;
-    shared.each(this.inputs, (input, i) => {
-      const arg1 = shared.getFluidValue(input[0]);
-      const [t, id] = this.transforms[i](shared.is.arr(arg1) ? arg1 : input.map(shared.getFluidValue));
-      transform += " " + t;
-      identity = identity && id;
-    });
-    return identity ? "none" : transform;
-  }
-  observerAdded(count) {
-    if (count == 1)
-      shared.each(this.inputs, (input) => shared.each(input, (value) => shared.hasFluidValue(value) && shared.addFluidObserver(value, this)));
-  }
-  observerRemoved(count) {
-    if (count == 0)
-      shared.each(this.inputs, (input) => shared.each(input, (value) => shared.hasFluidValue(value) && shared.removeFluidObserver(value, this)));
-  }
-  eventObserved(event) {
-    if (event.type == "change") {
-      this._value = null;
-    }
-    shared.callFluidObservers(this, event);
-  }
-}
-
-const primitives = [
-  "a",
-  "abbr",
-  "address",
-  "area",
-  "article",
-  "aside",
-  "audio",
-  "b",
-  "base",
-  "bdi",
-  "bdo",
-  "big",
-  "blockquote",
-  "body",
-  "br",
-  "button",
-  "canvas",
-  "caption",
-  "cite",
-  "code",
-  "col",
-  "colgroup",
-  "data",
-  "datalist",
-  "dd",
-  "del",
-  "details",
-  "dfn",
-  "dialog",
-  "div",
-  "dl",
-  "dt",
-  "em",
-  "embed",
-  "fieldset",
-  "figcaption",
-  "figure",
-  "footer",
-  "form",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "head",
-  "header",
-  "hgroup",
-  "hr",
-  "html",
-  "i",
-  "iframe",
-  "img",
-  "input",
-  "ins",
-  "kbd",
-  "keygen",
-  "label",
-  "legend",
-  "li",
-  "link",
-  "main",
-  "map",
-  "mark",
-  "menu",
-  "menuitem",
-  "meta",
-  "meter",
-  "nav",
-  "noscript",
-  "object",
-  "ol",
-  "optgroup",
-  "option",
-  "output",
-  "p",
-  "param",
-  "picture",
-  "pre",
-  "progress",
-  "q",
-  "rp",
-  "rt",
-  "ruby",
-  "s",
-  "samp",
-  "script",
-  "section",
-  "select",
-  "small",
-  "source",
-  "span",
-  "strong",
-  "style",
-  "sub",
-  "summary",
-  "sup",
-  "table",
-  "tbody",
-  "td",
-  "textarea",
-  "tfoot",
-  "th",
-  "thead",
-  "time",
-  "title",
-  "tr",
-  "track",
-  "u",
-  "ul",
-  "var",
-  "video",
-  "wbr",
-  "circle",
-  "clipPath",
-  "defs",
-  "ellipse",
-  "foreignObject",
-  "g",
-  "image",
-  "line",
-  "linearGradient",
-  "mask",
-  "path",
-  "pattern",
-  "polygon",
-  "polyline",
-  "radialGradient",
-  "rect",
-  "stop",
-  "svg",
-  "text",
-  "tspan"
-];
-
-core.Globals.assign({
-  batchedUpdates: reactDom.unstable_batchedUpdates,
-  createStringInterpolator: shared.createStringInterpolator,
-  colors: shared.colors
-});
-const host = animated$1.createHost(primitives, {
-  applyAnimatedValues: applyAnimatedValues,
-  createAnimatedStyle: (style) => new AnimatedStyle(style),
-  getComponentProps: ({scrollTop, scrollLeft, ...props}) => props
-});
-const animated = host.animated;
-
-Object.keys(core).forEach(function (k) {
-  if (k !== 'default') Object.defineProperty(exports, k, {
-    enumerable: true,
-    get: function () {
-      return core[k];
-    }
-  });
-});
-exports.a = animated;
-exports.animated = animated;
-
-
-},{"@react-spring/animated":16,"@react-spring/core":17,"@react-spring/shared":18,"react-dom":192}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useSelector = exports.useInterpret = exports.useActor = exports.useService = exports.asLayoutEffect = exports.asEffect = exports.useMachine = void 0;
@@ -4638,7 +1351,7 @@ Object.defineProperty(exports, "useInterpret", { enumerable: true, get: function
 var useSelector_1 = require("./useSelector");
 Object.defineProperty(exports, "useSelector", { enumerable: true, get: function () { return useSelector_1.useSelector; } });
 
-},{"./useActor":24,"./useInterpret":26,"./useMachine":27,"./useSelector":29,"./useService":30}],23:[function(require,module,exports){
+},{"./useActor":18,"./useInterpret":20,"./useMachine":21,"./useSelector":23,"./useService":24}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReactEffectType = void 0;
@@ -4648,7 +1361,7 @@ var ReactEffectType;
     ReactEffectType[ReactEffectType["LayoutEffect"] = 2] = "LayoutEffect";
 })(ReactEffectType = exports.ReactEffectType || (exports.ReactEffectType = {}));
 
-},{}],24:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -4721,7 +1434,7 @@ function useActor(actorRef, getSnapshot) {
 }
 exports.useActor = useActor;
 
-},{"./useConstant":25,"react":199,"use-isomorphic-layout-effect":213}],25:[function(require,module,exports){
+},{"./useConstant":19,"react":186,"use-isomorphic-layout-effect":200}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = require("react");
@@ -4734,7 +1447,7 @@ function useConstant(fn) {
 }
 exports.default = useConstant;
 
-},{"react":199}],26:[function(require,module,exports){
+},{"react":186}],20:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __assign = (this && this.__assign) || function () {
@@ -4851,7 +1564,7 @@ function useInterpret(getMachine, options, observerOrListener) {
 exports.useInterpret = useInterpret;
 
 }).call(this)}).call(this,require('_process'))
-},{"./useConstant":25,"./useReactEffectActions":28,"_process":183,"react":199,"use-isomorphic-layout-effect":213,"xstate":223}],27:[function(require,module,exports){
+},{"./useConstant":19,"./useReactEffectActions":22,"_process":172,"react":186,"use-isomorphic-layout-effect":200,"xstate":210}],21:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -4939,7 +1652,7 @@ function useMachine(getMachine, options) {
 }
 exports.useMachine = useMachine;
 
-},{"./types":23,"./useInterpret":26,"react":199,"xstate":223}],28:[function(require,module,exports){
+},{"./types":17,"./useInterpret":20,"react":186,"xstate":210}],22:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -5008,7 +1721,7 @@ function useReactEffectActions(service) {
 }
 exports.useReactEffectActions = useReactEffectActions;
 
-},{"./types":23,"./useMachine":27,"./utils":31,"react":199,"use-isomorphic-layout-effect":213}],29:[function(require,module,exports){
+},{"./types":17,"./useMachine":21,"./utils":25,"react":186,"use-isomorphic-layout-effect":200}],23:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -5066,7 +1779,7 @@ function useSelector(actor, selector, compare, getSnapshot) {
 }
 exports.useSelector = useSelector;
 
-},{"./useActor":24,"./useService":30,"react":199}],30:[function(require,module,exports){
+},{"./useActor":18,"./useService":24,"react":186}],24:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
@@ -5105,7 +1818,7 @@ function useService(service) {
 exports.useService = useService;
 
 }).call(this)}).call(this,require('_process'))
-},{"./useActor":24,"_process":183}],31:[function(require,module,exports){
+},{"./useActor":18,"_process":172}],25:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -5161,14 +1874,14 @@ function partition(items, predicate) {
 }
 exports.partition = partition;
 
-},{}],32:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function (it) {
   if (typeof it != 'function') {
     throw TypeError(String(it) + ' is not a function');
   } return it;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var isObject = require('../internals/is-object');
 
 module.exports = function (it) {
@@ -5177,7 +1890,7 @@ module.exports = function (it) {
   } return it;
 };
 
-},{"../internals/is-object":87}],34:[function(require,module,exports){
+},{"../internals/is-object":80}],28:[function(require,module,exports){
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var create = require('../internals/object-create');
 var definePropertyModule = require('../internals/object-define-property');
@@ -5199,14 +1912,14 @@ module.exports = function (key) {
   ArrayPrototype[UNSCOPABLES][key] = true;
 };
 
-},{"../internals/object-create":99,"../internals/object-define-property":101,"../internals/well-known-symbol":135}],35:[function(require,module,exports){
+},{"../internals/object-create":92,"../internals/object-define-property":94,"../internals/well-known-symbol":128}],29:[function(require,module,exports){
 module.exports = function (it, Constructor, name) {
   if (!(it instanceof Constructor)) {
     throw TypeError('Incorrect ' + (name ? name + ' ' : '') + 'invocation');
   } return it;
 };
 
-},{}],36:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var isObject = require('../internals/is-object');
 
 module.exports = function (it) {
@@ -5215,21 +1928,7 @@ module.exports = function (it) {
   } return it;
 };
 
-},{"../internals/is-object":87}],37:[function(require,module,exports){
-'use strict';
-var $forEach = require('../internals/array-iteration').forEach;
-var arrayMethodIsStrict = require('../internals/array-method-is-strict');
-
-var STRICT_METHOD = arrayMethodIsStrict('forEach');
-
-// `Array.prototype.forEach` method implementation
-// https://tc39.es/ecma262/#sec-array.prototype.foreach
-module.exports = !STRICT_METHOD ? function forEach(callbackfn /* , thisArg */) {
-  return $forEach(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
-// eslint-disable-next-line es/no-array-prototype-foreach -- safe
-} : [].forEach;
-
-},{"../internals/array-iteration":40,"../internals/array-method-is-strict":42}],38:[function(require,module,exports){
+},{"../internals/is-object":80}],31:[function(require,module,exports){
 'use strict';
 var bind = require('../internals/function-bind-context');
 var toObject = require('../internals/to-object');
@@ -5272,7 +1971,7 @@ module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undef
   return result;
 };
 
-},{"../internals/call-with-safe-iteration-closing":45,"../internals/create-property":56,"../internals/function-bind-context":69,"../internals/get-iterator-method":72,"../internals/is-array-iterator-method":84,"../internals/to-length":128,"../internals/to-object":129}],39:[function(require,module,exports){
+},{"../internals/call-with-safe-iteration-closing":38,"../internals/create-property":49,"../internals/function-bind-context":62,"../internals/get-iterator-method":65,"../internals/is-array-iterator-method":77,"../internals/to-length":121,"../internals/to-object":122}],32:[function(require,module,exports){
 var toIndexedObject = require('../internals/to-indexed-object');
 var toLength = require('../internals/to-length');
 var toAbsoluteIndex = require('../internals/to-absolute-index');
@@ -5306,7 +2005,7 @@ module.exports = {
   indexOf: createMethod(false)
 };
 
-},{"../internals/to-absolute-index":125,"../internals/to-indexed-object":126,"../internals/to-length":128}],40:[function(require,module,exports){
+},{"../internals/to-absolute-index":118,"../internals/to-indexed-object":119,"../internals/to-length":121}],33:[function(require,module,exports){
 var bind = require('../internals/function-bind-context');
 var IndexedObject = require('../internals/indexed-object');
 var toObject = require('../internals/to-object');
@@ -5380,7 +2079,7 @@ module.exports = {
   filterOut: createMethod(7)
 };
 
-},{"../internals/array-species-create":44,"../internals/function-bind-context":69,"../internals/indexed-object":79,"../internals/to-length":128,"../internals/to-object":129}],41:[function(require,module,exports){
+},{"../internals/array-species-create":37,"../internals/function-bind-context":62,"../internals/indexed-object":72,"../internals/to-length":121,"../internals/to-object":122}],34:[function(require,module,exports){
 var fails = require('../internals/fails');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var V8_VERSION = require('../internals/engine-v8-version');
@@ -5401,7 +2100,7 @@ module.exports = function (METHOD_NAME) {
   });
 };
 
-},{"../internals/engine-v8-version":64,"../internals/fails":67,"../internals/well-known-symbol":135}],42:[function(require,module,exports){
+},{"../internals/engine-v8-version":57,"../internals/fails":60,"../internals/well-known-symbol":128}],35:[function(require,module,exports){
 'use strict';
 var fails = require('../internals/fails');
 
@@ -5413,7 +2112,7 @@ module.exports = function (METHOD_NAME, argument) {
   });
 };
 
-},{"../internals/fails":67}],43:[function(require,module,exports){
+},{"../internals/fails":60}],36:[function(require,module,exports){
 var aFunction = require('../internals/a-function');
 var toObject = require('../internals/to-object');
 var IndexedObject = require('../internals/indexed-object');
@@ -5455,7 +2154,7 @@ module.exports = {
   right: createMethod(true)
 };
 
-},{"../internals/a-function":32,"../internals/indexed-object":79,"../internals/to-length":128,"../internals/to-object":129}],44:[function(require,module,exports){
+},{"../internals/a-function":26,"../internals/indexed-object":72,"../internals/to-length":121,"../internals/to-object":122}],37:[function(require,module,exports){
 var isObject = require('../internals/is-object');
 var isArray = require('../internals/is-array');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -5477,7 +2176,7 @@ module.exports = function (originalArray, length) {
   } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
 };
 
-},{"../internals/is-array":85,"../internals/is-object":87,"../internals/well-known-symbol":135}],45:[function(require,module,exports){
+},{"../internals/is-array":78,"../internals/is-object":80,"../internals/well-known-symbol":128}],38:[function(require,module,exports){
 var anObject = require('../internals/an-object');
 var iteratorClose = require('../internals/iterator-close');
 
@@ -5492,7 +2191,7 @@ module.exports = function (iterator, fn, value, ENTRIES) {
   }
 };
 
-},{"../internals/an-object":36,"../internals/iterator-close":90}],46:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/iterator-close":83}],39:[function(require,module,exports){
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var ITERATOR = wellKnownSymbol('iterator');
@@ -5532,14 +2231,14 @@ module.exports = function (exec, SKIP_CLOSING) {
   return ITERATION_SUPPORT;
 };
 
-},{"../internals/well-known-symbol":135}],47:[function(require,module,exports){
+},{"../internals/well-known-symbol":128}],40:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = function (it) {
   return toString.call(it).slice(8, -1);
 };
 
-},{}],48:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var classofRaw = require('../internals/classof-raw');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -5567,7 +2266,7 @@ module.exports = TO_STRING_TAG_SUPPORT ? classofRaw : function (it) {
     : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
 };
 
-},{"../internals/classof-raw":47,"../internals/to-string-tag-support":131,"../internals/well-known-symbol":135}],49:[function(require,module,exports){
+},{"../internals/classof-raw":40,"../internals/to-string-tag-support":124,"../internals/well-known-symbol":128}],42:[function(require,module,exports){
 'use strict';
 var redefineAll = require('../internals/redefine-all');
 var getWeakData = require('../internals/internal-metadata').getWeakData;
@@ -5690,7 +2389,7 @@ module.exports = {
   }
 };
 
-},{"../internals/an-instance":35,"../internals/an-object":36,"../internals/array-iteration":40,"../internals/has":75,"../internals/internal-metadata":82,"../internals/internal-state":83,"../internals/is-object":87,"../internals/iterate":89,"../internals/redefine-all":114}],50:[function(require,module,exports){
+},{"../internals/an-instance":29,"../internals/an-object":30,"../internals/array-iteration":33,"../internals/has":68,"../internals/internal-metadata":75,"../internals/internal-state":76,"../internals/is-object":80,"../internals/iterate":82,"../internals/redefine-all":107}],43:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var global = require('../internals/global');
@@ -5795,7 +2494,7 @@ module.exports = function (CONSTRUCTOR_NAME, wrapper, common) {
   return Constructor;
 };
 
-},{"../internals/an-instance":35,"../internals/check-correctness-of-iteration":46,"../internals/export":66,"../internals/fails":67,"../internals/global":74,"../internals/inherit-if-required":80,"../internals/internal-metadata":82,"../internals/is-forced":86,"../internals/is-object":87,"../internals/iterate":89,"../internals/redefine":115,"../internals/set-to-string-tag":118}],51:[function(require,module,exports){
+},{"../internals/an-instance":29,"../internals/check-correctness-of-iteration":39,"../internals/export":59,"../internals/fails":60,"../internals/global":67,"../internals/inherit-if-required":73,"../internals/internal-metadata":75,"../internals/is-forced":79,"../internals/is-object":80,"../internals/iterate":82,"../internals/redefine":108,"../internals/set-to-string-tag":111}],44:[function(require,module,exports){
 var has = require('../internals/has');
 var ownKeys = require('../internals/own-keys');
 var getOwnPropertyDescriptorModule = require('../internals/object-get-own-property-descriptor');
@@ -5811,7 +2510,7 @@ module.exports = function (target, source) {
   }
 };
 
-},{"../internals/has":75,"../internals/object-define-property":101,"../internals/object-get-own-property-descriptor":102,"../internals/own-keys":112}],52:[function(require,module,exports){
+},{"../internals/has":68,"../internals/object-define-property":94,"../internals/object-get-own-property-descriptor":95,"../internals/own-keys":105}],45:[function(require,module,exports){
 var fails = require('../internals/fails');
 
 module.exports = !fails(function () {
@@ -5821,7 +2520,7 @@ module.exports = !fails(function () {
   return Object.getPrototypeOf(new F()) !== F.prototype;
 });
 
-},{"../internals/fails":67}],53:[function(require,module,exports){
+},{"../internals/fails":60}],46:[function(require,module,exports){
 'use strict';
 var IteratorPrototype = require('../internals/iterators-core').IteratorPrototype;
 var create = require('../internals/object-create');
@@ -5839,7 +2538,7 @@ module.exports = function (IteratorConstructor, NAME, next) {
   return IteratorConstructor;
 };
 
-},{"../internals/create-property-descriptor":55,"../internals/iterators":92,"../internals/iterators-core":91,"../internals/object-create":99,"../internals/set-to-string-tag":118}],54:[function(require,module,exports){
+},{"../internals/create-property-descriptor":48,"../internals/iterators":85,"../internals/iterators-core":84,"../internals/object-create":92,"../internals/set-to-string-tag":111}],47:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var definePropertyModule = require('../internals/object-define-property');
 var createPropertyDescriptor = require('../internals/create-property-descriptor');
@@ -5851,7 +2550,7 @@ module.exports = DESCRIPTORS ? function (object, key, value) {
   return object;
 };
 
-},{"../internals/create-property-descriptor":55,"../internals/descriptors":59,"../internals/object-define-property":101}],55:[function(require,module,exports){
+},{"../internals/create-property-descriptor":48,"../internals/descriptors":52,"../internals/object-define-property":94}],48:[function(require,module,exports){
 module.exports = function (bitmap, value) {
   return {
     enumerable: !(bitmap & 1),
@@ -5861,7 +2560,7 @@ module.exports = function (bitmap, value) {
   };
 };
 
-},{}],56:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 var toPrimitive = require('../internals/to-primitive');
 var definePropertyModule = require('../internals/object-define-property');
@@ -5873,7 +2572,7 @@ module.exports = function (object, key, value) {
   else object[propertyKey] = value;
 };
 
-},{"../internals/create-property-descriptor":55,"../internals/object-define-property":101,"../internals/to-primitive":130}],57:[function(require,module,exports){
+},{"../internals/create-property-descriptor":48,"../internals/object-define-property":94,"../internals/to-primitive":123}],50:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var createIteratorConstructor = require('../internals/create-iterator-constructor');
@@ -5965,7 +2664,7 @@ module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, I
   return methods;
 };
 
-},{"../internals/create-iterator-constructor":53,"../internals/create-non-enumerable-property":54,"../internals/export":66,"../internals/is-pure":88,"../internals/iterators":92,"../internals/iterators-core":91,"../internals/object-get-prototype-of":106,"../internals/object-set-prototype-of":110,"../internals/redefine":115,"../internals/set-to-string-tag":118,"../internals/well-known-symbol":135}],58:[function(require,module,exports){
+},{"../internals/create-iterator-constructor":46,"../internals/create-non-enumerable-property":47,"../internals/export":59,"../internals/is-pure":81,"../internals/iterators":85,"../internals/iterators-core":84,"../internals/object-get-prototype-of":99,"../internals/object-set-prototype-of":103,"../internals/redefine":108,"../internals/set-to-string-tag":111,"../internals/well-known-symbol":128}],51:[function(require,module,exports){
 var path = require('../internals/path');
 var has = require('../internals/has');
 var wrappedWellKnownSymbolModule = require('../internals/well-known-symbol-wrapped');
@@ -5978,7 +2677,7 @@ module.exports = function (NAME) {
   });
 };
 
-},{"../internals/has":75,"../internals/object-define-property":101,"../internals/path":113,"../internals/well-known-symbol-wrapped":134}],59:[function(require,module,exports){
+},{"../internals/has":68,"../internals/object-define-property":94,"../internals/path":106,"../internals/well-known-symbol-wrapped":127}],52:[function(require,module,exports){
 var fails = require('../internals/fails');
 
 // Detect IE8's incomplete defineProperty implementation
@@ -5987,7 +2686,7 @@ module.exports = !fails(function () {
   return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 });
 
-},{"../internals/fails":67}],60:[function(require,module,exports){
+},{"../internals/fails":60}],53:[function(require,module,exports){
 var global = require('../internals/global');
 var isObject = require('../internals/is-object');
 
@@ -5999,7 +2698,7 @@ module.exports = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-},{"../internals/global":74,"../internals/is-object":87}],61:[function(require,module,exports){
+},{"../internals/global":67,"../internals/is-object":80}],54:[function(require,module,exports){
 // iterable DOM collections
 // flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
 module.exports = {
@@ -6036,18 +2735,18 @@ module.exports = {
   TouchList: 0
 };
 
-},{}],62:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 var classof = require('../internals/classof-raw');
 var global = require('../internals/global');
 
 module.exports = classof(global.process) == 'process';
 
-},{"../internals/classof-raw":47,"../internals/global":74}],63:[function(require,module,exports){
+},{"../internals/classof-raw":40,"../internals/global":67}],56:[function(require,module,exports){
 var getBuiltIn = require('../internals/get-built-in');
 
 module.exports = getBuiltIn('navigator', 'userAgent') || '';
 
-},{"../internals/get-built-in":71}],64:[function(require,module,exports){
+},{"../internals/get-built-in":64}],57:[function(require,module,exports){
 var global = require('../internals/global');
 var userAgent = require('../internals/engine-user-agent');
 
@@ -6069,7 +2768,7 @@ if (v8) {
 
 module.exports = version && +version;
 
-},{"../internals/engine-user-agent":63,"../internals/global":74}],65:[function(require,module,exports){
+},{"../internals/engine-user-agent":56,"../internals/global":67}],58:[function(require,module,exports){
 // IE8- don't enum bug keys
 module.exports = [
   'constructor',
@@ -6081,7 +2780,7 @@ module.exports = [
   'valueOf'
 ];
 
-},{}],66:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var global = require('../internals/global');
 var getOwnPropertyDescriptor = require('../internals/object-get-own-property-descriptor').f;
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
@@ -6137,7 +2836,7 @@ module.exports = function (options, source) {
   }
 };
 
-},{"../internals/copy-constructor-properties":51,"../internals/create-non-enumerable-property":54,"../internals/global":74,"../internals/is-forced":86,"../internals/object-get-own-property-descriptor":102,"../internals/redefine":115,"../internals/set-global":117}],67:[function(require,module,exports){
+},{"../internals/copy-constructor-properties":44,"../internals/create-non-enumerable-property":47,"../internals/global":67,"../internals/is-forced":79,"../internals/object-get-own-property-descriptor":95,"../internals/redefine":108,"../internals/set-global":110}],60:[function(require,module,exports){
 module.exports = function (exec) {
   try {
     return !!exec();
@@ -6146,7 +2845,7 @@ module.exports = function (exec) {
   }
 };
 
-},{}],68:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var fails = require('../internals/fails');
 
 module.exports = !fails(function () {
@@ -6154,7 +2853,7 @@ module.exports = !fails(function () {
   return Object.isExtensible(Object.preventExtensions({}));
 });
 
-},{"../internals/fails":67}],69:[function(require,module,exports){
+},{"../internals/fails":60}],62:[function(require,module,exports){
 var aFunction = require('../internals/a-function');
 
 // optional / simple context binding
@@ -6180,7 +2879,7 @@ module.exports = function (fn, that, length) {
   };
 };
 
-},{"../internals/a-function":32}],70:[function(require,module,exports){
+},{"../internals/a-function":26}],63:[function(require,module,exports){
 'use strict';
 var aFunction = require('../internals/a-function');
 var isObject = require('../internals/is-object');
@@ -6209,7 +2908,7 @@ module.exports = Function.bind || function bind(that /* , ...args */) {
   return boundFunction;
 };
 
-},{"../internals/a-function":32,"../internals/is-object":87}],71:[function(require,module,exports){
+},{"../internals/a-function":26,"../internals/is-object":80}],64:[function(require,module,exports){
 var path = require('../internals/path');
 var global = require('../internals/global');
 
@@ -6222,7 +2921,7 @@ module.exports = function (namespace, method) {
     : path[namespace] && path[namespace][method] || global[namespace] && global[namespace][method];
 };
 
-},{"../internals/global":74,"../internals/path":113}],72:[function(require,module,exports){
+},{"../internals/global":67,"../internals/path":106}],65:[function(require,module,exports){
 var classof = require('../internals/classof');
 var Iterators = require('../internals/iterators');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -6235,7 +2934,7 @@ module.exports = function (it) {
     || Iterators[classof(it)];
 };
 
-},{"../internals/classof":48,"../internals/iterators":92,"../internals/well-known-symbol":135}],73:[function(require,module,exports){
+},{"../internals/classof":41,"../internals/iterators":85,"../internals/well-known-symbol":128}],66:[function(require,module,exports){
 var anObject = require('../internals/an-object');
 var getIteratorMethod = require('../internals/get-iterator-method');
 
@@ -6246,7 +2945,7 @@ module.exports = function (it) {
   } return anObject(iteratorMethod.call(it));
 };
 
-},{"../internals/an-object":36,"../internals/get-iterator-method":72}],74:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/get-iterator-method":65}],67:[function(require,module,exports){
 (function (global){(function (){
 var check = function (it) {
   return it && it.Math == Math && it;
@@ -6264,22 +2963,22 @@ module.exports =
   (function () { return this; })() || Function('return this')();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],75:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 
 module.exports = function (it, key) {
   return hasOwnProperty.call(it, key);
 };
 
-},{}],76:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = {};
 
-},{}],77:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var getBuiltIn = require('../internals/get-built-in');
 
 module.exports = getBuiltIn('document', 'documentElement');
 
-},{"../internals/get-built-in":71}],78:[function(require,module,exports){
+},{"../internals/get-built-in":64}],71:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var fails = require('../internals/fails');
 var createElement = require('../internals/document-create-element');
@@ -6292,7 +2991,7 @@ module.exports = !DESCRIPTORS && !fails(function () {
   }).a != 7;
 });
 
-},{"../internals/descriptors":59,"../internals/document-create-element":60,"../internals/fails":67}],79:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/document-create-element":53,"../internals/fails":60}],72:[function(require,module,exports){
 var fails = require('../internals/fails');
 var classof = require('../internals/classof-raw');
 
@@ -6307,7 +3006,7 @@ module.exports = fails(function () {
   return classof(it) == 'String' ? split.call(it, '') : Object(it);
 } : Object;
 
-},{"../internals/classof-raw":47,"../internals/fails":67}],80:[function(require,module,exports){
+},{"../internals/classof-raw":40,"../internals/fails":60}],73:[function(require,module,exports){
 var isObject = require('../internals/is-object');
 var setPrototypeOf = require('../internals/object-set-prototype-of');
 
@@ -6326,7 +3025,7 @@ module.exports = function ($this, dummy, Wrapper) {
   return $this;
 };
 
-},{"../internals/is-object":87,"../internals/object-set-prototype-of":110}],81:[function(require,module,exports){
+},{"../internals/is-object":80,"../internals/object-set-prototype-of":103}],74:[function(require,module,exports){
 var store = require('../internals/shared-store');
 
 var functionToString = Function.toString;
@@ -6340,7 +3039,7 @@ if (typeof store.inspectSource != 'function') {
 
 module.exports = store.inspectSource;
 
-},{"../internals/shared-store":120}],82:[function(require,module,exports){
+},{"../internals/shared-store":113}],75:[function(require,module,exports){
 var hiddenKeys = require('../internals/hidden-keys');
 var isObject = require('../internals/is-object');
 var has = require('../internals/has');
@@ -6404,7 +3103,7 @@ var meta = module.exports = {
 
 hiddenKeys[METADATA] = true;
 
-},{"../internals/freezing":68,"../internals/has":75,"../internals/hidden-keys":76,"../internals/is-object":87,"../internals/object-define-property":101,"../internals/uid":132}],83:[function(require,module,exports){
+},{"../internals/freezing":61,"../internals/has":68,"../internals/hidden-keys":69,"../internals/is-object":80,"../internals/object-define-property":94,"../internals/uid":125}],76:[function(require,module,exports){
 var NATIVE_WEAK_MAP = require('../internals/native-weak-map');
 var global = require('../internals/global');
 var isObject = require('../internals/is-object');
@@ -6470,7 +3169,7 @@ module.exports = {
   getterFor: getterFor
 };
 
-},{"../internals/create-non-enumerable-property":54,"../internals/global":74,"../internals/has":75,"../internals/hidden-keys":76,"../internals/is-object":87,"../internals/native-weak-map":95,"../internals/shared-key":119,"../internals/shared-store":120}],84:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":47,"../internals/global":67,"../internals/has":68,"../internals/hidden-keys":69,"../internals/is-object":80,"../internals/native-weak-map":88,"../internals/shared-key":112,"../internals/shared-store":113}],77:[function(require,module,exports){
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var Iterators = require('../internals/iterators');
 
@@ -6482,7 +3181,7 @@ module.exports = function (it) {
   return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
 };
 
-},{"../internals/iterators":92,"../internals/well-known-symbol":135}],85:[function(require,module,exports){
+},{"../internals/iterators":85,"../internals/well-known-symbol":128}],78:[function(require,module,exports){
 var classof = require('../internals/classof-raw');
 
 // `IsArray` abstract operation
@@ -6492,7 +3191,7 @@ module.exports = Array.isArray || function isArray(arg) {
   return classof(arg) == 'Array';
 };
 
-},{"../internals/classof-raw":47}],86:[function(require,module,exports){
+},{"../internals/classof-raw":40}],79:[function(require,module,exports){
 var fails = require('../internals/fails');
 
 var replacement = /#|\.prototype\./;
@@ -6515,15 +3214,15 @@ var POLYFILL = isForced.POLYFILL = 'P';
 
 module.exports = isForced;
 
-},{"../internals/fails":67}],87:[function(require,module,exports){
+},{"../internals/fails":60}],80:[function(require,module,exports){
 module.exports = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-},{}],88:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = false;
 
-},{}],89:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 var anObject = require('../internals/an-object');
 var isArrayIteratorMethod = require('../internals/is-array-iterator-method');
 var toLength = require('../internals/to-length');
@@ -6583,7 +3282,7 @@ module.exports = function (iterable, unboundFunction, options) {
   } return new Result(false);
 };
 
-},{"../internals/an-object":36,"../internals/function-bind-context":69,"../internals/get-iterator-method":72,"../internals/is-array-iterator-method":84,"../internals/iterator-close":90,"../internals/to-length":128}],90:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/function-bind-context":62,"../internals/get-iterator-method":65,"../internals/is-array-iterator-method":77,"../internals/iterator-close":83,"../internals/to-length":121}],83:[function(require,module,exports){
 var anObject = require('../internals/an-object');
 
 module.exports = function (iterator) {
@@ -6593,7 +3292,7 @@ module.exports = function (iterator) {
   }
 };
 
-},{"../internals/an-object":36}],91:[function(require,module,exports){
+},{"../internals/an-object":30}],84:[function(require,module,exports){
 'use strict';
 var fails = require('../internals/fails');
 var getPrototypeOf = require('../internals/object-get-prototype-of');
@@ -6640,9 +3339,9 @@ module.exports = {
   BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
 };
 
-},{"../internals/create-non-enumerable-property":54,"../internals/fails":67,"../internals/has":75,"../internals/is-pure":88,"../internals/object-get-prototype-of":106,"../internals/well-known-symbol":135}],92:[function(require,module,exports){
-arguments[4][76][0].apply(exports,arguments)
-},{"dup":76}],93:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":47,"../internals/fails":60,"../internals/has":68,"../internals/is-pure":81,"../internals/object-get-prototype-of":99,"../internals/well-known-symbol":128}],85:[function(require,module,exports){
+arguments[4][69][0].apply(exports,arguments)
+},{"dup":69}],86:[function(require,module,exports){
 var IS_NODE = require('../internals/engine-is-node');
 var V8_VERSION = require('../internals/engine-v8-version');
 var fails = require('../internals/fails');
@@ -6656,7 +3355,7 @@ module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
     (IS_NODE ? V8_VERSION === 38 : V8_VERSION > 37 && V8_VERSION < 41);
 });
 
-},{"../internals/engine-is-node":62,"../internals/engine-v8-version":64,"../internals/fails":67}],94:[function(require,module,exports){
+},{"../internals/engine-is-node":55,"../internals/engine-v8-version":57,"../internals/fails":60}],87:[function(require,module,exports){
 var fails = require('../internals/fails');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var IS_PURE = require('../internals/is-pure');
@@ -6691,7 +3390,7 @@ module.exports = !fails(function () {
     || new URL('http://x', undefined).host !== 'x';
 });
 
-},{"../internals/fails":67,"../internals/is-pure":88,"../internals/well-known-symbol":135}],95:[function(require,module,exports){
+},{"../internals/fails":60,"../internals/is-pure":81,"../internals/well-known-symbol":128}],88:[function(require,module,exports){
 var global = require('../internals/global');
 var inspectSource = require('../internals/inspect-source');
 
@@ -6699,7 +3398,7 @@ var WeakMap = global.WeakMap;
 
 module.exports = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
 
-},{"../internals/global":74,"../internals/inspect-source":81}],96:[function(require,module,exports){
+},{"../internals/global":67,"../internals/inspect-source":74}],89:[function(require,module,exports){
 var global = require('../internals/global');
 var trim = require('../internals/string-trim').trim;
 var whitespaces = require('../internals/whitespaces');
@@ -6715,7 +3414,7 @@ module.exports = FORCED ? function parseFloat(string) {
   return result === 0 && trimmedString.charAt(0) == '-' ? -0 : result;
 } : $parseFloat;
 
-},{"../internals/global":74,"../internals/string-trim":124,"../internals/whitespaces":136}],97:[function(require,module,exports){
+},{"../internals/global":67,"../internals/string-trim":117,"../internals/whitespaces":129}],90:[function(require,module,exports){
 var global = require('../internals/global');
 var trim = require('../internals/string-trim').trim;
 var whitespaces = require('../internals/whitespaces');
@@ -6731,7 +3430,7 @@ module.exports = FORCED ? function parseInt(string, radix) {
   return $parseInt(S, (radix >>> 0) || (hex.test(S) ? 16 : 10));
 } : $parseInt;
 
-},{"../internals/global":74,"../internals/string-trim":124,"../internals/whitespaces":136}],98:[function(require,module,exports){
+},{"../internals/global":67,"../internals/string-trim":117,"../internals/whitespaces":129}],91:[function(require,module,exports){
 'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var fails = require('../internals/fails');
@@ -6787,7 +3486,7 @@ module.exports = !$assign || fails(function () {
   } return T;
 } : $assign;
 
-},{"../internals/descriptors":59,"../internals/fails":67,"../internals/indexed-object":79,"../internals/object-get-own-property-symbols":105,"../internals/object-keys":108,"../internals/object-property-is-enumerable":109,"../internals/to-object":129}],99:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/fails":60,"../internals/indexed-object":72,"../internals/object-get-own-property-symbols":98,"../internals/object-keys":101,"../internals/object-property-is-enumerable":102,"../internals/to-object":122}],92:[function(require,module,exports){
 var anObject = require('../internals/an-object');
 var defineProperties = require('../internals/object-define-properties');
 var enumBugKeys = require('../internals/enum-bug-keys');
@@ -6867,7 +3566,7 @@ module.exports = Object.create || function create(O, Properties) {
   return Properties === undefined ? result : defineProperties(result, Properties);
 };
 
-},{"../internals/an-object":36,"../internals/document-create-element":60,"../internals/enum-bug-keys":65,"../internals/hidden-keys":76,"../internals/html":77,"../internals/object-define-properties":100,"../internals/shared-key":119}],100:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/document-create-element":53,"../internals/enum-bug-keys":58,"../internals/hidden-keys":69,"../internals/html":70,"../internals/object-define-properties":93,"../internals/shared-key":112}],93:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var definePropertyModule = require('../internals/object-define-property');
 var anObject = require('../internals/an-object');
@@ -6886,7 +3585,7 @@ module.exports = DESCRIPTORS ? Object.defineProperties : function defineProperti
   return O;
 };
 
-},{"../internals/an-object":36,"../internals/descriptors":59,"../internals/object-define-property":101,"../internals/object-keys":108}],101:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/descriptors":52,"../internals/object-define-property":94,"../internals/object-keys":101}],94:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var IE8_DOM_DEFINE = require('../internals/ie8-dom-define');
 var anObject = require('../internals/an-object');
@@ -6909,7 +3608,7 @@ exports.f = DESCRIPTORS ? $defineProperty : function defineProperty(O, P, Attrib
   return O;
 };
 
-},{"../internals/an-object":36,"../internals/descriptors":59,"../internals/ie8-dom-define":78,"../internals/to-primitive":130}],102:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/descriptors":52,"../internals/ie8-dom-define":71,"../internals/to-primitive":123}],95:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var propertyIsEnumerableModule = require('../internals/object-property-is-enumerable');
 var createPropertyDescriptor = require('../internals/create-property-descriptor');
@@ -6932,7 +3631,7 @@ exports.f = DESCRIPTORS ? $getOwnPropertyDescriptor : function getOwnPropertyDes
   if (has(O, P)) return createPropertyDescriptor(!propertyIsEnumerableModule.f.call(O, P), O[P]);
 };
 
-},{"../internals/create-property-descriptor":55,"../internals/descriptors":59,"../internals/has":75,"../internals/ie8-dom-define":78,"../internals/object-property-is-enumerable":109,"../internals/to-indexed-object":126,"../internals/to-primitive":130}],103:[function(require,module,exports){
+},{"../internals/create-property-descriptor":48,"../internals/descriptors":52,"../internals/has":68,"../internals/ie8-dom-define":71,"../internals/object-property-is-enumerable":102,"../internals/to-indexed-object":119,"../internals/to-primitive":123}],96:[function(require,module,exports){
 /* eslint-disable es/no-object-getownpropertynames -- safe */
 var toIndexedObject = require('../internals/to-indexed-object');
 var $getOwnPropertyNames = require('../internals/object-get-own-property-names').f;
@@ -6957,7 +3656,7 @@ module.exports.f = function getOwnPropertyNames(it) {
     : $getOwnPropertyNames(toIndexedObject(it));
 };
 
-},{"../internals/object-get-own-property-names":104,"../internals/to-indexed-object":126}],104:[function(require,module,exports){
+},{"../internals/object-get-own-property-names":97,"../internals/to-indexed-object":119}],97:[function(require,module,exports){
 var internalObjectKeys = require('../internals/object-keys-internal');
 var enumBugKeys = require('../internals/enum-bug-keys');
 
@@ -6970,11 +3669,11 @@ exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return internalObjectKeys(O, hiddenKeys);
 };
 
-},{"../internals/enum-bug-keys":65,"../internals/object-keys-internal":107}],105:[function(require,module,exports){
+},{"../internals/enum-bug-keys":58,"../internals/object-keys-internal":100}],98:[function(require,module,exports){
 // eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
 exports.f = Object.getOwnPropertySymbols;
 
-},{}],106:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 var has = require('../internals/has');
 var toObject = require('../internals/to-object');
 var sharedKey = require('../internals/shared-key');
@@ -6994,7 +3693,7 @@ module.exports = CORRECT_PROTOTYPE_GETTER ? Object.getPrototypeOf : function (O)
   } return O instanceof Object ? ObjectPrototype : null;
 };
 
-},{"../internals/correct-prototype-getter":52,"../internals/has":75,"../internals/shared-key":119,"../internals/to-object":129}],107:[function(require,module,exports){
+},{"../internals/correct-prototype-getter":45,"../internals/has":68,"../internals/shared-key":112,"../internals/to-object":122}],100:[function(require,module,exports){
 var has = require('../internals/has');
 var toIndexedObject = require('../internals/to-indexed-object');
 var indexOf = require('../internals/array-includes').indexOf;
@@ -7013,7 +3712,7 @@ module.exports = function (object, names) {
   return result;
 };
 
-},{"../internals/array-includes":39,"../internals/has":75,"../internals/hidden-keys":76,"../internals/to-indexed-object":126}],108:[function(require,module,exports){
+},{"../internals/array-includes":32,"../internals/has":68,"../internals/hidden-keys":69,"../internals/to-indexed-object":119}],101:[function(require,module,exports){
 var internalObjectKeys = require('../internals/object-keys-internal');
 var enumBugKeys = require('../internals/enum-bug-keys');
 
@@ -7024,7 +3723,7 @@ module.exports = Object.keys || function keys(O) {
   return internalObjectKeys(O, enumBugKeys);
 };
 
-},{"../internals/enum-bug-keys":65,"../internals/object-keys-internal":107}],109:[function(require,module,exports){
+},{"../internals/enum-bug-keys":58,"../internals/object-keys-internal":100}],102:[function(require,module,exports){
 'use strict';
 var $propertyIsEnumerable = {}.propertyIsEnumerable;
 // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
@@ -7040,7 +3739,7 @@ exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
   return !!descriptor && descriptor.enumerable;
 } : $propertyIsEnumerable;
 
-},{}],110:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 /* eslint-disable no-proto -- safe */
 var anObject = require('../internals/an-object');
 var aPossiblePrototype = require('../internals/a-possible-prototype');
@@ -7068,7 +3767,7 @@ module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
   };
 }() : undefined);
 
-},{"../internals/a-possible-prototype":33,"../internals/an-object":36}],111:[function(require,module,exports){
+},{"../internals/a-possible-prototype":27,"../internals/an-object":30}],104:[function(require,module,exports){
 'use strict';
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var classof = require('../internals/classof');
@@ -7079,7 +3778,7 @@ module.exports = TO_STRING_TAG_SUPPORT ? {}.toString : function toString() {
   return '[object ' + classof(this) + ']';
 };
 
-},{"../internals/classof":48,"../internals/to-string-tag-support":131}],112:[function(require,module,exports){
+},{"../internals/classof":41,"../internals/to-string-tag-support":124}],105:[function(require,module,exports){
 var getBuiltIn = require('../internals/get-built-in');
 var getOwnPropertyNamesModule = require('../internals/object-get-own-property-names');
 var getOwnPropertySymbolsModule = require('../internals/object-get-own-property-symbols');
@@ -7092,12 +3791,12 @@ module.exports = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
 };
 
-},{"../internals/an-object":36,"../internals/get-built-in":71,"../internals/object-get-own-property-names":104,"../internals/object-get-own-property-symbols":105}],113:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/get-built-in":64,"../internals/object-get-own-property-names":97,"../internals/object-get-own-property-symbols":98}],106:[function(require,module,exports){
 var global = require('../internals/global');
 
 module.exports = global;
 
-},{"../internals/global":74}],114:[function(require,module,exports){
+},{"../internals/global":67}],107:[function(require,module,exports){
 var redefine = require('../internals/redefine');
 
 module.exports = function (target, src, options) {
@@ -7105,7 +3804,7 @@ module.exports = function (target, src, options) {
   return target;
 };
 
-},{"../internals/redefine":115}],115:[function(require,module,exports){
+},{"../internals/redefine":108}],108:[function(require,module,exports){
 var global = require('../internals/global');
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
 var has = require('../internals/has');
@@ -7147,7 +3846,7 @@ var TEMPLATE = String(String).split('String');
   return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
 });
 
-},{"../internals/create-non-enumerable-property":54,"../internals/global":74,"../internals/has":75,"../internals/inspect-source":81,"../internals/internal-state":83,"../internals/set-global":117}],116:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":47,"../internals/global":67,"../internals/has":68,"../internals/inspect-source":74,"../internals/internal-state":76,"../internals/set-global":110}],109:[function(require,module,exports){
 // `RequireObjectCoercible` abstract operation
 // https://tc39.es/ecma262/#sec-requireobjectcoercible
 module.exports = function (it) {
@@ -7155,7 +3854,7 @@ module.exports = function (it) {
   return it;
 };
 
-},{}],117:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 var global = require('../internals/global');
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
 
@@ -7167,7 +3866,7 @@ module.exports = function (key, value) {
   } return value;
 };
 
-},{"../internals/create-non-enumerable-property":54,"../internals/global":74}],118:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":47,"../internals/global":67}],111:[function(require,module,exports){
 var defineProperty = require('../internals/object-define-property').f;
 var has = require('../internals/has');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -7180,7 +3879,7 @@ module.exports = function (it, TAG, STATIC) {
   }
 };
 
-},{"../internals/has":75,"../internals/object-define-property":101,"../internals/well-known-symbol":135}],119:[function(require,module,exports){
+},{"../internals/has":68,"../internals/object-define-property":94,"../internals/well-known-symbol":128}],112:[function(require,module,exports){
 var shared = require('../internals/shared');
 var uid = require('../internals/uid');
 
@@ -7190,7 +3889,7 @@ module.exports = function (key) {
   return keys[key] || (keys[key] = uid(key));
 };
 
-},{"../internals/shared":121,"../internals/uid":132}],120:[function(require,module,exports){
+},{"../internals/shared":114,"../internals/uid":125}],113:[function(require,module,exports){
 var global = require('../internals/global');
 var setGlobal = require('../internals/set-global');
 
@@ -7199,7 +3898,7 @@ var store = global[SHARED] || setGlobal(SHARED, {});
 
 module.exports = store;
 
-},{"../internals/global":74,"../internals/set-global":117}],121:[function(require,module,exports){
+},{"../internals/global":67,"../internals/set-global":110}],114:[function(require,module,exports){
 var IS_PURE = require('../internals/is-pure');
 var store = require('../internals/shared-store');
 
@@ -7211,7 +3910,7 @@ var store = require('../internals/shared-store');
   copyright: '© 2021 Denis Pushkarev (zloirock.ru)'
 });
 
-},{"../internals/is-pure":88,"../internals/shared-store":120}],122:[function(require,module,exports){
+},{"../internals/is-pure":81,"../internals/shared-store":113}],115:[function(require,module,exports){
 var toInteger = require('../internals/to-integer');
 var requireObjectCoercible = require('../internals/require-object-coercible');
 
@@ -7240,7 +3939,7 @@ module.exports = {
   charAt: createMethod(true)
 };
 
-},{"../internals/require-object-coercible":116,"../internals/to-integer":127}],123:[function(require,module,exports){
+},{"../internals/require-object-coercible":109,"../internals/to-integer":120}],116:[function(require,module,exports){
 'use strict';
 // based on https://github.com/bestiejs/punycode.js/blob/master/punycode.js
 var maxInt = 2147483647; // aka. 0x7FFFFFFF or 2^31-1
@@ -7410,7 +4109,7 @@ module.exports = function (input) {
   return encoded.join('.');
 };
 
-},{}],124:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 var requireObjectCoercible = require('../internals/require-object-coercible');
 var whitespaces = require('../internals/whitespaces');
 
@@ -7440,7 +4139,7 @@ module.exports = {
   trim: createMethod(3)
 };
 
-},{"../internals/require-object-coercible":116,"../internals/whitespaces":136}],125:[function(require,module,exports){
+},{"../internals/require-object-coercible":109,"../internals/whitespaces":129}],118:[function(require,module,exports){
 var toInteger = require('../internals/to-integer');
 
 var max = Math.max;
@@ -7454,7 +4153,7 @@ module.exports = function (index, length) {
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-},{"../internals/to-integer":127}],126:[function(require,module,exports){
+},{"../internals/to-integer":120}],119:[function(require,module,exports){
 // toObject with fallback for non-array-like ES3 strings
 var IndexedObject = require('../internals/indexed-object');
 var requireObjectCoercible = require('../internals/require-object-coercible');
@@ -7463,7 +4162,7 @@ module.exports = function (it) {
   return IndexedObject(requireObjectCoercible(it));
 };
 
-},{"../internals/indexed-object":79,"../internals/require-object-coercible":116}],127:[function(require,module,exports){
+},{"../internals/indexed-object":72,"../internals/require-object-coercible":109}],120:[function(require,module,exports){
 var ceil = Math.ceil;
 var floor = Math.floor;
 
@@ -7473,7 +4172,7 @@ module.exports = function (argument) {
   return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
 };
 
-},{}],128:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 var toInteger = require('../internals/to-integer');
 
 var min = Math.min;
@@ -7484,7 +4183,7 @@ module.exports = function (argument) {
   return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
 };
 
-},{"../internals/to-integer":127}],129:[function(require,module,exports){
+},{"../internals/to-integer":120}],122:[function(require,module,exports){
 var requireObjectCoercible = require('../internals/require-object-coercible');
 
 // `ToObject` abstract operation
@@ -7493,7 +4192,7 @@ module.exports = function (argument) {
   return Object(requireObjectCoercible(argument));
 };
 
-},{"../internals/require-object-coercible":116}],130:[function(require,module,exports){
+},{"../internals/require-object-coercible":109}],123:[function(require,module,exports){
 var isObject = require('../internals/is-object');
 
 // `ToPrimitive` abstract operation
@@ -7509,7 +4208,7 @@ module.exports = function (input, PREFERRED_STRING) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-},{"../internals/is-object":87}],131:[function(require,module,exports){
+},{"../internals/is-object":80}],124:[function(require,module,exports){
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
@@ -7519,7 +4218,7 @@ test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
 
-},{"../internals/well-known-symbol":135}],132:[function(require,module,exports){
+},{"../internals/well-known-symbol":128}],125:[function(require,module,exports){
 var id = 0;
 var postfix = Math.random();
 
@@ -7527,7 +4226,7 @@ module.exports = function (key) {
   return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
 };
 
-},{}],133:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 /* eslint-disable es/no-symbol -- required for testing */
 var NATIVE_SYMBOL = require('../internals/native-symbol');
 
@@ -7535,12 +4234,12 @@ module.exports = NATIVE_SYMBOL
   && !Symbol.sham
   && typeof Symbol.iterator == 'symbol';
 
-},{"../internals/native-symbol":93}],134:[function(require,module,exports){
+},{"../internals/native-symbol":86}],127:[function(require,module,exports){
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 exports.f = wellKnownSymbol;
 
-},{"../internals/well-known-symbol":135}],135:[function(require,module,exports){
+},{"../internals/well-known-symbol":128}],128:[function(require,module,exports){
 var global = require('../internals/global');
 var shared = require('../internals/shared');
 var has = require('../internals/has');
@@ -7562,12 +4261,12 @@ module.exports = function (name) {
   } return WellKnownSymbolsStore[name];
 };
 
-},{"../internals/global":74,"../internals/has":75,"../internals/native-symbol":93,"../internals/shared":121,"../internals/uid":132,"../internals/use-symbol-as-uid":133}],136:[function(require,module,exports){
+},{"../internals/global":67,"../internals/has":68,"../internals/native-symbol":86,"../internals/shared":114,"../internals/uid":125,"../internals/use-symbol-as-uid":126}],129:[function(require,module,exports){
 // a string of all valid unicode whitespaces
 module.exports = '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u2002' +
   '\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF';
 
-},{}],137:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var fails = require('../internals/fails');
@@ -7630,36 +4329,7 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
   }
 });
 
-},{"../internals/array-method-has-species-support":41,"../internals/array-species-create":44,"../internals/create-property":56,"../internals/engine-v8-version":64,"../internals/export":66,"../internals/fails":67,"../internals/is-array":85,"../internals/is-object":87,"../internals/to-length":128,"../internals/to-object":129,"../internals/well-known-symbol":135}],138:[function(require,module,exports){
-'use strict';
-var $ = require('../internals/export');
-var $filter = require('../internals/array-iteration').filter;
-var arrayMethodHasSpeciesSupport = require('../internals/array-method-has-species-support');
-
-var HAS_SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('filter');
-
-// `Array.prototype.filter` method
-// https://tc39.es/ecma262/#sec-array.prototype.filter
-// with adding support of @@species
-$({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
-  filter: function filter(callbackfn /* , thisArg */) {
-    return $filter(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
-  }
-});
-
-},{"../internals/array-iteration":40,"../internals/array-method-has-species-support":41,"../internals/export":66}],139:[function(require,module,exports){
-'use strict';
-var $ = require('../internals/export');
-var forEach = require('../internals/array-for-each');
-
-// `Array.prototype.forEach` method
-// https://tc39.es/ecma262/#sec-array.prototype.foreach
-// eslint-disable-next-line es/no-array-prototype-foreach -- safe
-$({ target: 'Array', proto: true, forced: [].forEach != forEach }, {
-  forEach: forEach
-});
-
-},{"../internals/array-for-each":37,"../internals/export":66}],140:[function(require,module,exports){
+},{"../internals/array-method-has-species-support":34,"../internals/array-species-create":37,"../internals/create-property":49,"../internals/engine-v8-version":57,"../internals/export":59,"../internals/fails":60,"../internals/is-array":78,"../internals/is-object":80,"../internals/to-length":121,"../internals/to-object":122,"../internals/well-known-symbol":128}],131:[function(require,module,exports){
 var $ = require('../internals/export');
 var from = require('../internals/array-from');
 var checkCorrectnessOfIteration = require('../internals/check-correctness-of-iteration');
@@ -7675,7 +4345,7 @@ $({ target: 'Array', stat: true, forced: INCORRECT_ITERATION }, {
   from: from
 });
 
-},{"../internals/array-from":38,"../internals/check-correctness-of-iteration":46,"../internals/export":66}],141:[function(require,module,exports){
+},{"../internals/array-from":31,"../internals/check-correctness-of-iteration":39,"../internals/export":59}],132:[function(require,module,exports){
 'use strict';
 /* eslint-disable es/no-array-prototype-indexof -- required for testing */
 var $ = require('../internals/export');
@@ -7698,7 +4368,7 @@ $({ target: 'Array', proto: true, forced: NEGATIVE_ZERO || !STRICT_METHOD }, {
   }
 });
 
-},{"../internals/array-includes":39,"../internals/array-method-is-strict":42,"../internals/export":66}],142:[function(require,module,exports){
+},{"../internals/array-includes":32,"../internals/array-method-is-strict":35,"../internals/export":59}],133:[function(require,module,exports){
 var $ = require('../internals/export');
 var isArray = require('../internals/is-array');
 
@@ -7708,7 +4378,7 @@ $({ target: 'Array', stat: true }, {
   isArray: isArray
 });
 
-},{"../internals/export":66,"../internals/is-array":85}],143:[function(require,module,exports){
+},{"../internals/export":59,"../internals/is-array":78}],134:[function(require,module,exports){
 'use strict';
 var toIndexedObject = require('../internals/to-indexed-object');
 var addToUnscopables = require('../internals/add-to-unscopables');
@@ -7763,7 +4433,7 @@ addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
 
-},{"../internals/add-to-unscopables":34,"../internals/define-iterator":57,"../internals/internal-state":83,"../internals/iterators":92,"../internals/to-indexed-object":126}],144:[function(require,module,exports){
+},{"../internals/add-to-unscopables":28,"../internals/define-iterator":50,"../internals/internal-state":76,"../internals/iterators":85,"../internals/to-indexed-object":119}],135:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var IndexedObject = require('../internals/indexed-object');
@@ -7783,7 +4453,7 @@ $({ target: 'Array', proto: true, forced: ES3_STRINGS || !STRICT_METHOD }, {
   }
 });
 
-},{"../internals/array-method-is-strict":42,"../internals/export":66,"../internals/indexed-object":79,"../internals/to-indexed-object":126}],145:[function(require,module,exports){
+},{"../internals/array-method-is-strict":35,"../internals/export":59,"../internals/indexed-object":72,"../internals/to-indexed-object":119}],136:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $map = require('../internals/array-iteration').map;
@@ -7800,7 +4470,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
   }
 });
 
-},{"../internals/array-iteration":40,"../internals/array-method-has-species-support":41,"../internals/export":66}],146:[function(require,module,exports){
+},{"../internals/array-iteration":33,"../internals/array-method-has-species-support":34,"../internals/export":59}],137:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $reduce = require('../internals/array-reduce').left;
@@ -7821,7 +4491,7 @@ $({ target: 'Array', proto: true, forced: !STRICT_METHOD || CHROME_BUG }, {
   }
 });
 
-},{"../internals/array-method-is-strict":42,"../internals/array-reduce":43,"../internals/engine-is-node":62,"../internals/engine-v8-version":64,"../internals/export":66}],147:[function(require,module,exports){
+},{"../internals/array-method-is-strict":35,"../internals/array-reduce":36,"../internals/engine-is-node":55,"../internals/engine-v8-version":57,"../internals/export":59}],138:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var isObject = require('../internals/is-object');
@@ -7870,7 +4540,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
   }
 });
 
-},{"../internals/array-method-has-species-support":41,"../internals/create-property":56,"../internals/export":66,"../internals/is-array":85,"../internals/is-object":87,"../internals/to-absolute-index":125,"../internals/to-indexed-object":126,"../internals/to-length":128,"../internals/well-known-symbol":135}],148:[function(require,module,exports){
+},{"../internals/array-method-has-species-support":34,"../internals/create-property":49,"../internals/export":59,"../internals/is-array":78,"../internals/is-object":80,"../internals/to-absolute-index":118,"../internals/to-indexed-object":119,"../internals/to-length":121,"../internals/well-known-symbol":128}],139:[function(require,module,exports){
 var $ = require('../internals/export');
 
 // `Date.now` method
@@ -7881,7 +4551,7 @@ $({ target: 'Date', stat: true }, {
   }
 });
 
-},{"../internals/export":66}],149:[function(require,module,exports){
+},{"../internals/export":59}],140:[function(require,module,exports){
 var redefine = require('../internals/redefine');
 
 var DatePrototype = Date.prototype;
@@ -7900,7 +4570,7 @@ if (new Date(NaN) + '' != INVALID_DATE) {
   });
 }
 
-},{"../internals/redefine":115}],150:[function(require,module,exports){
+},{"../internals/redefine":108}],141:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var defineProperty = require('../internals/object-define-property').f;
 
@@ -7924,7 +4594,7 @@ if (DESCRIPTORS && !(NAME in FunctionPrototype)) {
   });
 }
 
-},{"../internals/descriptors":59,"../internals/object-define-property":101}],151:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/object-define-property":94}],142:[function(require,module,exports){
 var $ = require('../internals/export');
 var assign = require('../internals/object-assign');
 
@@ -7935,7 +4605,7 @@ $({ target: 'Object', stat: true, forced: Object.assign !== assign }, {
   assign: assign
 });
 
-},{"../internals/export":66,"../internals/object-assign":98}],152:[function(require,module,exports){
+},{"../internals/export":59,"../internals/object-assign":91}],143:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var create = require('../internals/object-create');
@@ -7946,7 +4616,7 @@ $({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
   create: create
 });
 
-},{"../internals/descriptors":59,"../internals/export":66,"../internals/object-create":99}],153:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/export":59,"../internals/object-create":92}],144:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var defineProperties = require('../internals/object-define-properties');
@@ -7957,7 +4627,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperties: defineProperties
 });
 
-},{"../internals/descriptors":59,"../internals/export":66,"../internals/object-define-properties":100}],154:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/export":59,"../internals/object-define-properties":93}],145:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var objectDefinePropertyModile = require('../internals/object-define-property');
@@ -7968,7 +4638,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperty: objectDefinePropertyModile.f
 });
 
-},{"../internals/descriptors":59,"../internals/export":66,"../internals/object-define-property":101}],155:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/export":59,"../internals/object-define-property":94}],146:[function(require,module,exports){
 var $ = require('../internals/export');
 var FREEZING = require('../internals/freezing');
 var fails = require('../internals/fails');
@@ -7987,7 +4657,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES, sham: !FREEZING }
   }
 });
 
-},{"../internals/export":66,"../internals/fails":67,"../internals/freezing":68,"../internals/internal-metadata":82,"../internals/is-object":87}],156:[function(require,module,exports){
+},{"../internals/export":59,"../internals/fails":60,"../internals/freezing":61,"../internals/internal-metadata":75,"../internals/is-object":80}],147:[function(require,module,exports){
 var $ = require('../internals/export');
 var fails = require('../internals/fails');
 var toIndexedObject = require('../internals/to-indexed-object');
@@ -8005,33 +4675,7 @@ $({ target: 'Object', stat: true, forced: FORCED, sham: !DESCRIPTORS }, {
   }
 });
 
-},{"../internals/descriptors":59,"../internals/export":66,"../internals/fails":67,"../internals/object-get-own-property-descriptor":102,"../internals/to-indexed-object":126}],157:[function(require,module,exports){
-var $ = require('../internals/export');
-var DESCRIPTORS = require('../internals/descriptors');
-var ownKeys = require('../internals/own-keys');
-var toIndexedObject = require('../internals/to-indexed-object');
-var getOwnPropertyDescriptorModule = require('../internals/object-get-own-property-descriptor');
-var createProperty = require('../internals/create-property');
-
-// `Object.getOwnPropertyDescriptors` method
-// https://tc39.es/ecma262/#sec-object.getownpropertydescriptors
-$({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
-  getOwnPropertyDescriptors: function getOwnPropertyDescriptors(object) {
-    var O = toIndexedObject(object);
-    var getOwnPropertyDescriptor = getOwnPropertyDescriptorModule.f;
-    var keys = ownKeys(O);
-    var result = {};
-    var index = 0;
-    var key, descriptor;
-    while (keys.length > index) {
-      descriptor = getOwnPropertyDescriptor(O, key = keys[index++]);
-      if (descriptor !== undefined) createProperty(result, key, descriptor);
-    }
-    return result;
-  }
-});
-
-},{"../internals/create-property":56,"../internals/descriptors":59,"../internals/export":66,"../internals/object-get-own-property-descriptor":102,"../internals/own-keys":112,"../internals/to-indexed-object":126}],158:[function(require,module,exports){
+},{"../internals/descriptors":52,"../internals/export":59,"../internals/fails":60,"../internals/object-get-own-property-descriptor":95,"../internals/to-indexed-object":119}],148:[function(require,module,exports){
 var $ = require('../internals/export');
 var fails = require('../internals/fails');
 var toObject = require('../internals/to-object');
@@ -8049,7 +4693,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES, sham: !CORRECT_PR
 });
 
 
-},{"../internals/correct-prototype-getter":52,"../internals/export":66,"../internals/fails":67,"../internals/object-get-prototype-of":106,"../internals/to-object":129}],159:[function(require,module,exports){
+},{"../internals/correct-prototype-getter":45,"../internals/export":59,"../internals/fails":60,"../internals/object-get-prototype-of":99,"../internals/to-object":122}],149:[function(require,module,exports){
 var $ = require('../internals/export');
 var toObject = require('../internals/to-object');
 var nativeKeys = require('../internals/object-keys');
@@ -8065,7 +4709,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES }, {
   }
 });
 
-},{"../internals/export":66,"../internals/fails":67,"../internals/object-keys":108,"../internals/to-object":129}],160:[function(require,module,exports){
+},{"../internals/export":59,"../internals/fails":60,"../internals/object-keys":101,"../internals/to-object":122}],150:[function(require,module,exports){
 var $ = require('../internals/export');
 var setPrototypeOf = require('../internals/object-set-prototype-of');
 
@@ -8075,7 +4719,7 @@ $({ target: 'Object', stat: true }, {
   setPrototypeOf: setPrototypeOf
 });
 
-},{"../internals/export":66,"../internals/object-set-prototype-of":110}],161:[function(require,module,exports){
+},{"../internals/export":59,"../internals/object-set-prototype-of":103}],151:[function(require,module,exports){
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var redefine = require('../internals/redefine');
 var toString = require('../internals/object-to-string');
@@ -8086,7 +4730,7 @@ if (!TO_STRING_TAG_SUPPORT) {
   redefine(Object.prototype, 'toString', toString, { unsafe: true });
 }
 
-},{"../internals/object-to-string":111,"../internals/redefine":115,"../internals/to-string-tag-support":131}],162:[function(require,module,exports){
+},{"../internals/object-to-string":104,"../internals/redefine":108,"../internals/to-string-tag-support":124}],152:[function(require,module,exports){
 var $ = require('../internals/export');
 var parseFloatImplementation = require('../internals/number-parse-float');
 
@@ -8096,7 +4740,7 @@ $({ global: true, forced: parseFloat != parseFloatImplementation }, {
   parseFloat: parseFloatImplementation
 });
 
-},{"../internals/export":66,"../internals/number-parse-float":96}],163:[function(require,module,exports){
+},{"../internals/export":59,"../internals/number-parse-float":89}],153:[function(require,module,exports){
 var $ = require('../internals/export');
 var parseIntImplementation = require('../internals/number-parse-int');
 
@@ -8106,7 +4750,7 @@ $({ global: true, forced: parseInt != parseIntImplementation }, {
   parseInt: parseIntImplementation
 });
 
-},{"../internals/export":66,"../internals/number-parse-int":97}],164:[function(require,module,exports){
+},{"../internals/export":59,"../internals/number-parse-int":90}],154:[function(require,module,exports){
 var $ = require('../internals/export');
 var getBuiltIn = require('../internals/get-built-in');
 var aFunction = require('../internals/a-function');
@@ -8159,7 +4803,7 @@ $({ target: 'Reflect', stat: true, forced: FORCED, sham: FORCED }, {
   }
 });
 
-},{"../internals/a-function":32,"../internals/an-object":36,"../internals/export":66,"../internals/fails":67,"../internals/function-bind":70,"../internals/get-built-in":71,"../internals/is-object":87,"../internals/object-create":99}],165:[function(require,module,exports){
+},{"../internals/a-function":26,"../internals/an-object":30,"../internals/export":59,"../internals/fails":60,"../internals/function-bind":63,"../internals/get-built-in":64,"../internals/is-object":80,"../internals/object-create":92}],155:[function(require,module,exports){
 'use strict';
 var charAt = require('../internals/string-multibyte').charAt;
 var InternalStateModule = require('../internals/internal-state');
@@ -8190,7 +4834,7 @@ defineIterator(String, 'String', function (iterated) {
   return { value: point, done: false };
 });
 
-},{"../internals/define-iterator":57,"../internals/internal-state":83,"../internals/string-multibyte":122}],166:[function(require,module,exports){
+},{"../internals/define-iterator":50,"../internals/internal-state":76,"../internals/string-multibyte":115}],156:[function(require,module,exports){
 // `Symbol.prototype.description` getter
 // https://tc39.es/ecma262/#sec-symbol.prototype.description
 'use strict';
@@ -8242,14 +4886,14 @@ if (DESCRIPTORS && typeof NativeSymbol == 'function' && (!('description' in Nati
   });
 }
 
-},{"../internals/copy-constructor-properties":51,"../internals/descriptors":59,"../internals/export":66,"../internals/global":74,"../internals/has":75,"../internals/is-object":87,"../internals/object-define-property":101}],167:[function(require,module,exports){
+},{"../internals/copy-constructor-properties":44,"../internals/descriptors":52,"../internals/export":59,"../internals/global":67,"../internals/has":68,"../internals/is-object":80,"../internals/object-define-property":94}],157:[function(require,module,exports){
 var defineWellKnownSymbol = require('../internals/define-well-known-symbol');
 
 // `Symbol.iterator` well-known symbol
 // https://tc39.es/ecma262/#sec-symbol.iterator
 defineWellKnownSymbol('iterator');
 
-},{"../internals/define-well-known-symbol":58}],168:[function(require,module,exports){
+},{"../internals/define-well-known-symbol":51}],158:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var global = require('../internals/global');
@@ -8562,7 +5206,7 @@ setToStringTag($Symbol, SYMBOL);
 
 hiddenKeys[HIDDEN] = true;
 
-},{"../internals/an-object":36,"../internals/array-iteration":40,"../internals/create-non-enumerable-property":54,"../internals/create-property-descriptor":55,"../internals/define-well-known-symbol":58,"../internals/descriptors":59,"../internals/export":66,"../internals/fails":67,"../internals/get-built-in":71,"../internals/global":74,"../internals/has":75,"../internals/hidden-keys":76,"../internals/internal-state":83,"../internals/is-array":85,"../internals/is-object":87,"../internals/is-pure":88,"../internals/native-symbol":93,"../internals/object-create":99,"../internals/object-define-property":101,"../internals/object-get-own-property-descriptor":102,"../internals/object-get-own-property-names":104,"../internals/object-get-own-property-names-external":103,"../internals/object-get-own-property-symbols":105,"../internals/object-keys":108,"../internals/object-property-is-enumerable":109,"../internals/redefine":115,"../internals/set-to-string-tag":118,"../internals/shared":121,"../internals/shared-key":119,"../internals/to-indexed-object":126,"../internals/to-object":129,"../internals/to-primitive":130,"../internals/uid":132,"../internals/use-symbol-as-uid":133,"../internals/well-known-symbol":135,"../internals/well-known-symbol-wrapped":134}],169:[function(require,module,exports){
+},{"../internals/an-object":30,"../internals/array-iteration":33,"../internals/create-non-enumerable-property":47,"../internals/create-property-descriptor":48,"../internals/define-well-known-symbol":51,"../internals/descriptors":52,"../internals/export":59,"../internals/fails":60,"../internals/get-built-in":64,"../internals/global":67,"../internals/has":68,"../internals/hidden-keys":69,"../internals/internal-state":76,"../internals/is-array":78,"../internals/is-object":80,"../internals/is-pure":81,"../internals/native-symbol":86,"../internals/object-create":92,"../internals/object-define-property":94,"../internals/object-get-own-property-descriptor":95,"../internals/object-get-own-property-names":97,"../internals/object-get-own-property-names-external":96,"../internals/object-get-own-property-symbols":98,"../internals/object-keys":101,"../internals/object-property-is-enumerable":102,"../internals/redefine":108,"../internals/set-to-string-tag":111,"../internals/shared":114,"../internals/shared-key":112,"../internals/to-indexed-object":119,"../internals/to-object":122,"../internals/to-primitive":123,"../internals/uid":125,"../internals/use-symbol-as-uid":126,"../internals/well-known-symbol":128,"../internals/well-known-symbol-wrapped":127}],159:[function(require,module,exports){
 'use strict';
 var global = require('../internals/global');
 var redefineAll = require('../internals/redefine-all');
@@ -8632,24 +5276,7 @@ if (NATIVE_WEAK_MAP && IS_IE11) {
   });
 }
 
-},{"../internals/collection":50,"../internals/collection-weak":49,"../internals/global":74,"../internals/internal-metadata":82,"../internals/internal-state":83,"../internals/is-object":87,"../internals/native-weak-map":95,"../internals/redefine-all":114}],170:[function(require,module,exports){
-var global = require('../internals/global');
-var DOMIterables = require('../internals/dom-iterables');
-var forEach = require('../internals/array-for-each');
-var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
-
-for (var COLLECTION_NAME in DOMIterables) {
-  var Collection = global[COLLECTION_NAME];
-  var CollectionPrototype = Collection && Collection.prototype;
-  // some Chrome versions have non-configurable methods on DOMTokenList
-  if (CollectionPrototype && CollectionPrototype.forEach !== forEach) try {
-    createNonEnumerableProperty(CollectionPrototype, 'forEach', forEach);
-  } catch (error) {
-    CollectionPrototype.forEach = forEach;
-  }
-}
-
-},{"../internals/array-for-each":37,"../internals/create-non-enumerable-property":54,"../internals/dom-iterables":61,"../internals/global":74}],171:[function(require,module,exports){
+},{"../internals/collection":43,"../internals/collection-weak":42,"../internals/global":67,"../internals/internal-metadata":75,"../internals/internal-state":76,"../internals/is-object":80,"../internals/native-weak-map":88,"../internals/redefine-all":107}],160:[function(require,module,exports){
 var global = require('../internals/global');
 var DOMIterables = require('../internals/dom-iterables');
 var ArrayIteratorMethods = require('../modules/es.array.iterator');
@@ -8684,7 +5311,7 @@ for (var COLLECTION_NAME in DOMIterables) {
   }
 }
 
-},{"../internals/create-non-enumerable-property":54,"../internals/dom-iterables":61,"../internals/global":74,"../internals/well-known-symbol":135,"../modules/es.array.iterator":143}],172:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":47,"../internals/dom-iterables":54,"../internals/global":67,"../internals/well-known-symbol":128,"../modules/es.array.iterator":134}],161:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.array.iterator');
@@ -9033,7 +5660,7 @@ module.exports = {
   getState: getInternalParamsState
 };
 
-},{"../internals/an-instance":35,"../internals/an-object":36,"../internals/classof":48,"../internals/create-iterator-constructor":53,"../internals/create-property-descriptor":55,"../internals/export":66,"../internals/function-bind-context":69,"../internals/get-built-in":71,"../internals/get-iterator":73,"../internals/get-iterator-method":72,"../internals/has":75,"../internals/internal-state":83,"../internals/is-object":87,"../internals/native-url":94,"../internals/object-create":99,"../internals/redefine":115,"../internals/redefine-all":114,"../internals/set-to-string-tag":118,"../internals/well-known-symbol":135,"../modules/es.array.iterator":143}],173:[function(require,module,exports){
+},{"../internals/an-instance":29,"../internals/an-object":30,"../internals/classof":41,"../internals/create-iterator-constructor":46,"../internals/create-property-descriptor":48,"../internals/export":59,"../internals/function-bind-context":62,"../internals/get-built-in":64,"../internals/get-iterator":66,"../internals/get-iterator-method":65,"../internals/has":68,"../internals/internal-state":76,"../internals/is-object":80,"../internals/native-url":87,"../internals/object-create":92,"../internals/redefine":108,"../internals/redefine-all":107,"../internals/set-to-string-tag":111,"../internals/well-known-symbol":128,"../modules/es.array.iterator":134}],162:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.string.iterator');
@@ -10040,7 +6667,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
   URL: URLConstructor
 });
 
-},{"../internals/an-instance":35,"../internals/array-from":38,"../internals/descriptors":59,"../internals/export":66,"../internals/global":74,"../internals/has":75,"../internals/internal-state":83,"../internals/native-url":94,"../internals/object-assign":98,"../internals/object-define-properties":100,"../internals/redefine":115,"../internals/set-to-string-tag":118,"../internals/string-multibyte":122,"../internals/string-punycode-to-ascii":123,"../modules/es.string.iterator":165,"../modules/web.url-search-params":172}],174:[function(require,module,exports){
+},{"../internals/an-instance":29,"../internals/array-from":31,"../internals/descriptors":52,"../internals/export":59,"../internals/global":67,"../internals/has":68,"../internals/internal-state":76,"../internals/native-url":87,"../internals/object-assign":91,"../internals/object-define-properties":93,"../internals/redefine":108,"../internals/set-to-string-tag":111,"../internals/string-multibyte":115,"../internals/string-punycode-to-ascii":116,"../modules/es.string.iterator":155,"../modules/web.url-search-params":161}],163:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -10539,7 +7166,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],175:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -18637,7 +15264,7 @@ exports.useViewportScroll = useViewportScroll;
 exports.visualElement = visualElement;
 
 }).call(this)}).call(this,require('_process'))
-},{"@emotion/is-prop-valid":8,"_process":183,"framesync":177,"hey-listen":178,"popmotion":181,"react":199,"style-value-types":206,"tslib":176}],176:[function(require,module,exports){
+},{"@emotion/is-prop-valid":8,"_process":172,"framesync":166,"hey-listen":167,"popmotion":170,"react":186,"style-value-types":193,"tslib":165}],165:[function(require,module,exports){
 (function (global){(function (){
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -18943,7 +15570,7 @@ var __createBinding;
 });
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],177:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -19075,7 +15702,7 @@ exports.default = sync;
 exports.flushSync = flushSync;
 exports.getFrameData = getFrameData;
 
-},{}],178:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -19097,7 +15724,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":183}],179:[function(require,module,exports){
+},{"_process":172}],168:[function(require,module,exports){
 (function (global){(function (){
 /**
  * @license
@@ -36310,7 +32937,7 @@ if (process.env.NODE_ENV !== 'production') {
 }.call(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],180:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -36402,7 +33029,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],181:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -37392,9 +34019,9 @@ exports.velocityPerFrame = velocityPerFrame;
 exports.velocityPerSecond = velocityPerSecond;
 exports.wrap = wrap;
 
-},{"framesync":177,"hey-listen":178,"style-value-types":206,"tslib":182}],182:[function(require,module,exports){
-arguments[4][176][0].apply(exports,arguments)
-},{"dup":176}],183:[function(require,module,exports){
+},{"framesync":166,"hey-listen":167,"style-value-types":193,"tslib":171}],171:[function(require,module,exports){
+arguments[4][165][0].apply(exports,arguments)
+},{"dup":165}],172:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -37580,7 +34207,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],184:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -37684,7 +34311,7 @@ checkPropTypes.resetWarningCache = function() {
 
 module.exports = checkPropTypes;
 
-},{"./lib/ReactPropTypesSecret":188}],185:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":177}],174:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -37750,7 +34377,7 @@ module.exports = function() {
   return ReactPropTypes;
 };
 
-},{"./lib/ReactPropTypesSecret":188}],186:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":177}],175:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -38343,7 +34970,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
   return ReactPropTypes;
 };
 
-},{"./checkPropTypes":184,"./lib/ReactPropTypesSecret":188,"object-assign":180,"react-is":195}],187:[function(require,module,exports){
+},{"./checkPropTypes":173,"./lib/ReactPropTypesSecret":177,"object-assign":169,"react-is":183}],176:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -38364,7 +34991,7 @@ if ("development" !== 'production') {
   module.exports = require('./factoryWithThrowingShims')();
 }
 
-},{"./factoryWithThrowingShims":185,"./factoryWithTypeCheckers":186,"react-is":195}],188:[function(require,module,exports){
+},{"./factoryWithThrowingShims":174,"./factoryWithTypeCheckers":175,"react-is":183}],177:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -38378,160 +35005,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],189:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-let updateQueue = makeQueue();
-const raf = (fn) => schedule(fn, updateQueue);
-let writeQueue = makeQueue();
-raf.write = (fn) => schedule(fn, writeQueue);
-let onStartQueue = makeQueue();
-raf.onStart = (fn) => schedule(fn, onStartQueue);
-let onFrameQueue = makeQueue();
-raf.onFrame = (fn) => schedule(fn, onFrameQueue);
-let onFinishQueue = makeQueue();
-raf.onFinish = (fn) => schedule(fn, onFinishQueue);
-let timeouts = [];
-raf.setTimeout = (handler, ms) => {
-  let time = raf.now() + ms;
-  let cancel = () => {
-    let i = timeouts.findIndex((t) => t.cancel == cancel);
-    if (~i)
-      timeouts.splice(i, 1);
-    __raf.count -= ~i ? 1 : 0;
-  };
-  let timeout = {time, handler, cancel};
-  timeouts.splice(findTimeout(time), 0, timeout);
-  __raf.count += 1;
-  start();
-  return timeout;
-};
-let findTimeout = (time) => ~(~timeouts.findIndex((t) => t.time > time) || ~timeouts.length);
-raf.cancel = (fn) => {
-  updateQueue.delete(fn);
-  writeQueue.delete(fn);
-};
-raf.sync = (fn) => {
-  sync = true;
-  raf.batchedUpdates(fn);
-  sync = false;
-};
-raf.throttle = (fn) => {
-  let lastArgs;
-  function queuedFn() {
-    try {
-      fn(...lastArgs);
-    } finally {
-      lastArgs = null;
-    }
-  }
-  function throttled(...args) {
-    lastArgs = args;
-    raf.onStart(queuedFn);
-  }
-  throttled.handler = fn;
-  throttled.cancel = () => {
-    onStartQueue.delete(queuedFn);
-    lastArgs = null;
-  };
-  return throttled;
-};
-let nativeRaf = typeof window != "undefined" ? window.requestAnimationFrame : () => {
-};
-raf.use = (impl) => nativeRaf = impl;
-raf.now = typeof performance != "undefined" ? () => performance.now() : Date.now;
-raf.batchedUpdates = (fn) => fn();
-raf.catch = console.error;
-let ts = -1;
-let sync = false;
-function schedule(fn, queue) {
-  if (sync) {
-    queue.delete(fn);
-    fn(0);
-  } else {
-    queue.add(fn);
-    start();
-  }
-}
-function start() {
-  if (ts < 0) {
-    ts = 0;
-    nativeRaf(loop);
-  }
-}
-function loop() {
-  if (~ts) {
-    nativeRaf(loop);
-    raf.batchedUpdates(update);
-  }
-}
-function update() {
-  let prevTs = ts;
-  ts = raf.now();
-  let count = findTimeout(ts);
-  if (count) {
-    eachSafely(timeouts.splice(0, count), (t) => t.handler());
-    __raf.count -= count;
-  }
-  onStartQueue.flush();
-  updateQueue.flush(prevTs ? Math.min(64, ts - prevTs) : 16.667);
-  onFrameQueue.flush();
-  writeQueue.flush();
-  onFinishQueue.flush();
-}
-function makeQueue() {
-  let next = new Set();
-  let current = next;
-  return {
-    add(fn) {
-      __raf.count += current == next && !next.has(fn) ? 1 : 0;
-      next.add(fn);
-    },
-    delete(fn) {
-      __raf.count -= current == next && next.has(fn) ? 1 : 0;
-      return next.delete(fn);
-    },
-    flush(arg) {
-      if (current.size) {
-        next = new Set();
-        __raf.count -= current.size;
-        eachSafely(current, (fn) => fn(arg) && next.add(fn));
-        __raf.count += next.size;
-        current = next;
-      }
-    }
-  };
-}
-function eachSafely(values, each) {
-  values.forEach((value) => {
-    try {
-      each(value);
-    } catch (e) {
-      raf.catch(e);
-    }
-  });
-}
-const __raf = {
-  count: 0,
-  clear() {
-    ts = -1;
-    timeouts = [];
-    onStartQueue = makeQueue();
-    updateQueue = makeQueue();
-    onFrameQueue = makeQueue();
-    writeQueue = makeQueue();
-    onFinishQueue = makeQueue();
-    __raf.count = 0;
-  }
-};
-
-exports.__raf = __raf;
-exports.raf = raf;
-
-
-},{}],190:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 /** @license React v17.0.2
  * react-dom.development.js
  *
@@ -64795,7 +61269,7 @@ exports.version = ReactVersion;
   })();
 }
 
-},{"object-assign":180,"react":199,"scheduler":204,"scheduler/tracing":205}],191:[function(require,module,exports){
+},{"object-assign":169,"react":186,"scheduler":191,"scheduler/tracing":192}],179:[function(require,module,exports){
 /** @license React v17.0.2
  * react-dom.production.min.js
  *
@@ -65094,7 +61568,7 @@ exports.findDOMNode=function(a){if(null==a)return null;if(1===a.nodeType)return 
 exports.render=function(a,b,c){if(!rk(b))throw Error(y(200));return tk(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!rk(a))throw Error(y(40));return a._reactRootContainer?(Xj(function(){tk(null,null,a,!1,function(){a._reactRootContainer=null;a[ff]=null})}),!0):!1};exports.unstable_batchedUpdates=Wj;exports.unstable_createPortal=function(a,b){return uk(a,b,2<arguments.length&&void 0!==arguments[2]?arguments[2]:null)};
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!rk(c))throw Error(y(200));if(null==a||void 0===a._reactInternals)throw Error(y(38));return tk(a,b,c,!1,d)};exports.version="17.0.2";
 
-},{"object-assign":180,"react":199,"scheduler":204}],192:[function(require,module,exports){
+},{"object-assign":169,"react":186,"scheduler":191}],180:[function(require,module,exports){
 'use strict';
 
 function checkDCE() {
@@ -65134,7 +61608,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react-dom.development.js');
 }
 
-},{"./cjs/react-dom.development.js":190,"./cjs/react-dom.production.min.js":191}],193:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":178,"./cjs/react-dom.production.min.js":179}],181:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v16.13.1
  * react-is.development.js
@@ -65319,7 +61793,7 @@ exports.typeOf = typeOf;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":183}],194:[function(require,module,exports){
+},{"_process":172}],182:[function(require,module,exports){
 /** @license React v16.13.1
  * react-is.production.min.js
  *
@@ -65336,7 +61810,7 @@ exports.Profiler=g;exports.StrictMode=f;exports.Suspense=p;exports.isAsyncMode=f
 exports.isMemo=function(a){return z(a)===r};exports.isPortal=function(a){return z(a)===d};exports.isProfiler=function(a){return z(a)===g};exports.isStrictMode=function(a){return z(a)===f};exports.isSuspense=function(a){return z(a)===p};
 exports.isValidElementType=function(a){return"string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===w||a.$$typeof===x||a.$$typeof===y||a.$$typeof===v)};exports.typeOf=z;
 
-},{}],195:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -65347,25 +61821,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-is.development.js":193,"./cjs/react-is.production.min.js":194,"_process":183}],196:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var web = require('@react-spring/web');
-
-
-
-Object.keys(web).forEach(function (k) {
-	if (k !== 'default') Object.defineProperty(exports, k, {
-		enumerable: true,
-		get: function () {
-			return web[k];
-		}
-	});
-});
-
-},{"@react-spring/web":21}],197:[function(require,module,exports){
+},{"./cjs/react-is.development.js":181,"./cjs/react-is.production.min.js":182,"_process":172}],184:[function(require,module,exports){
 /** @license React v17.0.2
  * react.development.js
  *
@@ -67700,7 +64156,7 @@ exports.version = ReactVersion;
   })();
 }
 
-},{"object-assign":180}],198:[function(require,module,exports){
+},{"object-assign":169}],185:[function(require,module,exports){
 /** @license React v17.0.2
  * react.production.min.js
  *
@@ -67725,7 +64181,7 @@ key:d,ref:k,props:e,_owner:h}};exports.createContext=function(a,b){void 0===b&&(
 exports.lazy=function(a){return{$$typeof:v,_payload:{_status:-1,_result:a},_init:Q}};exports.memo=function(a,b){return{$$typeof:u,type:a,compare:void 0===b?null:b}};exports.useCallback=function(a,b){return S().useCallback(a,b)};exports.useContext=function(a,b){return S().useContext(a,b)};exports.useDebugValue=function(){};exports.useEffect=function(a,b){return S().useEffect(a,b)};exports.useImperativeHandle=function(a,b,c){return S().useImperativeHandle(a,b,c)};
 exports.useLayoutEffect=function(a,b){return S().useLayoutEffect(a,b)};exports.useMemo=function(a,b){return S().useMemo(a,b)};exports.useReducer=function(a,b,c){return S().useReducer(a,b,c)};exports.useRef=function(a){return S().useRef(a)};exports.useState=function(a){return S().useState(a)};exports.version="17.0.2";
 
-},{"object-assign":180}],199:[function(require,module,exports){
+},{"object-assign":169}],186:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -67734,7 +64190,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react.development.js');
 }
 
-},{"./cjs/react.development.js":197,"./cjs/react.production.min.js":198}],200:[function(require,module,exports){
+},{"./cjs/react.development.js":184,"./cjs/react.production.min.js":185}],187:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler-tracing.development.js
  *
@@ -68083,7 +64539,7 @@ exports.unstable_wrap = unstable_wrap;
   })();
 }
 
-},{}],201:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler-tracing.production.min.js
  *
@@ -68094,7 +64550,7 @@ exports.unstable_wrap = unstable_wrap;
  */
 'use strict';var b=0;exports.__interactionsRef=null;exports.__subscriberRef=null;exports.unstable_clear=function(a){return a()};exports.unstable_getCurrent=function(){return null};exports.unstable_getThreadID=function(){return++b};exports.unstable_subscribe=function(){};exports.unstable_trace=function(a,d,c){return c()};exports.unstable_unsubscribe=function(){};exports.unstable_wrap=function(a){return a};
 
-},{}],202:[function(require,module,exports){
+},{}],189:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler.development.js
  *
@@ -68742,7 +65198,7 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
   })();
 }
 
-},{}],203:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler.production.min.js
  *
@@ -68764,7 +65220,7 @@ exports.unstable_next=function(a){switch(P){case 1:case 2:case 3:var b=3;break;d
 exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"object"===typeof c&&null!==c?(c=c.delay,c="number"===typeof c&&0<c?d+c:d):c=d;switch(a){case 1:var e=-1;break;case 2:e=250;break;case 5:e=1073741823;break;case 4:e=1E4;break;default:e=5E3}e=c+e;a={id:N++,callback:b,priorityLevel:a,startTime:c,expirationTime:e,sortIndex:-1};c>d?(a.sortIndex=c,H(M,a),null===J(L)&&a===J(M)&&(S?h():S=!0,g(U,c-d))):(a.sortIndex=e,H(L,a),R||Q||(R=!0,f(V)));return a};
 exports.unstable_wrapCallback=function(a){var b=P;return function(){var c=P;P=b;try{return a.apply(this,arguments)}finally{P=c}}};
 
-},{}],204:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -68773,7 +65229,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler.development.js');
 }
 
-},{"./cjs/scheduler.development.js":202,"./cjs/scheduler.production.min.js":203}],205:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":189,"./cjs/scheduler.production.min.js":190}],192:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -68782,7 +65238,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler-tracing.development.js');
 }
 
-},{"./cjs/scheduler-tracing.development.js":200,"./cjs/scheduler-tracing.production.min.js":201}],206:[function(require,module,exports){
+},{"./cjs/scheduler-tracing.development.js":187,"./cjs/scheduler-tracing.production.min.js":188}],193:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -69016,13 +65472,13 @@ exports.scale = scale;
 exports.vh = vh;
 exports.vw = vw;
 
-},{"tslib":207}],207:[function(require,module,exports){
-arguments[4][176][0].apply(exports,arguments)
-},{"dup":176}],208:[function(require,module,exports){
+},{"tslib":194}],194:[function(require,module,exports){
+arguments[4][165][0].apply(exports,arguments)
+},{"dup":165}],195:[function(require,module,exports){
 (function(e,r){typeof exports==="object"&&typeof module!=="undefined"?r(exports):typeof define==="function"&&define.amd?define(["exports"],r):(e=e||self,r(e.stylis={}))})(this,(function(e){"use strict";var r="-ms-";var a="-moz-";var c="-webkit-";var t="comm";var n="rule";var s="decl";var i="@page";var u="@media";var o="@import";var f="@charset";var l="@viewport";var h="@supports";var p="@document";var v="@namespace";var b="@keyframes";var m="@font-face";var w="@counter-style";var d="@font-feature-values";var $=Math.abs;var k=String.fromCharCode;function g(e,r){return(((r<<2^A(e,0))<<2^A(e,1))<<2^A(e,2))<<2^A(e,3)}function x(e){return e.trim()}function E(e,r){return(e=r.exec(e))?e[0]:e}function y(e,r,a){return e.replace(r,a)}function T(e,r){return e.indexOf(r)}function A(e,r){return e.charCodeAt(r)|0}function O(e,r,a){return e.slice(r,a)}function M(e){return e.length}function C(e){return e.length}function S(e,r){return r.push(e),e}function R(e,r){return e.map(r).join("")}e.line=1;e.column=1;e.length=0;e.position=0;e.character=0;e.characters="";function z(r,a,c,t,n,s,i){return{value:r,root:a,parent:c,type:t,props:n,children:s,line:e.line,column:e.column,length:i,return:""}}function N(e,r,a){return z(e,r.root,r.parent,a,r.props,r.children,0)}function P(){return e.character}function U(){e.character=e.position>0?A(e.characters,--e.position):0;if(e.column--,e.character===10)e.column=1,e.line--;return e.character}function _(){e.character=e.position<e.length?A(e.characters,e.position++):0;if(e.column++,e.character===10)e.column=1,e.line++;return e.character}function j(){return A(e.characters,e.position)}function F(){return e.position}function I(r,a){return O(e.characters,r,a)}function L(e){switch(e){case 0:case 9:case 10:case 13:case 32:return 5;case 33:case 43:case 44:case 47:case 62:case 64:case 126:case 59:case 123:case 125:return 4;case 58:return 3;case 34:case 39:case 40:case 91:return 2;case 41:case 93:return 1}return 0}function D(r){return e.line=e.column=1,e.length=M(e.characters=r),e.position=0,[]}function K(r){return e.characters="",r}function V(r){return x(I(e.position-1,H(r===91?r+2:r===40?r+1:r)))}function W(e){return K(B(D(e)))}function Y(r){while(e.character=j())if(e.character<33)_();else break;return L(r)>2||L(e.character)>3?"":" "}function B(r){while(_())switch(L(e.character)){case 0:S(q(e.position-1),r);break;case 2:S(V(e.character),r);break;default:S(k(e.character),r)}return r}function G(r,a){while(--a&&_())if(e.character<48||e.character>102||e.character>57&&e.character<65||e.character>70&&e.character<97)break;return I(r,F()+(a<6&&j()==32&&_()==32))}function H(r){while(_())switch(e.character){case r:return e.position;case 34:case 39:return H(r===34||r===39?r:e.character);case 40:if(r===41)H(r);break;case 92:_();break}return e.position}function Z(r,a){while(_())if(r+e.character===47+10)break;else if(r+e.character===42+42&&j()===47)break;return"/*"+I(a,e.position-1)+"*"+k(r===47?r:_())}function q(r){while(!L(j()))_();return I(r,e.position)}function J(e){return K(Q("",null,null,null,[""],e=D(e),0,[0],e))}function Q(e,r,a,c,t,n,s,i,u){var o=0;var f=0;var l=s;var h=0;var p=0;var v=0;var b=1;var m=1;var w=1;var d=0;var $="";var g=t;var x=n;var E=c;var T=$;while(m)switch(v=d,d=_()){case 34:case 39:case 91:case 40:T+=V(d);break;case 9:case 10:case 13:case 32:T+=Y(v);break;case 92:T+=G(F()-1,7);continue;case 47:switch(j()){case 42:case 47:S(ee(Z(_(),F()),r,a),u);break;default:T+="/"}break;case 123*b:i[o++]=M(T)*w;case 125*b:case 59:case 0:switch(d){case 0:case 125:m=0;case 59+f:if(p>0&&M(T)-l)S(p>32?re(T+";",c,a,l-1):re(y(T," ","")+";",c,a,l-2),u);break;case 59:T+=";";default:S(E=X(T,r,a,o,f,t,i,$,g=[],x=[],l),n);if(d===123)if(f===0)Q(T,r,E,E,g,n,l,i,x);else switch(h){case 100:case 109:case 115:Q(e,E,E,c&&S(X(e,E,E,0,0,t,i,$,t,g=[],l),x),t,x,l,i,c?g:x);break;default:Q(T,E,E,E,[""],x,l,i,x)}}o=f=p=0,b=w=1,$=T="",l=s;break;case 58:l=1+M(T),p=v;default:if(b<1)if(d==123)--b;else if(d==125&&b++==0&&U()==125)continue;switch(T+=k(d),d*b){case 38:w=f>0?1:(T+="\f",-1);break;case 44:i[o++]=(M(T)-1)*w,w=1;break;case 64:if(j()===45)T+=V(_());h=j(),f=M($=T+=q(F())),d++;break;case 45:if(v===45&&M(T)==2)b=0}}return n}function X(e,r,a,c,t,s,i,u,o,f,l){var h=t-1;var p=t===0?s:[""];var v=C(p);for(var b=0,m=0,w=0;b<c;++b)for(var d=0,k=O(e,h+1,h=$(m=i[b])),g=e;d<v;++d)if(g=x(m>0?p[d]+" "+k:y(k,/&\f/g,p[d])))o[w++]=g;return z(e,r,a,t===0?n:u,o,f,l)}function ee(e,r,a){return z(e,r,a,t,k(P()),O(e,2,-2),0)}function re(e,r,a,c){return z(e,r,a,s,O(e,0,c),O(e,c+1,-1),c)}function ae(e,t){switch(g(e,t)){case 5103:return c+"print-"+e+e;case 5737:case 4201:case 3177:case 3433:case 1641:case 4457:case 2921:case 5572:case 6356:case 5844:case 3191:case 6645:case 3005:case 6391:case 5879:case 5623:case 6135:case 4599:case 4855:case 4215:case 6389:case 5109:case 5365:case 5621:case 3829:return c+e+e;case 5349:case 4246:case 4810:case 6968:case 2756:return c+e+a+e+r+e+e;case 6828:case 4268:return c+e+r+e+e;case 6165:return c+e+r+"flex-"+e+e;case 5187:return c+e+y(e,/(\w+).+(:[^]+)/,c+"box-$1$2"+r+"flex-$1$2")+e;case 5443:return c+e+r+"flex-item-"+y(e,/flex-|-self/,"")+e;case 4675:return c+e+r+"flex-line-pack"+y(e,/align-content|flex-|-self/,"")+e;case 5548:return c+e+r+y(e,"shrink","negative")+e;case 5292:return c+e+r+y(e,"basis","preferred-size")+e;case 6060:return c+"box-"+y(e,"-grow","")+c+e+r+y(e,"grow","positive")+e;case 4554:return c+y(e,/([^-])(transform)/g,"$1"+c+"$2")+e;case 6187:return y(y(y(e,/(zoom-|grab)/,c+"$1"),/(image-set)/,c+"$1"),e,"")+e;case 5495:case 3959:return y(e,/(image-set\([^]*)/,c+"$1"+"$`$1");case 4968:return y(y(e,/(.+:)(flex-)?(.*)/,c+"box-pack:$3"+r+"flex-pack:$3"),/s.+-b[^;]+/,"justify")+c+e+e;case 4095:case 3583:case 4068:case 2532:return y(e,/(.+)-inline(.+)/,c+"$1$2")+e;case 8116:case 7059:case 5753:case 5535:case 5445:case 5701:case 4933:case 4677:case 5533:case 5789:case 5021:case 4765:if(M(e)-1-t>6)switch(A(e,t+1)){case 109:if(A(e,t+4)!==45)break;case 102:return y(e,/(.+:)(.+)-([^]+)/,"$1"+c+"$2-$3"+"$1"+a+(A(e,t+3)==108?"$3":"$2-$3"))+e;case 115:return~T(e,"stretch")?ae(y(e,"stretch","fill-available"),t)+e:e}break;case 4949:if(A(e,t+1)!==115)break;case 6444:switch(A(e,M(e)-3-(~T(e,"!important")&&10))){case 107:return y(e,":",":"+c)+e;case 101:return y(e,/(.+:)([^;!]+)(;|!.+)?/,"$1"+c+(A(e,14)===45?"inline-":"")+"box$3"+"$1"+c+"$2$3"+"$1"+r+"$2box$3")+e}break;case 5936:switch(A(e,t+11)){case 114:return c+e+r+y(e,/[svh]\w+-[tblr]{2}/,"tb")+e;case 108:return c+e+r+y(e,/[svh]\w+-[tblr]{2}/,"tb-rl")+e;case 45:return c+e+r+y(e,/[svh]\w+-[tblr]{2}/,"lr")+e}return c+e+r+e+e}return e}function ce(e,r){var a="";var c=C(e);for(var t=0;t<c;t++)a+=r(e[t],t,e,r)||"";return a}function te(e,r,a,c){switch(e.type){case o:case s:return e.return=e.return||e.value;case t:return"";case n:e.value=e.props.join(",")}return M(a=ce(e.children,c))?e.return=e.value+"{"+a+"}":""}function ne(e){var r=C(e);return function(a,c,t,n){var s="";for(var i=0;i<r;i++)s+=e[i](a,c,t,n)||"";return s}}function se(e){return function(r){if(!r.root)if(r=r.return)e(r)}}function ie(e,t,i,u){if(!e.return)switch(e.type){case s:e.return=ae(e.value,e.length);break;case b:return ce([N(y(e.value,"@","@"+c),e,"")],u);case n:if(e.length)return R(e.props,(function(t){switch(E(t,/(::plac\w+|:read-\w+)/)){case":read-only":case":read-write":return ce([N(y(t,/:(read-\w+)/,":"+a+"$1"),e,"")],u);case"::placeholder":return ce([N(y(t,/:(plac\w+)/,":"+c+"input-$1"),e,""),N(y(t,/:(plac\w+)/,":"+a+"$1"),e,""),N(y(t,/:(plac\w+)/,r+"input-$1"),e,"")],u)}return""}))}}function ue(e){switch(e.type){case n:e.props=e.props.map((function(r){return R(W(r),(function(r,a,c){switch(A(r,0)){case 12:return O(r,1,M(r));case 0:case 40:case 43:case 62:case 126:return r;case 58:if(c[++a]==="global")c[a]="",c[++a]="\f"+O(c[a],a=1,-1);case 32:return a===1?"":r;default:switch(a){case 0:e=r;return C(c)>1?"":r;case a=C(c)-1:case 2:return a===2?r+e+e:r+e;default:return r}}}))}))}}e.CHARSET=f;e.COMMENT=t;e.COUNTER_STYLE=w;e.DECLARATION=s;e.DOCUMENT=p;e.FONT_FACE=m;e.FONT_FEATURE_VALUES=d;e.IMPORT=o;e.KEYFRAMES=b;e.MEDIA=u;e.MOZ=a;e.MS=r;e.NAMESPACE=v;e.PAGE=i;e.RULESET=n;e.SUPPORTS=h;e.VIEWPORT=l;e.WEBKIT=c;e.abs=$;e.alloc=D;e.append=S;e.caret=F;e.char=P;e.charat=A;e.combine=R;e.comment=ee;e.commenter=Z;e.compile=J;e.copy=N;e.dealloc=K;e.declaration=re;e.delimit=V;e.delimiter=H;e.escaping=G;e.from=k;e.hash=g;e.identifier=q;e.indexof=T;e.match=E;e.middleware=ne;e.namespace=ue;e.next=_;e.node=z;e.parse=Q;e.peek=j;e.prefix=ae;e.prefixer=ie;e.prev=U;e.replace=y;e.ruleset=X;e.rulesheet=se;e.serialize=ce;e.sizeof=C;e.slice=I;e.stringify=te;e.strlen=M;e.substr=O;e.token=L;e.tokenize=W;e.tokenizer=B;e.trim=x;e.whitespace=Y;Object.defineProperty(e,"__esModule",{value:true})}));
 
 
-},{}],209:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var useDebounce_1 = require("./useDebounce");
@@ -69032,7 +65488,7 @@ exports.useDebouncedCallback = useDebouncedCallback_1.default;
 var useThrottledCallback_1 = require("./useThrottledCallback");
 exports.useThrottledCallback = useThrottledCallback_1.default;
 
-},{"./useDebounce":210,"./useDebouncedCallback":211,"./useThrottledCallback":212}],210:[function(require,module,exports){
+},{"./useDebounce":197,"./useDebouncedCallback":198,"./useThrottledCallback":199}],197:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
@@ -69064,7 +65520,7 @@ function useDebounce(value, delay, options) {
 }
 exports.default = useDebounce;
 
-},{"./useDebouncedCallback":211,"react":199}],211:[function(require,module,exports){
+},{"./useDebouncedCallback":198,"react":186}],198:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
@@ -69270,7 +65726,7 @@ function useDebouncedCallback(func, wait, options) {
 }
 exports.default = useDebouncedCallback;
 
-},{"react":199}],212:[function(require,module,exports){
+},{"react":186}],199:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var useDebouncedCallback_1 = require("./useDebouncedCallback");
@@ -69332,7 +65788,7 @@ function useThrottledCallback(func, wait, _a) {
 }
 exports.default = useThrottledCallback;
 
-},{"./useDebouncedCallback":211}],213:[function(require,module,exports){
+},{"./useDebouncedCallback":198}],200:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -69343,7 +65799,7 @@ var index =  react.useLayoutEffect ;
 
 exports.default = index;
 
-},{"react":199}],214:[function(require,module,exports){
+},{"react":186}],201:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isSpawnedActor = exports.isActor = exports.createDeferredActor = exports.createInvocableActor = exports.createNullActor = void 0;
@@ -69406,7 +65862,7 @@ function isSpawnedActor(item) {
 }
 exports.isSpawnedActor = isSpawnedActor;
 
-},{"./serviceScope":231,"./utils":234}],215:[function(require,module,exports){
+},{"./serviceScope":218,"./utils":221}],202:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createMachine = exports.Machine = void 0;
@@ -69427,7 +65883,7 @@ function createMachine(config, options) {
 }
 exports.createMachine = createMachine;
 
-},{"./StateNode":217}],216:[function(require,module,exports){
+},{"./StateNode":204}],203:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -69664,7 +66120,7 @@ var State = /** @class */ (function () {
 }());
 exports.State = State;
 
-},{"./actions":219,"./constants":220,"./stateUtils":232,"./utils":234}],217:[function(require,module,exports){
+},{"./actions":206,"./constants":207,"./stateUtils":219,"./utils":221}],204:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -71047,7 +67503,7 @@ var StateNode = /** @class */ (function () {
 }());
 exports.StateNode = StateNode;
 
-},{"./Actor":214,"./State":216,"./actionTypes":218,"./actions":219,"./constants":220,"./environment":222,"./invokeUtils":225,"./stateUtils":232,"./types":233,"./utils":234}],218:[function(require,module,exports){
+},{"./Actor":201,"./State":203,"./actionTypes":205,"./actions":206,"./constants":207,"./environment":209,"./invokeUtils":212,"./stateUtils":219,"./types":220,"./utils":221}],205:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pure = exports.choose = exports.update = exports.error = exports.errorPlatform = exports.errorExecution = exports.invoke = exports.init = exports.log = exports.doneState = exports.after = exports.assign = exports.nullEvent = exports.cancel = exports.send = exports.raise = exports.stop = exports.start = void 0;
@@ -71072,7 +67528,7 @@ exports.update = types_1.ActionTypes.Update;
 exports.choose = types_1.ActionTypes.Choose;
 exports.pure = types_1.ActionTypes.Pure;
 
-},{"./types":233}],219:[function(require,module,exports){
+},{"./types":220}],206:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -71534,7 +67990,7 @@ function resolveActions(machine, currentState, currentContext, _event, actions) 
 }
 exports.resolveActions = resolveActions;
 
-},{"./actionTypes":218,"./environment":222,"./types":233,"./utils":234}],220:[function(require,module,exports){
+},{"./actionTypes":205,"./environment":209,"./types":220,"./utils":221}],207:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TARGETLESS_KEY = exports.DEFAULT_GUARD_TYPE = exports.EMPTY_ACTIVITY_MAP = exports.STATE_DELIMITER = void 0;
@@ -71543,7 +67999,7 @@ exports.EMPTY_ACTIVITY_MAP = {};
 exports.DEFAULT_GUARD_TYPE = 'xstate.guard';
 exports.TARGETLESS_KEY = '';
 
-},{}],221:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -71582,7 +68038,7 @@ function registerService(service) {
 exports.registerService = registerService;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./environment":222}],222:[function(require,module,exports){
+},{"./environment":209}],209:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -71590,7 +68046,7 @@ exports.IS_PRODUCTION = void 0;
 exports.IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":183}],223:[function(require,module,exports){
+},{"_process":172}],210:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -71652,7 +68108,7 @@ var actions = {
 exports.actions = actions;
 __exportStar(require("./types"), exports);
 
-},{"./Machine":215,"./State":216,"./StateNode":217,"./actions":219,"./interpreter":224,"./mapState":226,"./match":227,"./schema":230,"./types":233,"./utils":234}],224:[function(require,module,exports){
+},{"./Machine":202,"./State":203,"./StateNode":204,"./actions":206,"./interpreter":211,"./mapState":213,"./match":214,"./schema":217,"./types":220,"./utils":221}],211:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 var __assign = (this && this.__assign) || function () {
@@ -72755,7 +69211,7 @@ function interpret(machine, options) {
 exports.interpret = interpret;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Actor":214,"./State":216,"./actionTypes":218,"./actions":219,"./devTools":221,"./environment":222,"./registry":228,"./scheduler":229,"./serviceScope":231,"./stateUtils":232,"./types":233,"./utils":234}],225:[function(require,module,exports){
+},{"./Actor":201,"./State":203,"./actionTypes":205,"./actions":206,"./devTools":208,"./environment":209,"./registry":215,"./scheduler":216,"./serviceScope":218,"./stateUtils":219,"./types":220,"./utils":221}],212:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -72799,7 +69255,7 @@ function toInvokeDefinition(invokeConfig) {
 }
 exports.toInvokeDefinition = toInvokeDefinition;
 
-},{"./actions":219}],226:[function(require,module,exports){
+},{"./actions":206}],213:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -72838,7 +69294,7 @@ function mapState(stateMap, stateId) {
 }
 exports.mapState = mapState;
 
-},{"./utils":234}],227:[function(require,module,exports){
+},{"./utils":221}],214:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -72892,7 +69348,7 @@ function matchState(state, patterns, defaultValue) {
 }
 exports.matchState = matchState;
 
-},{"./State":216}],228:[function(require,module,exports){
+},{"./State":203}],215:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registry = void 0;
@@ -72914,7 +69370,7 @@ exports.registry = {
     }
 };
 
-},{}],229:[function(require,module,exports){
+},{}],216:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -72990,7 +69446,7 @@ var Scheduler = /** @class */ (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{}],230:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSchema = void 0;
@@ -72999,7 +69455,7 @@ function createSchema(schema) {
 }
 exports.createSchema = createSchema;
 
-},{}],231:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.consume = exports.provide = void 0;
@@ -73018,7 +69474,7 @@ exports.provide = provide;
 var consume = function (fn) { return fn(serviceStack[serviceStack.length - 1]); };
 exports.consume = consume;
 
-},{}],232:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -73246,7 +69702,7 @@ function isInFinalState(configuration, stateNode) {
 }
 exports.isInFinalState = isInFinalState;
 
-},{"./utils":234}],233:[function(require,module,exports){
+},{"./utils":221}],220:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpecialTargets = exports.ActionTypes = void 0;
@@ -73279,7 +69735,7 @@ var SpecialTargets;
     SpecialTargets["Internal"] = "#_internal";
 })(SpecialTargets = exports.SpecialTargets || (exports.SpecialTargets = {}));
 
-},{}],234:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -73906,7 +70362,7 @@ function toObserver(nextHandler, errorHandler, completionHandler) {
 }
 exports.toObserver = toObserver;
 
-},{"./constants":220,"./environment":222}],235:[function(require,module,exports){
+},{"./constants":207,"./environment":209}],222:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -74082,7 +70538,7 @@ AestheticLines.propTypes = {
 var _default = AestheticLines;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":245,"./pathline.jsx":241,"@emotion/css":5,"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/web.dom-collections.iterator.js":171,"prop-types":187,"react":199}],236:[function(require,module,exports){
+},{"../hooks/use-frame-rate":232,"./pathline.jsx":228,"@emotion/css":5,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"prop-types":176,"react":186}],223:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -74154,7 +70610,7 @@ Button.defaultProps = {
 var _default = Button;
 exports["default"] = _default;
 
-},{"@emotion/css":5,"core-js/modules/es.array.index-of.js":141,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.object.assign.js":151,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"core-js/modules/es.object.keys.js":159,"core-js/modules/es.symbol.js":168,"prop-types":187,"react":199}],237:[function(require,module,exports){
+},{"@emotion/css":5,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],224:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -74349,7 +70805,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-control-bar-machine":247,"@emotion/css":5,"@xstate/react":22,"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"core-js/modules/es.object.get-own-property-descriptor.js":156,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/es.weak-map.js":169,"core-js/modules/web.dom-collections.iterator.js":171,"lodash":179,"prop-types":187,"react":199}],238:[function(require,module,exports){
+},{"../state-machines/create-control-bar-machine":234,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],225:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -74366,23 +70822,11 @@ require("core-js/modules/es.array.slice.js");
 
 require("core-js/modules/es.array.from.js");
 
+require("core-js/modules/es.weak-map.js");
+
 require("core-js/modules/es.object.define-property.js");
 
-require("core-js/modules/es.object.keys.js");
-
-require("core-js/modules/es.array.filter.js");
-
 require("core-js/modules/es.object.get-own-property-descriptor.js");
-
-require("core-js/modules/es.array.for-each.js");
-
-require("core-js/modules/web.dom-collections.for-each.js");
-
-require("core-js/modules/es.object.get-own-property-descriptors.js");
-
-require("core-js/modules/es.object.define-properties.js");
-
-require("core-js/modules/es.weak-map.js");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -74413,8 +70857,6 @@ var _lodash = _interopRequireDefault(require("lodash"));
 
 var _react = _interopRequireWildcard(require("react"));
 
-var _reactSpring = require("react-spring");
-
 var _framerMotion = require("framer-motion");
 
 var _useDebounce = require("use-debounce");
@@ -74440,12 +70882,6 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -74539,16 +70975,6 @@ function GifGenerationSystem(props) {
       state = _useMachine2[0],
       send = _useMachine2[1];
 
-  var _useState = (0, _react.useState)(0),
-      _useState2 = _slicedToArray(_useState, 2),
-      workspaceWidth = _useState2[0],
-      setWorkspaceWidth = _useState2[1];
-
-  var _useState3 = (0, _react.useState)(0),
-      _useState4 = _slicedToArray(_useState3, 2),
-      workspaceHeight = _useState4[0],
-      setWorkspaceHeight = _useState4[1];
-
   var canvasRef = (0, _react.useRef)(null);
   var videoRef = (0, _react.useRef)(null);
   var widthRef = (0, _react.useRef)(null);
@@ -74560,16 +70986,6 @@ function GifGenerationSystem(props) {
   var endRef = (0, _react.useRef)(null);
   var formRef = (0, _react.useRef)(null);
   var contextRef = (0, _react.useRef)(state.context);
-  var widthProps = (0, _reactSpring.useSpring)({
-    to: {
-      width: workspaceWidth
-    }
-  });
-  var heightProps = (0, _reactSpring.useSpring)({
-    to: {
-      height: workspaceHeight
-    }
-  });
   var frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps); // draw the video to the preview canvas
 
   function drawFrame() {
@@ -74612,17 +71028,7 @@ function GifGenerationSystem(props) {
     if (_lodash["default"].isNumber(state.context.end) && !_lodash["default"].isNaN(state.context.end) && state.context.videoElement) {
       state.context.videoElement.currentTime = state.context.end;
     }
-  }, [state.context.end]); // change the width of the workspace, but don't do it right away
-
-  function setWorkspaceSize(_width, _height) {
-    setWorkspaceWidth(_width);
-    setWorkspaceHeight(_height);
-  }
-
-  var debouncedSetWorkspaceSize = (0, _useDebounce.useDebouncedCallback)(setWorkspaceSize, 1000);
-  (0, _react.useEffect)(function () {
-    debouncedSetWorkspaceSize(state.context.width, state.context.height);
-  }, [state.context.width, state.context.height]); // input handling
+  }, [state.context.end]); // input handling
 
   function handleWidthInputChange(event) {
     var newWidth = parseInt(event.target.value, 10) || 0;
@@ -74855,12 +71261,22 @@ function GifGenerationSystem(props) {
     generating: {
       generatingGif: 'succeeded'
     }
-  }) && /*#__PURE__*/_react["default"].createElement(_reactSpring.animated.canvas, {
+  }) && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.canvas, {
     className: "ggs__canvas",
     ref: canvasRef,
-    style: _objectSpread(_objectSpread(_objectSpread({}, widthProps), heightProps), {}, {
+    style: {
+      width: state.context.width,
+      height: state.context.height,
       willChange: 'width, height'
-    }),
+    },
+    animate: {
+      width: state.context.width,
+      height: state.context.height
+    },
+    transition: {
+      bounce: 0,
+      delay: 0.75
+    },
     height: state.context.height,
     width: state.context.width
   })), /*#__PURE__*/_react["default"].createElement("div", {
@@ -74960,7 +71376,7 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":249,"./aesthetic-lines.jsx":235,"./button.jsx":236,"./control-bar.jsx":237,"./incrementable-input.jsx":240,"./resize-bar.jsx":242,"./system-elements.jsx":243,"@xstate/react":22,"core-js/modules/es.array.filter.js":138,"core-js/modules/es.array.for-each.js":139,"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.date.now.js":148,"core-js/modules/es.date.to-string.js":149,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.get-own-property-descriptor.js":156,"core-js/modules/es.object.get-own-property-descriptors.js":157,"core-js/modules/es.object.keys.js":159,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.parse-float.js":162,"core-js/modules/es.parse-int.js":163,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/es.weak-map.js":169,"core-js/modules/web.dom-collections.for-each.js":170,"core-js/modules/web.dom-collections.iterator.js":171,"core-js/modules/web.url.js":173,"framer-motion":175,"lodash":179,"react":199,"react-spring":196,"use-debounce":209}],239:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":236,"./aesthetic-lines.jsx":222,"./button.jsx":223,"./control-bar.jsx":224,"./incrementable-input.jsx":227,"./resize-bar.jsx":229,"./system-elements.jsx":230,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.date.now.js":139,"core-js/modules/es.date.to-string.js":140,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.parse-float.js":152,"core-js/modules/es.parse-int.js":153,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"framer-motion":164,"lodash":168,"react":186,"use-debounce":196}],226:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -74970,20 +71386,6 @@ require("core-js/modules/es.object.freeze.js");
 require("core-js/modules/es.object.define-properties.js");
 
 require("core-js/modules/es.object.define-property.js");
-
-require("core-js/modules/es.object.keys.js");
-
-require("core-js/modules/es.symbol.js");
-
-require("core-js/modules/es.array.filter.js");
-
-require("core-js/modules/es.object.get-own-property-descriptor.js");
-
-require("core-js/modules/es.array.for-each.js");
-
-require("core-js/modules/web.dom-collections.for-each.js");
-
-require("core-js/modules/es.object.get-own-property-descriptors.js");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -74996,7 +71398,7 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _css = require("@emotion/css");
 
-var _reactSpring = require("react-spring");
+var _framerMotion = require("framer-motion");
 
 var _button = _interopRequireDefault(require("./button.jsx"));
 
@@ -75005,12 +71407,6 @@ var _gifGenerationSystem = _interopRequireDefault(require("./gif-generation-syst
 var _templateObject;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
@@ -75028,40 +71424,31 @@ Times.defaultProps = {
 var gifitAppClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  .actions {\n    position: absolute;\n    top: 30px;\n    right: 30px;\n  }\n"])));
 
 function GifitApp(props) {
-  var appTransition = (0, _reactSpring.useTransition)(props.active, {
-    from: {
-      opacity: 0
-    },
-    enter: {
-      opacity: 1
-    },
-    leave: {
-      opacity: 0
-    },
-    config: {
-      mass: 1,
-      tension: 750,
-      friction: 35
-    }
-  });
-
   function handleCloseClick(event) {
     event.preventDefault();
     props.onClose();
   }
 
-  return appTransition(function (styles, item) {
-    return item && /*#__PURE__*/_react["default"].createElement(_reactSpring.animated.div, {
-      className: (0, _css.cx)(gifitAppClassName, 'gifit-app'),
-      style: _objectSpread({}, styles)
-    }, /*#__PURE__*/_react["default"].createElement("div", {
-      className: "actions"
-    }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
-      type: "button",
-      onClick: handleCloseClick,
-      icon: /*#__PURE__*/_react["default"].createElement(Times, null)
-    }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null));
-  });
+  return props.active && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    className: (0, _css.cx)(gifitAppClassName, 'gifit-app'),
+    style: {
+      opacity: 0
+    },
+    animate: {
+      opacity: 1
+    },
+    transition: {
+      type: 'spring',
+      damping: 35,
+      stiffness: 350
+    }
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: "actions"
+  }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
+    type: "button",
+    onClick: handleCloseClick,
+    icon: /*#__PURE__*/_react["default"].createElement(Times, null)
+  }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null));
 }
 
 GifitApp.propTypes = {
@@ -75074,7 +71461,7 @@ GifitApp.defaultProps = {
 var _default = GifitApp;
 exports["default"] = _default;
 
-},{"./button.jsx":236,"./gif-generation-system.jsx":238,"@emotion/css":5,"core-js/modules/es.array.filter.js":138,"core-js/modules/es.array.for-each.js":139,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"core-js/modules/es.object.get-own-property-descriptor.js":156,"core-js/modules/es.object.get-own-property-descriptors.js":157,"core-js/modules/es.object.keys.js":159,"core-js/modules/es.symbol.js":168,"core-js/modules/web.dom-collections.for-each.js":170,"prop-types":187,"react":199,"react-spring":196}],240:[function(require,module,exports){
+},{"./button.jsx":223,"./gif-generation-system.jsx":225,"@emotion/css":5,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"framer-motion":164,"prop-types":176,"react":186}],227:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -75185,7 +71572,7 @@ IncrementableInput.defaultProps = {
 var _default = IncrementableInput;
 exports["default"] = _default;
 
-},{"@emotion/css":5,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"prop-types":187,"react":199}],241:[function(require,module,exports){
+},{"@emotion/css":5,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"prop-types":176,"react":186}],228:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -75285,7 +71672,7 @@ PathLine.propTypes = {
 var _default = PathLine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.concat.js":137,"core-js/modules/es.array.index-of.js":141,"core-js/modules/es.array.join.js":144,"core-js/modules/es.array.map.js":145,"core-js/modules/es.array.reduce.js":146,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.object.assign.js":151,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.keys.js":159,"core-js/modules/es.symbol.js":168,"prop-types":187,"react":199}],242:[function(require,module,exports){
+},{"core-js/modules/es.array.concat.js":130,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.join.js":135,"core-js/modules/es.array.map.js":136,"core-js/modules/es.array.reduce.js":137,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],229:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -75500,7 +71887,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":248,"@emotion/css":5,"@xstate/react":22,"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-properties.js":153,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.freeze.js":155,"core-js/modules/es.object.get-own-property-descriptor.js":156,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/es.weak-map.js":169,"core-js/modules/web.dom-collections.iterator.js":171,"lodash":179,"prop-types":187,"react":199}],243:[function(require,module,exports){
+},{"../state-machines/create-resize-bar-machine":235,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],230:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -75609,7 +71996,7 @@ SystemElements.propTypes = {};
 var _default = SystemElements;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":154,"framer-motion":175,"prop-types":187,"react":199}],244:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"framer-motion":164,"prop-types":176,"react":186}],231:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -75697,7 +72084,7 @@ function ContentApp() {
 
 _reactDom["default"].render( /*#__PURE__*/_react["default"].createElement(ContentApp, null), gifitElement);
 
-},{"./components/gifit-app.jsx":239,"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.get-own-property-descriptor.js":156,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/es.weak-map.js":169,"core-js/modules/web.dom-collections.iterator.js":171,"react":199,"react-dom":192}],245:[function(require,module,exports){
+},{"./components/gifit-app.jsx":226,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"react":186,"react-dom":180}],232:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -75795,7 +72182,7 @@ function useFrameRate(config) {
 var _default = useFrameRate;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.from.js":140,"core-js/modules/es.array.is-array.js":142,"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.array.slice.js":147,"core-js/modules/es.function.name.js":150,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/web.dom-collections.iterator.js":171,"lodash":179,"react":199}],246:[function(require,module,exports){
+},{"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"react":186}],233:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -76000,7 +72387,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator.js":143,"core-js/modules/es.object.create.js":152,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.object.get-prototype-of.js":158,"core-js/modules/es.object.set-prototype-of.js":160,"core-js/modules/es.object.to-string.js":161,"core-js/modules/es.reflect.construct.js":164,"core-js/modules/es.string.iterator.js":165,"core-js/modules/es.symbol.description.js":166,"core-js/modules/es.symbol.iterator.js":167,"core-js/modules/es.symbol.js":168,"core-js/modules/web.dom-collections.iterator.js":171,"core-js/modules/web.url.js":173,"events":174}],247:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.object.create.js":143,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-prototype-of.js":148,"core-js/modules/es.object.set-prototype-of.js":150,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.reflect.construct.js":154,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"events":163}],234:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -76100,7 +72487,7 @@ function createControlBarMachine(_ref) {
 var _default = createControlBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":154,"lodash":179,"xstate":223}],248:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":210}],235:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -76223,7 +72610,7 @@ function createResizeBarMachine(_ref) {
 var _default = createResizeBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":154,"lodash":179,"xstate":223}],249:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":210}],236:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -76520,4 +72907,4 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 var _default = gifGenerationSystemMachine;
 exports["default"] = _default;
 
-},{"../services/gif-service":246,"core-js/modules/es.object.define-property.js":154,"core-js/modules/es.parse-int.js":163,"lodash":179,"xstate":223}]},{},[244]);
+},{"../services/gif-service":233,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.parse-int.js":153,"lodash":168,"xstate":210}]},{},[231]);

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { css, cx } from '@emotion/css';
-import { animated, useTransition } from 'react-spring';
+import { motion } from 'framer-motion';
 
 import Button from '$components/button.jsx';
 import GifGenerationSystem from '$components/gif-generation-system.jsx';
@@ -17,39 +17,28 @@ const gifitAppClassName = css`
 `;
 
 function GifitApp (props) {
-  const appTransition = useTransition(props.active, {
-    from: { opacity: 0 },
-    enter: { opacity: 1 },
-    leave: { opacity: 0 },
-    config: {
-      mass: 1,
-      tension: 750,
-      friction: 35
-    }
-  });
-
   function handleCloseClick (event) {
     event.preventDefault();
     props.onClose();
   }
 
-  return appTransition((styles, item) => {
-    return item && (
-      <animated.div
-        className={cx(gifitAppClassName, 'gifit-app')}
-        style={{ ...styles }}>
-        <div className="actions">
-          <Button
-            type="button"
-            onClick={handleCloseClick}
-            icon={<Times />}>
-            Close GIFit
-          </Button>
-        </div>
-        <GifGenerationSystem />
-      </animated.div>
-    );
-  });
+  return props.active && (
+    <motion.div
+      className={cx(gifitAppClassName, 'gifit-app')}
+      style={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ type: 'spring', damping: 35, stiffness: 350 }}>
+      <div className="actions">
+        <Button
+          type="button"
+          onClick={handleCloseClick}
+          icon={<Times />}>
+          Close GIFit
+        </Button>
+      </div>
+      <GifGenerationSystem />
+    </motion.div>
+  );
 }
 
 GifitApp.propTypes = {
