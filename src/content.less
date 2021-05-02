@@ -145,30 +145,34 @@ input[type=number] {
 .ggs__corner {
 	position: absolute;
 	display: block;
-	width: 5px;
-	height: 5px;
+	width: 4px;
+	height: 10px;
 	border: var(--color-system) 1px solid;
-	border-radius: 50%;
+	border-radius: 2px;
 	opacity: var(--system-interface-opacity);
 	
 	&:nth-child(1) {
 		top: 0;
 		left: 0;
+		transform: rotate(-45deg);
 	}
 
 	&:nth-child(2) {
 		top: 0;
 		right: 0;
+		transform: rotate(45deg);
 	}
 
 	&:nth-child(3) {
 		bottom: 0;
 		right: 0;
+		transform: rotate(-45deg);
 	}
 
 	&:nth-child(4) {
 		bottom: 0;
 		left: 0;
+		transform: rotate(45deg);
 	}
 }
 

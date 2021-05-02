@@ -56,6 +56,18 @@ function GifGenerationSystem (props) {
   const contextRef = useRef(state.context);
   const widthProps = useSpring({ to: { width: workspaceWidth }});
   const heightProps = useSpring({ to: { height: workspaceHeight }});
+  const formProps = useSpring({
+    to: {
+      opacity: state.matches('initializing') ? 0 : 1,
+      scale: state.matches('initializing') ? 0.9 : 1
+    },
+    delay: 500,
+    config: {
+      mass: 1,
+      tension: 750,
+      friction: 35
+    }
+  });
   const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
 
   // draw the video to the preview canvas
@@ -220,7 +232,10 @@ function GifGenerationSystem (props) {
   }
 
   return (
-    <form className="gif-generation-system ggs" onSubmit={handleFormSubmit}>
+    <animated.form
+      className="gif-generation-system ggs"
+      style={{ ...formProps }}
+      onSubmit={handleFormSubmit}>
       <span className="ggs__corner" />
       <span className="ggs__corner" />
       <span className="ggs__corner" />
@@ -367,7 +382,7 @@ function GifGenerationSystem (props) {
         startRef={startRef}
         endRef={endRef}
         timeBarRef={timeBarRef} />
-    </form>
+    </animated.form>
   );
 }
 

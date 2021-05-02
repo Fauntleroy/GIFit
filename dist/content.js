@@ -64741,6 +64741,18 @@ function GifGenerationSystem(props) {
       height: workspaceHeight
     }
   });
+  var formProps = (0, _reactSpring.useSpring)({
+    to: {
+      opacity: state.matches('initializing') ? 0 : 1,
+      scale: state.matches('initializing') ? 0.9 : 1
+    },
+    delay: 500,
+    config: {
+      mass: 1,
+      tension: 750,
+      friction: 35
+    }
+  });
   var frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps); // draw the video to the preview canvas
 
   function drawFrame() {
@@ -64951,8 +64963,9 @@ function GifGenerationSystem(props) {
     submitButtonContents = ['Reset', /*#__PURE__*/_react["default"].createElement(Refresh, null)];
   }
 
-  return /*#__PURE__*/_react["default"].createElement("form", {
+  return /*#__PURE__*/_react["default"].createElement(_reactSpring.animated.form, {
     className: "gif-generation-system ggs",
+    style: _objectSpread({}, formProps),
     onSubmit: handleFormSubmit
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "ggs__corner"
@@ -65133,6 +65146,20 @@ require("core-js/modules/es.object.define-properties.js");
 
 require("core-js/modules/es.object.define-property.js");
 
+require("core-js/modules/es.object.keys.js");
+
+require("core-js/modules/es.symbol.js");
+
+require("core-js/modules/es.array.filter.js");
+
+require("core-js/modules/es.object.get-own-property-descriptor.js");
+
+require("core-js/modules/es.array.for-each.js");
+
+require("core-js/modules/web.dom-collections.for-each.js");
+
+require("core-js/modules/es.object.get-own-property-descriptors.js");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -65144,6 +65171,8 @@ var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _css = require("@emotion/css");
 
+var _reactSpring = require("react-spring");
+
 var _button = _interopRequireDefault(require("./button.jsx"));
 
 var _gifGenerationSystem = _interopRequireDefault(require("./gif-generation-system.jsx"));
@@ -65151,6 +65180,12 @@ var _gifGenerationSystem = _interopRequireDefault(require("./gif-generation-syst
 var _templateObject;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
@@ -65168,23 +65203,40 @@ Times.defaultProps = {
 var gifitAppClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  .actions {\n    position: absolute;\n    top: 30px;\n    right: 30px;\n  }\n"])));
 
 function GifitApp(props) {
+  var appTransition = (0, _reactSpring.useTransition)(props.active, {
+    from: {
+      opacity: 0
+    },
+    enter: {
+      opacity: 1
+    },
+    leave: {
+      opacity: 0
+    },
+    config: {
+      mass: 1,
+      tension: 750,
+      friction: 35
+    }
+  });
+
   function handleCloseClick(event) {
     event.preventDefault();
     props.onClose();
   }
 
-  return /*#__PURE__*/_react["default"].createElement("div", {
-    className: (0, _css.cx)(gifitAppClassName, 'gifit-app'),
-    style: {
-      display: props.active ? 'flex' : 'none'
-    }
-  }, props.active && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
-    className: "actions"
-  }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
-    type: "button",
-    onClick: handleCloseClick,
-    icon: /*#__PURE__*/_react["default"].createElement(Times, null)
-  }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null)));
+  return appTransition(function (styles, item) {
+    return item && /*#__PURE__*/_react["default"].createElement(_reactSpring.animated.div, {
+      className: (0, _css.cx)(gifitAppClassName, 'gifit-app'),
+      style: _objectSpread({}, styles)
+    }, /*#__PURE__*/_react["default"].createElement("div", {
+      className: "actions"
+    }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
+      type: "button",
+      onClick: handleCloseClick,
+      icon: /*#__PURE__*/_react["default"].createElement(Times, null)
+    }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null));
+  });
 }
 
 GifitApp.propTypes = {
@@ -65197,7 +65249,7 @@ GifitApp.defaultProps = {
 var _default = GifitApp;
 exports["default"] = _default;
 
-},{"./button.jsx":226,"./gif-generation-system.jsx":228,"@emotion/css":5,"core-js/modules/es.array.slice.js":145,"core-js/modules/es.object.define-properties.js":151,"core-js/modules/es.object.define-property.js":152,"core-js/modules/es.object.freeze.js":153,"prop-types":179,"react":191}],230:[function(require,module,exports){
+},{"./button.jsx":226,"./gif-generation-system.jsx":228,"@emotion/css":5,"core-js/modules/es.array.filter.js":136,"core-js/modules/es.array.for-each.js":137,"core-js/modules/es.array.slice.js":145,"core-js/modules/es.object.define-properties.js":151,"core-js/modules/es.object.define-property.js":152,"core-js/modules/es.object.freeze.js":153,"core-js/modules/es.object.get-own-property-descriptor.js":154,"core-js/modules/es.object.get-own-property-descriptors.js":155,"core-js/modules/es.object.keys.js":157,"core-js/modules/es.symbol.js":166,"core-js/modules/web.dom-collections.for-each.js":168,"prop-types":179,"react":191,"react-spring":188}],230:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
