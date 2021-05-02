@@ -9,6 +9,7 @@ import Button from './button.jsx';
 import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
+import AestheticLines from '$components/aesthetic-lines.jsx';
 
 import ArrowDown from '$icons/arrow-down.svg';
 import Cancel from '$icons/cancel.svg';
@@ -45,6 +46,13 @@ function GifGenerationSystem (props) {
   const [workspaceHeight, setWorkspaceHeight] = useState(0);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
+  const widthRef = useRef(null);
+  const widthBarRef = useRef(null);
+  const heightRef = useRef(null);
+  const heightBarRef = useRef(null);
+  const timeBarRef = useRef(null);
+  const startRef = useRef(null);
+  const endRef = useRef(null);
   const contextRef = useRef(state.context);
   const widthProps = useSpring({ to: { width: workspaceWidth }});
   const heightProps = useSpring({ to: { height: workspaceHeight }});
@@ -222,7 +230,10 @@ function GifGenerationSystem (props) {
         GIF Generation System
       </header>
 
-      <div className="ggs__width__bar" style={{ width: `${state.context.width}px` }}>
+      <div
+        className="ggs__width__bar"
+        style={{ width: `${state.context.width}px` }}
+        ref={widthBarRef}>
         <ResizeBar 
           value={state.context.width}
           onChange={handleWidthControlBarChange}
@@ -230,7 +241,7 @@ function GifGenerationSystem (props) {
       </div>
 
       <div className="ggs__dimensions">
-        <div className="ggs__width">
+        <div className="ggs__width" ref={widthRef}>
           <LabelledInput
             name="Width"
             addendum="px"
@@ -238,7 +249,7 @@ function GifGenerationSystem (props) {
             onChange={handleWidthInputChange}
             width={100} />
         </div>
-        <div className="ggs__height">
+        <div className="ggs__height" ref={heightRef}>
           <LabelledInput
             name="Height"
             addendum="px"
@@ -246,7 +257,10 @@ function GifGenerationSystem (props) {
             onChange={handleHeightInputChange}
             width={100} />
         </div>
-        <div className="ggs__height__bar" style={{ height: `${state.context.height}px` }}>
+        <div
+          className="ggs__height__bar"
+          style={{ height: `${state.context.height}px` }}
+          ref={heightBarRef}>
           <ResizeBar
             orientation="vertical"
             value={state.context.height}
@@ -261,7 +275,7 @@ function GifGenerationSystem (props) {
         <animated.canvas
           className="ggs__canvas"
           ref={canvasRef}
-          style={{ ...widthProps, ...heightProps }}
+          style={{ ...widthProps, ...heightProps, willChange: 'width, height' }}
           height={state.context.height}
           width={state.context.width} />}
       </div>
@@ -277,45 +291,49 @@ function GifGenerationSystem (props) {
           onChange={handleFrameRateInputChange} />
       </div>
       <div className="ggs__start-and-end">
-        <div className="ggs__time__bar">
+        <div className="ggs__time__bar" ref={timeBarRef}>
           <ControlBar
             startValue={state.context.start / videoRef.current.duration}
             endValue={state.context.end / videoRef.current.duration}
             onChange={handleStartEndControlBarChange}
             disabled={!state.matches('configuring')} />
         </div>
-        <label className="gifit__labelled-input">
-          <span className="gifit__labelled-input__label">Start</span>
-          <div className="gifit__labelled-input__data">
-            <IncrementableInput
-              value={state.context.start}
-              increment={1 / state.context.fps}
-              min={0}
-              max={state.context.end}
-              width="200px"
-              onChange={handleStartInputChange} />
-          </div>
-        </label>
+        <div className="ggs__start">
+          <label className="gifit__labelled-input" ref={startRef}>
+            <span className="gifit__labelled-input__label">Start</span>
+            <div className="gifit__labelled-input__data">
+              <IncrementableInput
+                value={state.context.start}
+                increment={1 / state.context.fps}
+                min={0}
+                max={state.context.end}
+                width="200px"
+                onChange={handleStartInputChange} />
+            </div>
+          </label>
+        </div>
 
         <div className="gifit__frames-viz">
-          {_.times(frameCount, () => (
-            <span className="gifit__frames-viz__frame"></span>
+          {_.times(frameCount, (i) => (
+            <span key={i} className="gifit__frames-viz__frame"></span>
           ))}
           <span className="gifit__frames-viz__count">{frameCount}</span>
         </div>
         
-        <label className="gifit__labelled-input">
-          <span className="gifit__labelled-input__label">End</span>
-          <div className="gifit__labelled-input__data">
-            <IncrementableInput
-              value={state.context.end}
-              increment={1 / state.context.fps}
-              min={state.context.start}
-              max={videoRef.current.duration}
-              width="200px"
-              onChange={handleEndInputChange} />
-          </div>
-        </label>
+        <div className="ggs__end">
+          <label className="gifit__labelled-input" ref={endRef}>
+            <span className="gifit__labelled-input__label">End</span>
+            <div className="gifit__labelled-input__data">
+              <IncrementableInput
+                value={state.context.end}
+                increment={1 / state.context.fps}
+                min={state.context.start}
+                max={videoRef.current.duration}
+                width="200px"
+                onChange={handleEndInputChange} />
+            </div>
+          </label>
+        </div>
       </div>
 
       <footer className="ggs__footer">
@@ -340,6 +358,15 @@ function GifGenerationSystem (props) {
           </a>
         </div>
       </footer>
+
+      <AestheticLines
+        widthRef={widthRef}
+        widthBarRef={widthBarRef}
+        heightRef={heightRef}
+        heightBarRef={heightBarRef}
+        startRef={startRef}
+        endRef={endRef}
+        timeBarRef={timeBarRef} />
     </form>
   );
 }

@@ -82,14 +82,6 @@ function ControlBar (props) {
   const [state, send] = useMachine(controlBarMachine);
   const controlBarRef = useRef(null);
 
-  function handleMouseDown (event) {
-    const position = getPosition(controlBarRef.current, event);
-    send('START', {
-      position,
-      precise: event.shiftKey
-    });
-  }
-
   const handleMouseMove = _.throttle(function (event) {
     const position = getPosition(controlBarRef.current, event);
     send('SLIDE', { position, precise: event.shiftKey });
@@ -98,17 +90,21 @@ function ControlBar (props) {
   function handleMouseUp (event) {
     const position = getPosition(controlBarRef.current, event);
     send('END', { position, precise: event.shiftKey });
+
+    window.removeEventListener('mouseup', handleMouseUp);
+    window.removeEventListener('mousemove', handleMouseMove);
   }
 
-  useEffect(() => {
+  function handleMouseDown (event) {
+    const position = getPosition(controlBarRef.current, event);
+    send('START', {
+      position,
+      precise: event.shiftKey
+    });
+
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
+  }
 
   useEffect(() => {
     props.onChange({ start: state.context.start, end: state.context.end, changed: 'start' });

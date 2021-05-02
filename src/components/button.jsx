@@ -7,6 +7,7 @@ const buttonClassName = css`
   display: inline-flex;
   justify-content: space-around;
   align-content: center;
+  align-items: stretch;
 
   cursor: pointer;
   font-family: Inter, sans-serif;

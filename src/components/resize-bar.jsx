@@ -102,16 +102,6 @@ function ControlBar (props) {
   const [state, send] = useMachine(resizeBarMachine);
   const controlBarRef = useRef(null);
 
-  function handleMouseDown (event) {
-    const position = getPosition(event.clientX, event.clientY, props.orientation);
-    send('START', {
-      initialSize: props.value,
-      position,
-      handle: event.target.dataset.handle,
-      precise: event.shiftKey
-    });
-  }
-
   const handleMouseMove = _.throttle(function (event) {
     const position = getPosition(event.clientX, event.clientY, props.orientation);
     send('SLIDE', {
@@ -126,17 +116,23 @@ function ControlBar (props) {
       position,
       precise: event.shiftKey
     });
+
+    window.removeEventListener('mouseup', handleMouseUp);
+    window.removeEventListener('mousemove', handleMouseMove);
   }
 
-  useEffect(() => {
+  function handleMouseDown (event) {
+    const position = getPosition(event.clientX, event.clientY, props.orientation);
+    send('START', {
+      initialSize: props.value,
+      position,
+      handle: event.target.dataset.handle,
+      precise: event.shiftKey
+    });
+
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
+  }
 
   useEffect(() => {
     props.onChange({
@@ -187,7 +183,7 @@ ControlBar.propTypes = {
   minimum: PropTypes.number,
   onChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
-  orientation: PropTypes.oneOf('horizontal', 'vertical')
+  orientation: PropTypes.oneOf(['horizontal', 'vertical'])
 };
 
 ControlBar.defaultProps = {

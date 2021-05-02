@@ -4,7 +4,8 @@ const plugins = [
     'root': ['./src'],
     'alias': {
       '$components': './src/components',
-      '$icons': './src/icons'
+      '$icons': './src/icons',
+      '$hooks': './src/hooks'
     }
   }]
 ];

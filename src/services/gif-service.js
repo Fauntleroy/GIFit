@@ -51,7 +51,7 @@ class GifService extends EventEmitter {
 
     // Initialize GIF maker
     this.gif = new window.GIF({
-      workers: 8,
+      workers: 4,
       quality,
       repeat: 0,
       width: config.width,

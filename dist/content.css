@@ -1,7 +1,7 @@
 :root {
   --color-shade: hsla(0, 0%, 0%, 0.175);
   --color-shadeactive: hsla(0, 0%, 0%, 0.35);
-  --color-nightshade: hsla(240, 21.6%, 14.5%, 0.9);
+  --color-nightshade: hsla(240, 21.6%, 14.5%, 0.95);
   --color-aluminum-blue: hsl(225deg 100% 80%);
   --color-intensity-red: hsl(350, 100%, 60%);
   --color-system: var(--color-aluminum-blue);
@@ -29,8 +29,6 @@ input[type=number] {
   bottom: 0;
   left: 0;
   background: var(--color-nightshade);
-  box-shadow: inset rgb(0 0 0%) 0 0 10vw;
-  backdrop-filter: blur(4px);
   font-family: Inter, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
@@ -86,6 +84,7 @@ input[type=number] {
   margin-left: -10px;
 }
 .ggs {
+  transform: translateZ(0.1);
   position: relative;
   display: grid;
   grid-gap: 20px;
@@ -212,7 +211,11 @@ input[type=number] {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding-top: 25px;
+  padding-top: 10px;
+}
+.ggs__start,
+.ggs__end {
+  padding-top: 15px;
 }
 .ggs__time__bar {
   flex-basis: 100%;
@@ -230,17 +233,18 @@ input[type=number] {
 }
 .gifit__frames-viz {
   margin: 10px;
-  max-width: 150px;
+  width: 150px;
   line-height: 1px;
+  text-align: center;
+  color: var(--color-system);
+  opacity: 0.25;
 }
 .gifit__frames-viz__frame {
   display: inline-block;
   width: 1px;
   height: 2px;
   margin: 1px;
-  background: var(--color-system);
-  border-radius: 50%;
-  opacity: 0.25;
+  background: currentColor;
 }
 .gifit__frames-viz__count {
   font-size: 8px;
@@ -248,6 +252,4 @@ input[type=number] {
   line-height: 1;
   float: left;
   margin: 1px;
-  color: var(--color-system);
-  opacity: 0.5;
 }
