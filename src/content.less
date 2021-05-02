@@ -1,13 +1,12 @@
 :root {
+	--hsl-aluminum-blue: 225deg, 100%, 80%;
 	--color-shade: hsla(0, 0%, 0%, 0.175);
 	--color-shadeactive: hsla(0, 0%, 0%, 0.35);
-	--color-nightshade: hsla(240, 21.6%, 14.5%, 0.95);
-	--color-aluminum-blue: hsl(225deg 100% 80%);
+	--color-nightshade: hsla(240, 21.6%, 18.5%, 0.95);
 	--color-intensity-red: hsl(350deg, 100%, 60%);
-	--color-system: var(--color-aluminum-blue);
+	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
+	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.35);
 	--color-highlight: var(--color-intensity-red);
-
-	--system-interface-opacity: 0.65;
 
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -89,7 +88,6 @@ input[type=number] {
 		text-transform: none;
 		letter-spacing: normal;
 		color: var(--color-system);
-		opacity: 0.5;
 	}
 
 	&__input-info {
@@ -102,19 +100,10 @@ input[type=number] {
 .ggs {
 	transform: translateZ(0.1); // perf?
 	position: relative;
-	display: grid;
-	grid-gap: 20px;
-	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: 35px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
-	grid-template-areas:
-		"header header header"
-		". width-bar ."
-		"dimensions workspace quality-and-frame-rate"
-		"start-and-end start-and-end start-and-end"
-		"footer footer footer";
 	
 	input[type="text"],
 	input[type="number"] {
+		position: relative;
 		display: inline-block;
 		width: 0;
 		min-width: 70px;
@@ -134,12 +123,37 @@ input[type=number] {
 
 		transition: background 250ms;
 
+		&::after {
+			content: '';
+			display: block;
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: black;
+			position: absolute;
+			top: 3px;
+			right: 4px;
+		}
+
 		&:hover,
 		&:focus {
 			outline: none;
 			background: var(--color-shadeactive);
 		}
 	}
+}
+
+.ggs__form {
+	display: grid;
+	grid-gap: 20px;
+	grid-template-columns: 150px minmax(150px, 1fr) 150px;
+	grid-template-rows: 35px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-areas:
+		"header header header"
+		". width-bar ."
+		"dimensions workspace quality-and-frame-rate"
+		"start-and-end start-and-end start-and-end"
+		"footer footer footer";
 }
 
 .ggs__corner {
@@ -151,25 +165,25 @@ input[type=number] {
 	border-radius: 2px;
 	opacity: var(--system-interface-opacity);
 	
-	&:nth-child(1) {
+	&:nth-of-type(1) {
 		top: 0;
 		left: 0;
 		transform: rotate(-45deg);
 	}
 
-	&:nth-child(2) {
+	&:nth-of-type(2) {
 		top: 0;
 		right: 0;
 		transform: rotate(45deg);
 	}
 
-	&:nth-child(3) {
+	&:nth-of-type(3) {
 		bottom: 0;
 		right: 0;
 		transform: rotate(-45deg);
 	}
 
-	&:nth-child(4) {
+	&:nth-of-type(4) {
 		bottom: 0;
 		left: 0;
 		transform: rotate(45deg);
@@ -181,6 +195,9 @@ input[type=number] {
 	align-self: center;
 	justify-self: center;
 	margin-bottom: 15px;
+}
+
+.ggs__label {
 	padding: 4px 20px;
 	border: var(--color-system) 1px solid;
 	border-radius: 3px;
@@ -283,9 +300,7 @@ input[type=number] {
 	width: 150px;
 	line-height: 1px;
 	text-align: center;
-	opacity: 0.25;
-	color: var(--color-system);
-	opacity: 0.25;
+	color: var(--color-subsystem);
 }
 
 .gifit__frames-viz__frame {

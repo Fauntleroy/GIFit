@@ -12,7 +12,6 @@ const aestheticLinesClassName = css`
   left: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.25;
   pointer-events: none;
 `;
 
@@ -45,7 +44,7 @@ function AestheticLines (props) {
           { x: widthBarRef.current.offsetLeft + (widthBarRef.current.offsetWidth / 2),
             y: widthBarRef.current.offsetTop }
         ]}
-        stroke="var(--color-system)"
+        stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
         fill="none"
@@ -59,7 +58,7 @@ function AestheticLines (props) {
           { x: heightBarRef.current.offsetLeft + (heightBarRef.current.offsetWidth / 2),
             y: heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2) }
         ]}
-        stroke="var(--color-system)"
+        stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
         fill="none"
@@ -75,7 +74,7 @@ function AestheticLines (props) {
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}
-        stroke="var(--color-system)"
+        stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
         fill="none"
@@ -91,7 +90,7 @@ function AestheticLines (props) {
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}
-        stroke="var(--color-system)"
+        stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
         fill="none"

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
+import { motion } from 'framer-motion';
 import { useDebouncedCallback } from 'use-debounce';
 import { useMachine } from '@xstate/react';
 
@@ -10,6 +11,7 @@ import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
 import AestheticLines from '$components/aesthetic-lines.jsx';
+import SystemElements from '$components/system-elements.jsx';
 
 import ArrowDown from '$icons/arrow-down.svg';
 import Cancel from '$icons/cancel.svg';
@@ -53,21 +55,10 @@ function GifGenerationSystem (props) {
   const timeBarRef = useRef(null);
   const startRef = useRef(null);
   const endRef = useRef(null);
+  const formRef = useRef(null);
   const contextRef = useRef(state.context);
   const widthProps = useSpring({ to: { width: workspaceWidth }});
   const heightProps = useSpring({ to: { height: workspaceHeight }});
-  const formProps = useSpring({
-    to: {
-      opacity: state.matches('initializing') ? 0 : 1,
-      scale: state.matches('initializing') ? 0.9 : 1
-    },
-    delay: 500,
-    config: {
-      mass: 1,
-      tension: 750,
-      friction: 35
-    }
-  });
   const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
 
   // draw the video to the preview canvas
@@ -106,7 +97,7 @@ function GifGenerationSystem (props) {
     });
 
     return () => {
-      videoRef.current.removeEventListener('seekd', drawFrame);
+      videoRef.current.removeEventListener('seeked', drawFrame);
     };
   }, []);
 
@@ -232,157 +223,157 @@ function GifGenerationSystem (props) {
   }
 
   return (
-    <animated.form
-      className="gif-generation-system ggs"
-      style={{ ...formProps }}
-      onSubmit={handleFormSubmit}>
-      <span className="ggs__corner" />
-      <span className="ggs__corner" />
-      <span className="ggs__corner" />
-      <span className="ggs__corner" />
+    <div className="gif-generation-system ggs">
 
-      <header className="ggs__head">
-        GIF Generation System
-      </header>
+      <SystemElements initialized={!state.matches('initializing')} />
 
-      <div
-        className="ggs__width__bar"
-        style={{ width: `${state.context.width}px` }}
-        ref={widthBarRef}>
-        <ResizeBar 
-          value={state.context.width}
-          onChange={handleWidthControlBarChange}
-          disabled={!state.matches('configuring')} />
-      </div>
+      <motion.form
+        className="ggs__form"
+        initial={{ opacity: 0, transform: 'scale(0.95)' }}
+        animate={{ opacity: 1, transform: 'scale(1)' }}
+        transition={{ type: 'spring', damping: 35, delay: 1, stiffness: 650 }}
+        onSubmit={handleFormSubmit}
+        ref={formRef}>
 
-      <div className="ggs__dimensions">
-        <div className="ggs__width" ref={widthRef}>
-          <LabelledInput
-            name="Width"
-            addendum="px"
-            value={state.context.width}
-            onChange={handleWidthInputChange}
-            width={100} />
-        </div>
-        <div className="ggs__height" ref={heightRef}>
-          <LabelledInput
-            name="Height"
-            addendum="px"
-            value={state.context.height}
-            onChange={handleHeightInputChange}
-            width={100} />
-        </div>
         <div
-          className="ggs__height__bar"
-          style={{ height: `${state.context.height}px` }}
-          ref={heightBarRef}>
-          <ResizeBar
-            orientation="vertical"
-            value={state.context.height}
-            onChange={handleHeightControlBarChange}
+          className="ggs__width__bar"
+          style={{ width: `${state.context.width}px` }}
+          ref={widthBarRef}>
+          <ResizeBar 
+            value={state.context.width}
+            onChange={handleWidthControlBarChange}
             disabled={!state.matches('configuring')} />
         </div>
-      </div>
-      <div className="ggs__workspace">
-        {state.matches({ generating: { generatingGif: 'succeeded' }}) &&
-        <img src={URL.createObjectURL(state.context.gifData.blob)} />}
-        {!state.matches({ generating: { generatingGif: 'succeeded' }}) &&
-        <animated.canvas
-          className="ggs__canvas"
-          ref={canvasRef}
-          style={{ ...widthProps, ...heightProps, willChange: 'width, height' }}
-          height={state.context.height}
-          width={state.context.width} />}
-      </div>
-      <div className="ggs__quality-and-frame-rate">
-        <LabelledInput
-          name="Quality"
-          value={state.context.quality}
-          onChange={handleQualityInputChange} />
-        <LabelledInput
-          name="Frame Rate"
-          addendum="fps"
-          value={state.context.fps}
-          onChange={handleFrameRateInputChange} />
-      </div>
-      <div className="ggs__start-and-end">
-        <div className="ggs__time__bar" ref={timeBarRef}>
-          <ControlBar
-            startValue={state.context.start / videoRef.current.duration}
-            endValue={state.context.end / videoRef.current.duration}
-            onChange={handleStartEndControlBarChange}
-            disabled={!state.matches('configuring')} />
+
+        <div className="ggs__dimensions">
+          <div className="ggs__width" ref={widthRef}>
+            <LabelledInput
+              name="Width"
+              addendum="px"
+              value={state.context.width}
+              onChange={handleWidthInputChange}
+              width={100} />
+          </div>
+          <div className="ggs__height" ref={heightRef}>
+            <LabelledInput
+              name="Height"
+              addendum="px"
+              value={state.context.height}
+              onChange={handleHeightInputChange}
+              width={100} />
+          </div>
+          <div
+            className="ggs__height__bar"
+            style={{ height: `${state.context.height}px` }}
+            ref={heightBarRef}>
+            <ResizeBar
+              orientation="vertical"
+              value={state.context.height}
+              onChange={handleHeightControlBarChange}
+              disabled={!state.matches('configuring')} />
+          </div>
         </div>
-        <div className="ggs__start">
-          <label className="gifit__labelled-input" ref={startRef}>
-            <span className="gifit__labelled-input__label">Start</span>
-            <div className="gifit__labelled-input__data">
-              <IncrementableInput
-                value={state.context.start}
-                increment={1 / state.context.fps}
-                min={0}
-                max={state.context.end}
-                width="200px"
-                onChange={handleStartInputChange} />
-            </div>
-          </label>
+        <div className="ggs__workspace">
+          {state.matches({ generating: { generatingGif: 'succeeded' }}) &&
+          <img src={URL.createObjectURL(state.context.gifData.blob)} />}
+          {!state.matches({ generating: { generatingGif: 'succeeded' }}) &&
+          <animated.canvas
+            className="ggs__canvas"
+            ref={canvasRef}
+            style={{ ...widthProps, ...heightProps, willChange: 'width, height' }}
+            height={state.context.height}
+            width={state.context.width} />}
+        </div>
+        <div className="ggs__quality-and-frame-rate">
+          <LabelledInput
+            name="Quality"
+            value={state.context.quality}
+            onChange={handleQualityInputChange} />
+          <LabelledInput
+            name="Frame Rate"
+            addendum="fps"
+            value={state.context.fps}
+            onChange={handleFrameRateInputChange} />
+        </div>
+        <div className="ggs__start-and-end">
+          <div className="ggs__time__bar" ref={timeBarRef}>
+            <ControlBar
+              startValue={state.context.start / videoRef.current.duration}
+              endValue={state.context.end / videoRef.current.duration}
+              onChange={handleStartEndControlBarChange}
+              disabled={!state.matches('configuring')} />
+          </div>
+          <div className="ggs__start">
+            <label className="gifit__labelled-input" ref={startRef}>
+              <span className="gifit__labelled-input__label">Start</span>
+              <div className="gifit__labelled-input__data">
+                <IncrementableInput
+                  value={state.context.start}
+                  increment={1 / state.context.fps}
+                  min={0}
+                  max={state.context.end}
+                  width="200px"
+                  onChange={handleStartInputChange} />
+              </div>
+            </label>
+          </div>
+
+          <div className="gifit__frames-viz">
+            {_.times(frameCount, (i) => (
+              <span key={i} className="gifit__frames-viz__frame"></span>
+            ))}
+            <span className="gifit__frames-viz__count">{frameCount}</span>
+          </div>
+          
+          <div className="ggs__end">
+            <label className="gifit__labelled-input" ref={endRef}>
+              <span className="gifit__labelled-input__label">End</span>
+              <div className="gifit__labelled-input__data">
+                <IncrementableInput
+                  value={state.context.end}
+                  increment={1 / state.context.fps}
+                  min={state.context.start}
+                  max={videoRef.current.duration}
+                  width="200px"
+                  onChange={handleEndInputChange} />
+              </div>
+            </label>
+          </div>
         </div>
 
-        <div className="gifit__frames-viz">
-          {_.times(frameCount, (i) => (
-            <span key={i} className="gifit__frames-viz__frame"></span>
-          ))}
-          <span className="gifit__frames-viz__count">{frameCount}</span>
-        </div>
-        
-        <div className="ggs__end">
-          <label className="gifit__labelled-input" ref={endRef}>
-            <span className="gifit__labelled-input__label">End</span>
-            <div className="gifit__labelled-input__data">
-              <IncrementableInput
-                value={state.context.end}
-                increment={1 / state.context.fps}
-                min={state.context.start}
-                max={videoRef.current.duration}
-                width="200px"
-                onChange={handleEndInputChange} />
-            </div>
-          </label>
-        </div>
-      </div>
+        <footer className="ggs__footer">
+          <div className="ggs__actions">
+            <span className="ggs__action">
+              <Button
+                type="submit"
+                icon={submitButtonContents[1]}>
+                {submitButtonContents[0]}
+              </Button>
+            </span>
+            <a
+              className="ggs__save ggs__action"
+              href={state?.context?.gifData?.blob ? URL.createObjectURL(state.context.gifData.blob) : null}
+              download={`gifit_${Date.now()}.gif`}>
+              <Button
+                type="button"
+                icon={<ArrowDown />}
+                disabled={!state.matches({ generating: { generatingGif: 'succeeded' }})}>
+                Save GIF
+              </Button>
+            </a>
+          </div>
+        </footer>
 
-      <footer className="ggs__footer">
-        <div className="ggs__actions">
-          <span className="ggs__action">
-            <Button
-              type="submit"
-              icon={submitButtonContents[1]}>
-              {submitButtonContents[0]}
-            </Button>
-          </span>
-          <a
-            className="ggs__save ggs__action"
-            href={state?.context?.gifData?.blob ? URL.createObjectURL(state.context.gifData.blob) : null}
-            download={`gifit_${Date.now()}.gif`}>
-            <Button
-              type="button"
-              icon={<ArrowDown />}
-              disabled={!state.matches({ generating: { generatingGif: 'succeeded' }})}>
-              Save GIF
-            </Button>
-          </a>
-        </div>
-      </footer>
-
-      <AestheticLines
-        widthRef={widthRef}
-        widthBarRef={widthBarRef}
-        heightRef={heightRef}
-        heightBarRef={heightBarRef}
-        startRef={startRef}
-        endRef={endRef}
-        timeBarRef={timeBarRef} />
-    </animated.form>
+        <AestheticLines
+          widthRef={widthRef}
+          widthBarRef={widthBarRef}
+          heightRef={heightRef}
+          heightBarRef={heightBarRef}
+          startRef={startRef}
+          endRef={endRef}
+          timeBarRef={timeBarRef} />
+      </motion.form>
+    </div>
   );
 }
 
