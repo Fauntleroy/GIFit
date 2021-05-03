@@ -10,6 +10,7 @@ function useFrameRate (config) {
   const [currentTime, setCurrentTime] = useState(firstTimestamp);
   const timeBetweenFrames = 1000 / fps;
   let lastFrame = null;
+  let rafId;
 
   function rafLoopFn (timestamp) {
     const timeSinceInit = timestamp - firstTimestamp;
@@ -22,11 +23,15 @@ function useFrameRate (config) {
       lastFrame = _currentFrame;
     }
 
-    requestAnimationFrame(rafLoopFn);
+    rafId = window.requestAnimationFrame(rafLoopFn);
   }
 
   useEffect(() => {
-    requestAnimationFrame(rafLoopFn);
+    rafId = window.requestAnimationFrame(rafLoopFn);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return [currentFrame, currentTime - firstTimestamp];

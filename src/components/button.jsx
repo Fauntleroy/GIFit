@@ -32,6 +32,11 @@ const buttonClassName = css`
     background: var(--color-highlight);
   }
 
+  &:active {
+    transform: scale(0.975);
+    transition: transform 0ms;
+  }
+
   &:disabled {
     filter: contrast(0.5);
     background: var(--color-system);

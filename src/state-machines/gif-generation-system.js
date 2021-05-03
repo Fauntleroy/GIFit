@@ -133,7 +133,7 @@ const gifGenerationSystemMachine = new Machine({
     setInitialDimensions: assign((context, event) => {
       const { videoElement } = event;
       const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
-      const aspectCorrectHeight = parseInt(DEFAULT_WIDTH / videoAspectRatio, 10);
+      const aspectCorrectHeight = _.round(DEFAULT_WIDTH / videoAspectRatio);
 
       return {
         width: DEFAULT_WIDTH,

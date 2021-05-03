@@ -1,7 +1,6 @@
 import _ from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useDebouncedCallback } from 'use-debounce';
 import { useMachine } from '@xstate/react';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
@@ -17,20 +16,21 @@ import Cancel from '$icons/cancel.svg';
 import MediaPlay from '$icons/media-play.svg';
 import Refresh from '$icons/refresh.svg';
 
-function LabelledInput (props) {
+function LabelledInput ({ name, width, value, onChange, addendum, ...passthroughProps }) {
   return (
     <label className="gifit__labelled-input">
-      <span className="gifit__labelled-input__label">{props.name}</span>
+      <span className="gifit__labelled-input__label">{name}</span>
       <div className="gifit__labelled-input__data">
         <input
           className="gifit__labelled-input__input"
           type="number"
           style={{
-            width: `${props.width}px`
+            width: `${width}px`
           }}
-          value={props.value}
-          onChange={props.onChange} />
-        {props.addendum && <span className="gifit__labelled-input__addendum">{props.addendum}</span>}
+          value={value}
+          onChange={onChange}
+          {...passthroughProps} />
+        {addendum && <span className="gifit__labelled-input__addendum">{addendum}</span>}
       </div>
     </label>
   );
@@ -68,7 +68,7 @@ function GifGenerationSystem (props) {
     }
   }
 
-  const debouncedDrawFrame = _.debounce(drawFrame, 250);
+  const debouncedDrawFrame = _.debounce(drawFrame, 375);
 
   useEffect(() => {
     debouncedDrawFrame();
@@ -96,16 +96,17 @@ function GifGenerationSystem (props) {
     };
   }, []);
 
+  // TODO don't seek on initial open
   // scrub the video to the start timecode when it changes
   useEffect(() => {
-    if (_.isNumber(state.context.start) && !_.isNaN(state.context.start) && state.context.videoElement) {
+    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
       state.context.videoElement.currentTime = state.context.start;
     }
   }, [state.context.start]);
 
   // scrub the video to the end timecode when it changes
   useEffect(() => {
-    if (_.isNumber(state.context.end) && !_.isNaN(state.context.end) && state.context.videoElement) {
+    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
       state.context.videoElement.currentTime = state.context.end;
     }
   }, [state.context.end]);
@@ -208,13 +209,13 @@ function GifGenerationSystem (props) {
   return (
     <div className="gif-generation-system ggs">
 
-      <SystemElements initialized={!state.matches('initializing')} />
+      <SystemElements />
 
       <motion.form
         className="ggs__form"
         initial={{ opacity: 0, transform: 'scale(0.95)' }}
         animate={{ opacity: 1, transform: 'scale(1)' }}
-        transition={{ type: 'spring', damping: 35, delay: 1, stiffness: 650 }}
+        transition={{ type: 'spring', damping: 45, delay: 1.15, stiffness: 500 }}
         onSubmit={handleFormSubmit}
         ref={formRef}>
 
@@ -235,7 +236,8 @@ function GifGenerationSystem (props) {
               addendum="px"
               value={state.context.width}
               onChange={handleWidthInputChange}
-              width={100} />
+              width={100}
+              disabled={!state.matches('configuring')} />
           </div>
           <div className="ggs__height" ref={heightRef}>
             <LabelledInput
@@ -243,7 +245,8 @@ function GifGenerationSystem (props) {
               addendum="px"
               value={state.context.height}
               onChange={handleHeightInputChange}
-              width={100} />
+              width={100}
+              disabled={!state.matches('configuring')} />
           </div>
           <div
             className="ggs__height__bar"
@@ -273,12 +276,14 @@ function GifGenerationSystem (props) {
           <LabelledInput
             name="Quality"
             value={state.context.quality}
-            onChange={handleQualityInputChange} />
+            onChange={handleQualityInputChange}
+            disabled={!state.matches('configuring')} />
           <LabelledInput
             name="Frame Rate"
             addendum="fps"
             value={state.context.fps}
-            onChange={handleFrameRateInputChange} />
+            onChange={handleFrameRateInputChange}
+            disabled={!state.matches('configuring')} />
         </div>
         <div className="ggs__start-and-end">
           <div className="ggs__time__bar" ref={timeBarRef}>
@@ -298,7 +303,8 @@ function GifGenerationSystem (props) {
                   min={0}
                   max={state.context.end}
                   width="200px"
-                  onChange={handleStartInputChange} />
+                  onChange={handleStartInputChange}
+                  disabled={!state.matches('configuring')} />
               </div>
             </label>
           </div>
@@ -320,7 +326,8 @@ function GifGenerationSystem (props) {
                   min={state.context.start}
                   max={videoRef.current.duration}
                   width="200px"
-                  onChange={handleEndInputChange} />
+                  onChange={handleEndInputChange}
+                  disabled={!state.matches('configuring')} />
               </div>
             </label>
           </div>

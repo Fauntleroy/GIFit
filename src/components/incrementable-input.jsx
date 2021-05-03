@@ -38,15 +38,18 @@ const incrementableInputClassName = css`
   }
 `;
 
-function IncrementableInput (props) {
+function IncrementableInput ({
+  increment, onChange, value, min, max, width, disabled,
+  ...passthroughProps
+}) {
   function handleIncrement () {
-    const newValue = Math.min(props.max, (props.value + props.increment));
-    props.onChange(newValue);
+    const newValue = Math.min(max, (value + increment));
+    onChange(newValue);
   }
 
   function handleDecrement () {
-    const newValue = Math.max(props.min, (props.value - props.increment));
-    props.onChange(newValue);
+    const newValue = Math.max(min, (value - increment));
+    onChange(newValue);
   }
 
   return (
@@ -54,22 +57,26 @@ function IncrementableInput (props) {
       <button
         className="decrementor"
         type="button"
-        onClick={handleDecrement}>
+        onClick={handleDecrement}
+        disabled={disabled}>
         <ChevronLeft style={{ width: '14px' }} />
       </button>
       <input
         className="input"
         type="text"
         inputMode="numeric"
-        value={props.value}
+        value={value}
         style={{
-          width: props.width
+          width: width
         }}
-        onChange={props.onChange} />
+        onChange={onChange}
+        disabled={disabled}
+        {...passthroughProps} />
       <button
         className="incrementor"
         type="button"
-        onClick={handleIncrement}>
+        onClick={handleIncrement}
+        disabled={disabled}>
         <ChevronRight style={{ width: '14px' }} />
       </button>
     </span>
@@ -82,14 +89,16 @@ IncrementableInput.propTypes = {
   value: PropTypes.number.isRequired,
   min: PropTypes.number,
   max: PropTypes.number,
-  width: PropTypes.string
+  width: PropTypes.string,
+  disabled: PropTypes.bool
 };
 
 IncrementableInput.defaultProps = {
   increment: 1,
   min: 0,
   max: Infinity,
-  width: '100px'
+  width: '100px',
+  disabled: false
 };
 
 export default IncrementableInput;

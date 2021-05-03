@@ -1434,7 +1434,7 @@ function useActor(actorRef, getSnapshot) {
 }
 exports.useActor = useActor;
 
-},{"./useConstant":19,"react":186,"use-isomorphic-layout-effect":200}],19:[function(require,module,exports){
+},{"./useConstant":19,"react":186,"use-isomorphic-layout-effect":196}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = require("react");
@@ -1564,7 +1564,7 @@ function useInterpret(getMachine, options, observerOrListener) {
 exports.useInterpret = useInterpret;
 
 }).call(this)}).call(this,require('_process'))
-},{"./useConstant":19,"./useReactEffectActions":22,"_process":172,"react":186,"use-isomorphic-layout-effect":200,"xstate":210}],21:[function(require,module,exports){
+},{"./useConstant":19,"./useReactEffectActions":22,"_process":172,"react":186,"use-isomorphic-layout-effect":196,"xstate":206}],21:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -1652,7 +1652,7 @@ function useMachine(getMachine, options) {
 }
 exports.useMachine = useMachine;
 
-},{"./types":17,"./useInterpret":20,"react":186,"xstate":210}],22:[function(require,module,exports){
+},{"./types":17,"./useInterpret":20,"react":186,"xstate":206}],22:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -1721,7 +1721,7 @@ function useReactEffectActions(service) {
 }
 exports.useReactEffectActions = useReactEffectActions;
 
-},{"./types":17,"./useMachine":21,"./utils":25,"react":186,"use-isomorphic-layout-effect":200}],23:[function(require,module,exports){
+},{"./types":17,"./useMachine":21,"./utils":25,"react":186,"use-isomorphic-layout-effect":196}],23:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -65479,316 +65479,6 @@ arguments[4][165][0].apply(exports,arguments)
 
 
 },{}],196:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var useDebounce_1 = require("./useDebounce");
-exports.useDebounce = useDebounce_1.default;
-var useDebouncedCallback_1 = require("./useDebouncedCallback");
-exports.useDebouncedCallback = useDebouncedCallback_1.default;
-var useThrottledCallback_1 = require("./useThrottledCallback");
-exports.useThrottledCallback = useThrottledCallback_1.default;
-
-},{"./useDebounce":197,"./useDebouncedCallback":198,"./useThrottledCallback":199}],197:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-var useDebouncedCallback_1 = require("./useDebouncedCallback");
-function valueEquality(left, right) {
-    return left === right;
-}
-function adjustFunctionValueOfSetState(value) {
-    return typeof value === 'function' ? function () { return value; } : value;
-}
-function useStateIgnoreCallback(initialState) {
-    var _a = react_1.useState(adjustFunctionValueOfSetState(initialState)), state = _a[0], setState = _a[1];
-    var setStateIgnoreCallback = react_1.useCallback(function (value) { return setState(adjustFunctionValueOfSetState(value)); }, []);
-    return [state, setStateIgnoreCallback];
-}
-function useDebounce(value, delay, options) {
-    var eq = (options && options.equalityFn) || valueEquality;
-    var _a = useStateIgnoreCallback(value), state = _a[0], dispatch = _a[1];
-    var debounced = useDebouncedCallback_1.default(react_1.useCallback(function (value) { return dispatch(value); }, [dispatch]), delay, options);
-    var previousValue = react_1.useRef(value);
-    react_1.useEffect(function () {
-        // We need to use this condition otherwise we will run debounce timer for the first render (including maxWait option)
-        if (!eq(previousValue.current, value)) {
-            debounced(value);
-            previousValue.current = value;
-        }
-    }, [value, debounced, eq]);
-    return [state, { cancel: debounced.cancel, isPending: debounced.isPending, flush: debounced.flush }];
-}
-exports.default = useDebounce;
-
-},{"./useDebouncedCallback":198,"react":186}],198:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var react_1 = require("react");
-/**
- * Creates a debounced function that delays invoking `func` until after `wait`
- * milliseconds have elapsed since the last time the debounced function was
- * invoked, or until the next browser frame is drawn. The debounced function
- * comes with a `cancel` method to cancel delayed `func` invocations and a
- * `flush` method to immediately invoke them. Provide `options` to indicate
- * whether `func` should be invoked on the leading and/or trailing edge of the
- * `wait` timeout. The `func` is invoked with the last arguments provided to the
- * debounced function. Subsequent calls to the debounced function return the
- * result of the last `func` invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the debounced function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * If `wait` is omitted in an environment with `requestAnimationFrame`, `func`
- * invocation will be deferred until the next frame is drawn (typically about
- * 16ms).
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `debounce` and `throttle`.
- *
- * @category Function
- * @param {Function} func The function to debounce.
- * @param {number} [wait=0]
- *  The number of milliseconds to delay; if omitted, `requestAnimationFrame` is
- *  used (if available, otherwise it will be setTimeout(...,0)).
- * @param {Object} [options={}] The options object.
- *  Specify invoking on the leading edge of the timeout.
- * @param {boolean} [options.leading=false]
- *  The maximum time `func` is allowed to be delayed before it's invoked.
- * @param {number} [options.maxWait]
- *  Specify invoking on the trailing edge of the timeout.
- * @param {boolean} [options.trailing=true]
- * @returns {Function} Returns the new debounced function.
- * @example
- *
- * // Avoid costly calculations while the window size is in flux.
- * const resizeHandler = useDebouncedCallback(calculateLayout, 150);
- * window.addEventListener('resize', resizeHandler)
- *
- * // Invoke `sendMail` when clicked, debouncing subsequent calls.
- * const clickHandler = useDebouncedCallback(sendMail, 300, {
- *   leading: true,
- *   trailing: false,
- * })
- * <button onClick={clickHandler}>click me</button>
- *
- * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
- * const debounced = useDebouncedCallback(batchLog, 250, { 'maxWait': 1000 })
- * const source = new EventSource('/stream')
- * source.addEventListener('message', debounced)
- *
- * // Cancel the trailing debounced invocation.
- * window.addEventListener('popstate', debounced.cancel)
- *
- * // Check for pending invocations.
- * const status = debounced.pending() ? "Pending..." : "Ready"
- */
-function useDebouncedCallback(func, wait, options) {
-    var _this = this;
-    var lastCallTime = react_1.useRef(null);
-    var lastInvokeTime = react_1.useRef(0);
-    var timerId = react_1.useRef(null);
-    var lastArgs = react_1.useRef([]);
-    var lastThis = react_1.useRef();
-    var result = react_1.useRef();
-    var funcRef = react_1.useRef(func);
-    var mounted = react_1.useRef(true);
-    funcRef.current = func;
-    // Bypass `requestAnimationFrame` by explicitly setting `wait=0`.
-    var useRAF = !wait && wait !== 0 && typeof window !== 'undefined';
-    if (typeof func !== 'function') {
-        throw new TypeError('Expected a function');
-    }
-    wait = +wait || 0;
-    options = options || {};
-    var leading = !!options.leading;
-    var trailing = 'trailing' in options ? !!options.trailing : true; // `true` by default
-    var maxing = 'maxWait' in options;
-    var maxWait = maxing ? Math.max(+options.maxWait || 0, wait) : null;
-    react_1.useEffect(function () {
-        mounted.current = true;
-        return function () {
-            mounted.current = false;
-        };
-    }, []);
-    // You may have a question, why we have so many code under the useMemo definition.
-    //
-    // This was made as we want to escape from useCallback hell and
-    // not to initialize a number of functions each time useDebouncedCallback is called.
-    //
-    // It means that we have less garbage for our GC calls which improves performance.
-    // Also, it makes this library smaller.
-    //
-    // And the last reason, that the code without lots of useCallback with deps is easier to read.
-    // You have only one place for that.
-    var debounced = react_1.useMemo(function () {
-        var invokeFunc = function (time) {
-            var args = lastArgs.current;
-            var thisArg = lastThis.current;
-            lastArgs.current = lastThis.current = null;
-            lastInvokeTime.current = time;
-            return (result.current = funcRef.current.apply(thisArg, args));
-        };
-        var startTimer = function (pendingFunc, wait) {
-            if (useRAF)
-                cancelAnimationFrame(timerId.current);
-            timerId.current = useRAF ? requestAnimationFrame(pendingFunc) : setTimeout(pendingFunc, wait);
-        };
-        var shouldInvoke = function (time) {
-            if (!mounted.current)
-                return false;
-            var timeSinceLastCall = time - lastCallTime.current;
-            var timeSinceLastInvoke = time - lastInvokeTime.current;
-            // Either this is the first call, activity has stopped and we're at the
-            // trailing edge, the system time has gone backwards and we're treating
-            // it as the trailing edge, or we've hit the `maxWait` limit.
-            return (!lastCallTime.current ||
-                timeSinceLastCall >= wait ||
-                timeSinceLastCall < 0 ||
-                (maxing && timeSinceLastInvoke >= maxWait));
-        };
-        var trailingEdge = function (time) {
-            timerId.current = null;
-            // Only invoke if we have `lastArgs` which means `func` has been
-            // debounced at least once.
-            if (trailing && lastArgs.current) {
-                return invokeFunc(time);
-            }
-            lastArgs.current = lastThis.current = null;
-            return result.current;
-        };
-        var timerExpired = function () {
-            var time = Date.now();
-            if (shouldInvoke(time)) {
-                return trailingEdge(time);
-            }
-            // https://github.com/xnimorz/use-debounce/issues/97
-            if (!mounted.current) {
-                return;
-            }
-            // Remaining wait calculation
-            var timeSinceLastCall = time - lastCallTime.current;
-            var timeSinceLastInvoke = time - lastInvokeTime.current;
-            var timeWaiting = wait - timeSinceLastCall;
-            var remainingWait = maxing ? Math.min(timeWaiting, maxWait - timeSinceLastInvoke) : timeWaiting;
-            // Restart the timer
-            startTimer(timerExpired, remainingWait);
-        };
-        var func = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var time = Date.now();
-            var isInvoking = shouldInvoke(time);
-            lastArgs.current = args;
-            lastThis.current = _this;
-            lastCallTime.current = time;
-            if (isInvoking) {
-                if (!timerId.current && mounted.current) {
-                    // Reset any `maxWait` timer.
-                    lastInvokeTime.current = lastCallTime.current;
-                    // Start the timer for the trailing edge.
-                    startTimer(timerExpired, wait);
-                    // Invoke the leading edge.
-                    return leading ? invokeFunc(lastCallTime.current) : result.current;
-                }
-                if (maxing) {
-                    // Handle invocations in a tight loop.
-                    startTimer(timerExpired, wait);
-                    return invokeFunc(lastCallTime.current);
-                }
-            }
-            if (!timerId.current) {
-                startTimer(timerExpired, wait);
-            }
-            return result.current;
-        };
-        func.cancel = function () {
-            if (timerId.current) {
-                useRAF ? cancelAnimationFrame(timerId.current) : clearTimeout(timerId.current);
-            }
-            lastInvokeTime.current = 0;
-            lastArgs.current = lastCallTime.current = lastThis.current = timerId.current = null;
-        };
-        func.isPending = function () {
-            return !!timerId.current;
-        };
-        func.flush = function () {
-            return !timerId.current ? result.current : trailingEdge(Date.now());
-        };
-        return func;
-    }, [leading, maxing, wait, maxWait, trailing, useRAF]);
-    return debounced;
-}
-exports.default = useDebouncedCallback;
-
-},{"react":186}],199:[function(require,module,exports){
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var useDebouncedCallback_1 = require("./useDebouncedCallback");
-/**
- * Creates a throttled function that only invokes `func` at most once per
- * every `wait` milliseconds (or once per browser frame). The throttled function
- * comes with a `cancel` method to cancel delayed `func` invocations and a
- * `flush` method to immediately invoke them. Provide `options` to indicate
- * whether `func` should be invoked on the leading and/or trailing edge of the
- * `wait` timeout. The `func` is invoked with the last arguments provided to the
- * throttled function. Subsequent calls to the throttled function return the
- * result of the last `func` invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the throttled function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * If `wait` is omitted in an environment with `requestAnimationFrame`, `func`
- * invocation will be deferred until the next frame is drawn (typically about
- * 16ms).
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `throttle` and `debounce`.
- *
- * @category Function
- * @param {Function} func The function to throttle.
- * @param {number} [wait=0]
- *  The number of milliseconds to throttle invocations to; if omitted,
- *  `requestAnimationFrame` is used (if available, otherwise it will be setTimeout(...,0)).
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=true]
- *  Specify invoking on the leading edge of the timeout.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new throttled function.
- * @example
- *
- * // Avoid excessively updating the position while scrolling.
- * const scrollHandler = useThrottledCallback(updatePosition, 100)
- * window.addEventListener('scroll', scrollHandler)
- *
- * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
- * const { callback } = useThrottledCallback(renewToken, 300000, { 'trailing': false })
- * <button onClick={callback}>click</button>
- *
- * // Cancel the trailing throttled invocation.
- * window.addEventListener('popstate', throttled.cancel);
- */
-function useThrottledCallback(func, wait, _a) {
-    var _b = _a === void 0 ? {} : _a, _c = _b.leading, leading = _c === void 0 ? true : _c, _d = _b.trailing, trailing = _d === void 0 ? true : _d;
-    return useDebouncedCallback_1.default(func, wait, {
-        maxWait: wait,
-        leading: leading,
-        trailing: trailing,
-    });
-}
-exports.default = useThrottledCallback;
-
-},{"./useDebouncedCallback":198}],200:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -65799,7 +65489,7 @@ var index =  react.useLayoutEffect ;
 
 exports.default = index;
 
-},{"react":186}],201:[function(require,module,exports){
+},{"react":186}],197:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isSpawnedActor = exports.isActor = exports.createDeferredActor = exports.createInvocableActor = exports.createNullActor = void 0;
@@ -65862,7 +65552,7 @@ function isSpawnedActor(item) {
 }
 exports.isSpawnedActor = isSpawnedActor;
 
-},{"./serviceScope":218,"./utils":221}],202:[function(require,module,exports){
+},{"./serviceScope":214,"./utils":217}],198:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createMachine = exports.Machine = void 0;
@@ -65883,7 +65573,7 @@ function createMachine(config, options) {
 }
 exports.createMachine = createMachine;
 
-},{"./StateNode":204}],203:[function(require,module,exports){
+},{"./StateNode":200}],199:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -66120,7 +65810,7 @@ var State = /** @class */ (function () {
 }());
 exports.State = State;
 
-},{"./actions":206,"./constants":207,"./stateUtils":219,"./utils":221}],204:[function(require,module,exports){
+},{"./actions":202,"./constants":203,"./stateUtils":215,"./utils":217}],200:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -67503,7 +67193,7 @@ var StateNode = /** @class */ (function () {
 }());
 exports.StateNode = StateNode;
 
-},{"./Actor":201,"./State":203,"./actionTypes":205,"./actions":206,"./constants":207,"./environment":209,"./invokeUtils":212,"./stateUtils":219,"./types":220,"./utils":221}],205:[function(require,module,exports){
+},{"./Actor":197,"./State":199,"./actionTypes":201,"./actions":202,"./constants":203,"./environment":205,"./invokeUtils":208,"./stateUtils":215,"./types":216,"./utils":217}],201:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pure = exports.choose = exports.update = exports.error = exports.errorPlatform = exports.errorExecution = exports.invoke = exports.init = exports.log = exports.doneState = exports.after = exports.assign = exports.nullEvent = exports.cancel = exports.send = exports.raise = exports.stop = exports.start = void 0;
@@ -67528,7 +67218,7 @@ exports.update = types_1.ActionTypes.Update;
 exports.choose = types_1.ActionTypes.Choose;
 exports.pure = types_1.ActionTypes.Pure;
 
-},{"./types":220}],206:[function(require,module,exports){
+},{"./types":216}],202:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -67990,7 +67680,7 @@ function resolveActions(machine, currentState, currentContext, _event, actions) 
 }
 exports.resolveActions = resolveActions;
 
-},{"./actionTypes":205,"./environment":209,"./types":220,"./utils":221}],207:[function(require,module,exports){
+},{"./actionTypes":201,"./environment":205,"./types":216,"./utils":217}],203:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TARGETLESS_KEY = exports.DEFAULT_GUARD_TYPE = exports.EMPTY_ACTIVITY_MAP = exports.STATE_DELIMITER = void 0;
@@ -67999,7 +67689,7 @@ exports.EMPTY_ACTIVITY_MAP = {};
 exports.DEFAULT_GUARD_TYPE = 'xstate.guard';
 exports.TARGETLESS_KEY = '';
 
-},{}],208:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -68038,7 +67728,7 @@ function registerService(service) {
 exports.registerService = registerService;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./environment":209}],209:[function(require,module,exports){
+},{"./environment":205}],205:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -68046,7 +67736,7 @@ exports.IS_PRODUCTION = void 0;
 exports.IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":172}],210:[function(require,module,exports){
+},{"_process":172}],206:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -68108,7 +67798,7 @@ var actions = {
 exports.actions = actions;
 __exportStar(require("./types"), exports);
 
-},{"./Machine":202,"./State":203,"./StateNode":204,"./actions":206,"./interpreter":211,"./mapState":213,"./match":214,"./schema":217,"./types":220,"./utils":221}],211:[function(require,module,exports){
+},{"./Machine":198,"./State":199,"./StateNode":200,"./actions":202,"./interpreter":207,"./mapState":209,"./match":210,"./schema":213,"./types":216,"./utils":217}],207:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 var __assign = (this && this.__assign) || function () {
@@ -69211,7 +68901,7 @@ function interpret(machine, options) {
 exports.interpret = interpret;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Actor":201,"./State":203,"./actionTypes":205,"./actions":206,"./devTools":208,"./environment":209,"./registry":215,"./scheduler":216,"./serviceScope":218,"./stateUtils":219,"./types":220,"./utils":221}],212:[function(require,module,exports){
+},{"./Actor":197,"./State":199,"./actionTypes":201,"./actions":202,"./devTools":204,"./environment":205,"./registry":211,"./scheduler":212,"./serviceScope":214,"./stateUtils":215,"./types":216,"./utils":217}],208:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -69255,7 +68945,7 @@ function toInvokeDefinition(invokeConfig) {
 }
 exports.toInvokeDefinition = toInvokeDefinition;
 
-},{"./actions":206}],213:[function(require,module,exports){
+},{"./actions":202}],209:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -69294,7 +68984,7 @@ function mapState(stateMap, stateId) {
 }
 exports.mapState = mapState;
 
-},{"./utils":221}],214:[function(require,module,exports){
+},{"./utils":217}],210:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -69348,7 +69038,7 @@ function matchState(state, patterns, defaultValue) {
 }
 exports.matchState = matchState;
 
-},{"./State":203}],215:[function(require,module,exports){
+},{"./State":199}],211:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registry = void 0;
@@ -69370,7 +69060,7 @@ exports.registry = {
     }
 };
 
-},{}],216:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -69446,7 +69136,7 @@ var Scheduler = /** @class */ (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{}],217:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSchema = void 0;
@@ -69455,7 +69145,7 @@ function createSchema(schema) {
 }
 exports.createSchema = createSchema;
 
-},{}],218:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.consume = exports.provide = void 0;
@@ -69474,7 +69164,7 @@ exports.provide = provide;
 var consume = function (fn) { return fn(serviceStack[serviceStack.length - 1]); };
 exports.consume = consume;
 
-},{}],219:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -69702,7 +69392,7 @@ function isInFinalState(configuration, stateNode) {
 }
 exports.isInFinalState = isInFinalState;
 
-},{"./utils":221}],220:[function(require,module,exports){
+},{"./utils":217}],216:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpecialTargets = exports.ActionTypes = void 0;
@@ -69735,7 +69425,7 @@ var SpecialTargets;
     SpecialTargets["Internal"] = "#_internal";
 })(SpecialTargets = exports.SpecialTargets || (exports.SpecialTargets = {}));
 
-},{}],221:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -70362,7 +70052,7 @@ function toObserver(nextHandler, errorHandler, completionHandler) {
 }
 exports.toObserver = toObserver;
 
-},{"./constants":207,"./environment":209}],222:[function(require,module,exports){
+},{"./constants":203,"./environment":205}],218:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -70456,10 +70146,10 @@ function AestheticLines(props) {
       y: widthRef.current.offsetTop
     }, {
       x: widthRef.current.offsetLeft + widthRef.current.offsetWidth / 2,
-      y: widthBarRef.current.offsetTop - 30
+      y: widthBarRef.current.offsetTop - 20
     }, {
       x: widthBarRef.current.offsetLeft + widthBarRef.current.offsetWidth / 2,
-      y: widthBarRef.current.offsetTop - 30
+      y: widthBarRef.current.offsetTop - 20
     }, {
       x: widthBarRef.current.offsetLeft + widthBarRef.current.offsetWidth / 2,
       y: widthBarRef.current.offsetTop
@@ -70491,10 +70181,10 @@ function AestheticLines(props) {
       y: startRef.current.offsetTop
     }, {
       x: startRef.current.offsetLeft + startRef.current.offsetWidth / 2,
-      y: startRef.current.offsetTop - 18
+      y: startRef.current.offsetTop - 13
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-      y: startRef.current.offsetTop - 18
+      y: startRef.current.offsetTop - 13
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -70510,10 +70200,10 @@ function AestheticLines(props) {
       y: endRef.current.offsetTop
     }, {
       x: endRef.current.offsetLeft + endRef.current.offsetWidth / 2,
-      y: endRef.current.offsetTop - 22
+      y: endRef.current.offsetTop - 18
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-      y: endRef.current.offsetTop - 22
+      y: endRef.current.offsetTop - 18
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -70538,7 +70228,7 @@ AestheticLines.propTypes = {
 var _default = AestheticLines;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":232,"./pathline.jsx":228,"@emotion/css":5,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"prop-types":176,"react":186}],223:[function(require,module,exports){
+},{"../hooks/use-frame-rate":228,"./pathline.jsx":224,"@emotion/css":5,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"prop-types":176,"react":186}],219:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -70580,7 +70270,7 @@ function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) r
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-var buttonClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: inline-flex;\n  justify-content: space-around;\n  align-content: center;\n  align-items: stretch;\n\n  cursor: pointer;\n  font-family: Inter, sans-serif;\n  font-size: 11px;\n  text-transform: uppercase;\n  font-weight: 600;\n  line-height: 1.25;\n  letter-spacing: 3px;\n  text-decoration: none;\n\n  min-width: 175px;\n  border: none;\n  border-radius: 3px;\n  padding: 0;\n\n  background: white;\n  color: rgb(25, 25, 25);\n\n  transition: all 250ms var(--ease-out-expo);\n\n  &:hover {\n    background: var(--color-highlight);\n  }\n\n  &:disabled {\n    filter: contrast(0.5);\n    background: var(--color-system);\n    opacity: 0.75;\n    transform: scale(0.95);\n  }\n\n  .children {\n    flex-basis: 100%;\n    padding: 7px 10px;\n  }\n\n  .button__icon {\n    display: flex;\n    align-content: center;\n    justify-content: center;\n    border-left: var(--color-shade) 1px solid;\n    padding: 2px 5px;\n  }\n"])));
+var buttonClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: inline-flex;\n  justify-content: space-around;\n  align-content: center;\n  align-items: stretch;\n\n  cursor: pointer;\n  font-family: Inter, sans-serif;\n  font-size: 11px;\n  text-transform: uppercase;\n  font-weight: 600;\n  line-height: 1.25;\n  letter-spacing: 3px;\n  text-decoration: none;\n\n  min-width: 175px;\n  border: none;\n  border-radius: 3px;\n  padding: 0;\n\n  background: white;\n  color: rgb(25, 25, 25);\n\n  transition: all 250ms var(--ease-out-expo);\n\n  &:hover {\n    background: var(--color-highlight);\n  }\n\n  &:active {\n    transform: scale(0.975);\n    transition: transform 0ms;\n  }\n\n  &:disabled {\n    filter: contrast(0.5);\n    background: var(--color-system);\n    opacity: 0.75;\n    transform: scale(0.95);\n  }\n\n  .children {\n    flex-basis: 100%;\n    padding: 7px 10px;\n  }\n\n  .button__icon {\n    display: flex;\n    align-content: center;\n    justify-content: center;\n    border-left: var(--color-shade) 1px solid;\n    padding: 2px 5px;\n  }\n"])));
 
 function Button(_ref) {
   var type = _ref.type,
@@ -70610,7 +70300,7 @@ Button.defaultProps = {
 var _default = Button;
 exports["default"] = _default;
 
-},{"@emotion/css":5,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],224:[function(require,module,exports){
+},{"@emotion/css":5,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],220:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70805,14 +70495,16 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-control-bar-machine":234,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],225:[function(require,module,exports){
+},{"../state-machines/create-control-bar-machine":230,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],221:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-require("core-js/modules/es.array.is-array.js");
-
 require("core-js/modules/es.symbol.js");
+
+require("core-js/modules/es.object.assign.js");
+
+require("core-js/modules/es.array.is-array.js");
 
 require("core-js/modules/es.symbol.description.js");
 
@@ -70853,13 +70545,15 @@ require("core-js/modules/es.date.now.js");
 
 require("core-js/modules/es.date.to-string.js");
 
+require("core-js/modules/es.object.keys.js");
+
+require("core-js/modules/es.array.index-of.js");
+
 var _lodash = _interopRequireDefault(require("lodash"));
 
 var _react = _interopRequireWildcard(require("react"));
 
 var _framerMotion = require("framer-motion");
-
-var _useDebounce = require("use-debounce");
 
 var _react2 = require("@xstate/react");
 
@@ -70894,6 +70588,12 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 
 var ArrowDown = function ArrowDown(props) {
   return /*#__PURE__*/_react["default"].createElement("svg", props, /*#__PURE__*/_react["default"].createElement("path", {
@@ -70943,24 +70643,31 @@ Refresh.defaultProps = {
   viewBox: "0 0 24 24"
 };
 
-function LabelledInput(props) {
+function LabelledInput(_ref) {
+  var name = _ref.name,
+      width = _ref.width,
+      value = _ref.value,
+      onChange = _ref.onChange,
+      addendum = _ref.addendum,
+      passthroughProps = _objectWithoutProperties(_ref, ["name", "width", "value", "onChange", "addendum"]);
+
   return /*#__PURE__*/_react["default"].createElement("label", {
     className: "gifit__labelled-input"
   }, /*#__PURE__*/_react["default"].createElement("span", {
     className: "gifit__labelled-input__label"
-  }, props.name), /*#__PURE__*/_react["default"].createElement("div", {
+  }, name), /*#__PURE__*/_react["default"].createElement("div", {
     className: "gifit__labelled-input__data"
-  }, /*#__PURE__*/_react["default"].createElement("input", {
+  }, /*#__PURE__*/_react["default"].createElement("input", _extends({
     className: "gifit__labelled-input__input",
     type: "number",
     style: {
-      width: "".concat(props.width, "px")
+      width: "".concat(width, "px")
     },
-    value: props.value,
-    onChange: props.onChange
-  }), props.addendum && /*#__PURE__*/_react["default"].createElement("span", {
+    value: value,
+    onChange: onChange
+  }, passthroughProps)), addendum && /*#__PURE__*/_react["default"].createElement("span", {
     className: "gifit__labelled-input__addendum"
-  }, props.addendum)));
+  }, addendum)));
 }
 
 LabelledInput.defaultProps = {
@@ -70995,7 +70702,7 @@ function GifGenerationSystem(props) {
     }
   }
 
-  var debouncedDrawFrame = _lodash["default"].debounce(drawFrame, 250);
+  var debouncedDrawFrame = _lodash["default"].debounce(drawFrame, 375);
 
   (0, _react.useEffect)(function () {
     debouncedDrawFrame();
@@ -71016,16 +70723,17 @@ function GifGenerationSystem(props) {
     return function () {
       videoRef.current.removeEventListener('seeked', drawFrame);
     };
-  }, []); // scrub the video to the start timecode when it changes
+  }, []); // TODO don't seek on initial open
+  // scrub the video to the start timecode when it changes
 
   (0, _react.useEffect)(function () {
-    if (_lodash["default"].isNumber(state.context.start) && !_lodash["default"].isNaN(state.context.start) && state.context.videoElement) {
+    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
       state.context.videoElement.currentTime = state.context.start;
     }
   }, [state.context.start]); // scrub the video to the end timecode when it changes
 
   (0, _react.useEffect)(function () {
-    if (_lodash["default"].isNumber(state.context.end) && !_lodash["default"].isNaN(state.context.end) && state.context.videoElement) {
+    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
       state.context.videoElement.currentTime = state.context.end;
     }
   }, [state.context.end]); // input handling
@@ -71092,10 +70800,10 @@ function GifGenerationSystem(props) {
     });
   }
 
-  function handleStartEndControlBarChange(_ref) {
-    var start = _ref.start,
-        end = _ref.end,
-        changed = _ref.changed;
+  function handleStartEndControlBarChange(_ref2) {
+    var start = _ref2.start,
+        end = _ref2.end,
+        changed = _ref2.changed;
     send('INPUT', {
       key: 'start',
       value: start * videoRef.current.duration
@@ -71111,9 +70819,9 @@ function GifGenerationSystem(props) {
     }
   }
 
-  var handleWidthControlBarChange = function handleWidthControlBarChange(_ref2) {
-    var scale = _ref2.scale,
-        size = _ref2.size;
+  var handleWidthControlBarChange = function handleWidthControlBarChange(_ref3) {
+    var scale = _ref3.scale,
+        size = _ref3.size;
     var newWidth = size;
     var newHeight = size / state.context.videoAspectRatio;
     send('INPUT', {
@@ -71126,9 +70834,9 @@ function GifGenerationSystem(props) {
     });
   };
 
-  var handleHeightControlBarChange = function handleHeightControlBarChange(_ref3) {
-    var scale = _ref3.scale,
-        size = _ref3.size;
+  var handleHeightControlBarChange = function handleHeightControlBarChange(_ref4) {
+    var scale = _ref4.scale,
+        size = _ref4.size;
     var newWidth = size * state.context.videoAspectRatio;
     var newHeight = size;
     send('INPUT', {
@@ -71188,9 +70896,7 @@ function GifGenerationSystem(props) {
 
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "gif-generation-system ggs"
-  }, /*#__PURE__*/_react["default"].createElement(_systemElements["default"], {
-    initialized: !state.matches('initializing')
-  }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.form, {
+  }, /*#__PURE__*/_react["default"].createElement(_systemElements["default"], null), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.form, {
     className: "ggs__form",
     initial: {
       opacity: 0,
@@ -71202,9 +70908,9 @@ function GifGenerationSystem(props) {
     },
     transition: {
       type: 'spring',
-      damping: 35,
-      delay: 1,
-      stiffness: 650
+      damping: 45,
+      delay: 1.15,
+      stiffness: 500
     },
     onSubmit: handleFormSubmit,
     ref: formRef
@@ -71228,7 +70934,8 @@ function GifGenerationSystem(props) {
     addendum: "px",
     value: state.context.width,
     onChange: handleWidthInputChange,
-    width: 100
+    width: 100,
+    disabled: !state.matches('configuring')
   })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__height",
     ref: heightRef
@@ -71237,7 +70944,8 @@ function GifGenerationSystem(props) {
     addendum: "px",
     value: state.context.height,
     onChange: handleHeightInputChange,
-    width: 100
+    width: 100,
+    disabled: !state.matches('configuring')
   })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__height__bar",
     style: {
@@ -71284,12 +70992,14 @@ function GifGenerationSystem(props) {
   }, /*#__PURE__*/_react["default"].createElement(LabelledInput, {
     name: "Quality",
     value: state.context.quality,
-    onChange: handleQualityInputChange
+    onChange: handleQualityInputChange,
+    disabled: !state.matches('configuring')
   }), /*#__PURE__*/_react["default"].createElement(LabelledInput, {
     name: "Frame Rate",
     addendum: "fps",
     value: state.context.fps,
-    onChange: handleFrameRateInputChange
+    onChange: handleFrameRateInputChange,
+    disabled: !state.matches('configuring')
   })), /*#__PURE__*/_react["default"].createElement("div", {
     className: "ggs__start-and-end"
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -71315,7 +71025,8 @@ function GifGenerationSystem(props) {
     min: 0,
     max: state.context.end,
     width: "200px",
-    onChange: handleStartInputChange
+    onChange: handleStartInputChange,
+    disabled: !state.matches('configuring')
   })))), /*#__PURE__*/_react["default"].createElement("div", {
     className: "gifit__frames-viz"
   }, _lodash["default"].times(frameCount, function (i) {
@@ -71340,7 +71051,8 @@ function GifGenerationSystem(props) {
     min: state.context.start,
     max: videoRef.current.duration,
     width: "200px",
-    onChange: handleEndInputChange
+    onChange: handleEndInputChange,
+    disabled: !state.matches('configuring')
   }))))), /*#__PURE__*/_react["default"].createElement("footer", {
     className: "ggs__footer"
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -71376,7 +71088,7 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":236,"./aesthetic-lines.jsx":222,"./button.jsx":223,"./control-bar.jsx":224,"./incrementable-input.jsx":227,"./resize-bar.jsx":229,"./system-elements.jsx":230,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.date.now.js":139,"core-js/modules/es.date.to-string.js":140,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.parse-float.js":152,"core-js/modules/es.parse-int.js":153,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"framer-motion":164,"lodash":168,"react":186,"use-debounce":196}],226:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":232,"./aesthetic-lines.jsx":218,"./button.jsx":219,"./control-bar.jsx":220,"./incrementable-input.jsx":223,"./resize-bar.jsx":225,"./system-elements.jsx":226,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.date.now.js":139,"core-js/modules/es.date.to-string.js":140,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.parse-float.js":152,"core-js/modules/es.parse-int.js":153,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"framer-motion":164,"lodash":168,"react":186}],222:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -71429,26 +71141,33 @@ function GifitApp(props) {
     props.onClose();
   }
 
-  return props.active && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+  return /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, props.active && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: (0, _css.cx)(gifitAppClassName, 'gifit-app'),
     style: {
-      opacity: 0
+      opacity: 0,
+      transform: 'scale(0.925)'
     },
     animate: {
-      opacity: 1
+      opacity: 1,
+      transform: 'scale(1)'
+    },
+    exit: {
+      opacity: 0,
+      transform: 'scale(0.925)'
     },
     transition: {
       type: 'spring',
-      damping: 35,
-      stiffness: 350
-    }
+      damping: 45,
+      stiffness: 500
+    },
+    key: "gifit-app"
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "actions"
   }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
     type: "button",
     onClick: handleCloseClick,
     icon: /*#__PURE__*/_react["default"].createElement(Times, null)
-  }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null));
+  }, "Close GIFit")), /*#__PURE__*/_react["default"].createElement(_gifGenerationSystem["default"], null)));
 }
 
 GifitApp.propTypes = {
@@ -71461,7 +71180,7 @@ GifitApp.defaultProps = {
 var _default = GifitApp;
 exports["default"] = _default;
 
-},{"./button.jsx":223,"./gif-generation-system.jsx":225,"@emotion/css":5,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"framer-motion":164,"prop-types":176,"react":186}],227:[function(require,module,exports){
+},{"./button.jsx":219,"./gif-generation-system.jsx":221,"@emotion/css":5,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"framer-motion":164,"prop-types":176,"react":186}],223:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.array.slice.js");
@@ -71469,6 +71188,14 @@ require("core-js/modules/es.array.slice.js");
 require("core-js/modules/es.object.freeze.js");
 
 require("core-js/modules/es.object.define-properties.js");
+
+require("core-js/modules/es.object.keys.js");
+
+require("core-js/modules/es.array.index-of.js");
+
+require("core-js/modules/es.symbol.js");
+
+require("core-js/modules/es.object.assign.js");
 
 require("core-js/modules/es.object.define-property.js");
 
@@ -71486,6 +71213,12 @@ var _css = require("@emotion/css");
 var _templateObject;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 
 function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
@@ -71514,15 +71247,24 @@ ChevronRight.defaultProps = {
 };
 var incrementableInputClassName = (0, _css.css)(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n  display: flex;\n  align-items: center;\n  position: relative;\n\n  .input[type=\"text\"] {\n    padding-left: 30px;\n    padding-right: 30px;\n  }\n\n  .decrementor,\n  .incrementor {\n    display: flex;\n    position: absolute;\n    padding: 7px 1px;\n    color: currentColor;\n    z-index: 1;\n    background: transparent;\n\n    &:hover {\n      background: transparent;\n    }\n  }\n\n  .decrementor {\n    left: 0;\n  }\n\n  .incrementor {\n    right: 0;\n  }\n"])));
 
-function IncrementableInput(props) {
+function IncrementableInput(_ref) {
+  var increment = _ref.increment,
+      onChange = _ref.onChange,
+      value = _ref.value,
+      min = _ref.min,
+      max = _ref.max,
+      width = _ref.width,
+      disabled = _ref.disabled,
+      passthroughProps = _objectWithoutProperties(_ref, ["increment", "onChange", "value", "min", "max", "width", "disabled"]);
+
   function handleIncrement() {
-    var newValue = Math.min(props.max, props.value + props.increment);
-    props.onChange(newValue);
+    var newValue = Math.min(max, value + increment);
+    onChange(newValue);
   }
 
   function handleDecrement() {
-    var newValue = Math.max(props.min, props.value - props.increment);
-    props.onChange(newValue);
+    var newValue = Math.max(min, value - increment);
+    onChange(newValue);
   }
 
   return /*#__PURE__*/_react["default"].createElement("span", {
@@ -71530,24 +71272,27 @@ function IncrementableInput(props) {
   }, /*#__PURE__*/_react["default"].createElement("button", {
     className: "decrementor",
     type: "button",
-    onClick: handleDecrement
+    onClick: handleDecrement,
+    disabled: disabled
   }, /*#__PURE__*/_react["default"].createElement(ChevronLeft, {
     style: {
       width: '14px'
     }
-  })), /*#__PURE__*/_react["default"].createElement("input", {
+  })), /*#__PURE__*/_react["default"].createElement("input", _extends({
     className: "input",
     type: "text",
     inputMode: "numeric",
-    value: props.value,
+    value: value,
     style: {
-      width: props.width
+      width: width
     },
-    onChange: props.onChange
-  }), /*#__PURE__*/_react["default"].createElement("button", {
+    onChange: onChange,
+    disabled: disabled
+  }, passthroughProps)), /*#__PURE__*/_react["default"].createElement("button", {
     className: "incrementor",
     type: "button",
-    onClick: handleIncrement
+    onClick: handleIncrement,
+    disabled: disabled
   }, /*#__PURE__*/_react["default"].createElement(ChevronRight, {
     style: {
       width: '14px'
@@ -71561,18 +71306,20 @@ IncrementableInput.propTypes = {
   value: _propTypes["default"].number.isRequired,
   min: _propTypes["default"].number,
   max: _propTypes["default"].number,
-  width: _propTypes["default"].string
+  width: _propTypes["default"].string,
+  disabled: _propTypes["default"].bool
 };
 IncrementableInput.defaultProps = {
   increment: 1,
   min: 0,
   max: Infinity,
-  width: '100px'
+  width: '100px',
+  disabled: false
 };
 var _default = IncrementableInput;
 exports["default"] = _default;
 
-},{"@emotion/css":5,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"prop-types":176,"react":186}],228:[function(require,module,exports){
+},{"@emotion/css":5,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],224:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -71672,7 +71419,7 @@ PathLine.propTypes = {
 var _default = PathLine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.concat.js":130,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.join.js":135,"core-js/modules/es.array.map.js":136,"core-js/modules/es.array.reduce.js":137,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],229:[function(require,module,exports){
+},{"core-js/modules/es.array.concat.js":130,"core-js/modules/es.array.index-of.js":132,"core-js/modules/es.array.join.js":135,"core-js/modules/es.array.map.js":136,"core-js/modules/es.array.reduce.js":137,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.object.assign.js":142,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.keys.js":149,"core-js/modules/es.symbol.js":158,"prop-types":176,"react":186}],225:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71887,7 +71634,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":235,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],230:[function(require,module,exports){
+},{"../state-machines/create-resize-bar-machine":231,"@emotion/css":5,"@xstate/react":16,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-properties.js":144,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.freeze.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"prop-types":176,"react":186}],226:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -71898,8 +71645,6 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 
 var _react = _interopRequireDefault(require("react"));
-
-var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var _framerMotion = require("framer-motion");
 
@@ -71912,18 +71657,20 @@ function SystemElements() {
     className: "ggs__label",
     style: {
       position: 'absolute',
-      top: '50%',
       left: '50%',
       transform: 'translateY(-50%) translateX(-50%)'
     },
+    initial: {
+      top: '50%'
+    },
     animate: {
-      top: '0'
+      top: '0%'
     },
     transition: {
       type: 'spring',
-      damping: 35,
+      damping: 45,
       delay: DELAY,
-      stiffness: 350
+      stiffness: 500
     }
   }, "GIF Generation System"), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
     className: "ggs__corner",
@@ -71937,9 +71684,9 @@ function SystemElements() {
     },
     transition: {
       type: 'spring',
-      damping: 35,
+      damping: 45,
       delay: DELAY,
-      stiffness: 350
+      stiffness: 500
     }
   }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
     className: "ggs__corner",
@@ -71953,9 +71700,9 @@ function SystemElements() {
     },
     transition: {
       type: 'spring',
-      damping: 35,
+      damping: 45,
       delay: DELAY,
-      stiffness: 350
+      stiffness: 500
     }
   }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
     className: "ggs__corner",
@@ -71969,9 +71716,9 @@ function SystemElements() {
     },
     transition: {
       type: 'spring',
-      damping: 35,
+      damping: 45,
       delay: DELAY,
-      stiffness: 350
+      stiffness: 500
     }
   }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
     className: "ggs__corner",
@@ -71985,9 +71732,9 @@ function SystemElements() {
     },
     transition: {
       type: 'spring',
-      damping: 35,
+      damping: 45,
       delay: DELAY,
-      stiffness: 350
+      stiffness: 500
     }
   }));
 }
@@ -71996,7 +71743,7 @@ SystemElements.propTypes = {};
 var _default = SystemElements;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":145,"framer-motion":164,"prop-types":176,"react":186}],231:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"framer-motion":164,"react":186}],227:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -72084,7 +71831,7 @@ function ContentApp() {
 
 _reactDom["default"].render( /*#__PURE__*/_react["default"].createElement(ContentApp, null), gifitElement);
 
-},{"./components/gifit-app.jsx":226,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"react":186,"react-dom":180}],232:[function(require,module,exports){
+},{"./components/gifit-app.jsx":222,"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/es.weak-map.js":159,"core-js/modules/web.dom-collections.iterator.js":160,"react":186,"react-dom":180}],228:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -72156,6 +71903,7 @@ function useFrameRate(config) {
 
   var timeBetweenFrames = 1000 / fps;
   var lastFrame = null;
+  var rafId;
 
   function rafLoopFn(timestamp) {
     var timeSinceInit = timestamp - firstTimestamp;
@@ -72170,11 +71918,14 @@ function useFrameRate(config) {
       lastFrame = _currentFrame;
     }
 
-    requestAnimationFrame(rafLoopFn);
+    rafId = window.requestAnimationFrame(rafLoopFn);
   }
 
   (0, _react.useEffect)(function () {
-    requestAnimationFrame(rafLoopFn);
+    rafId = window.requestAnimationFrame(rafLoopFn);
+    return function () {
+      window.cancelAnimationFrame(rafId);
+    };
   }, []);
   return [currentFrame, currentTime - firstTimestamp];
 }
@@ -72182,7 +71933,7 @@ function useFrameRate(config) {
 var _default = useFrameRate;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"react":186}],233:[function(require,module,exports){
+},{"core-js/modules/es.array.from.js":131,"core-js/modules/es.array.is-array.js":133,"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.array.slice.js":138,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"lodash":168,"react":186}],229:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -72387,7 +72138,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.object.create.js":143,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-prototype-of.js":148,"core-js/modules/es.object.set-prototype-of.js":150,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.reflect.construct.js":154,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"events":163}],234:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator.js":134,"core-js/modules/es.object.create.js":143,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-prototype-of.js":148,"core-js/modules/es.object.set-prototype-of.js":150,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.reflect.construct.js":154,"core-js/modules/es.string.iterator.js":155,"core-js/modules/es.symbol.description.js":156,"core-js/modules/es.symbol.iterator.js":157,"core-js/modules/es.symbol.js":158,"core-js/modules/web.dom-collections.iterator.js":160,"core-js/modules/web.url.js":162,"events":163}],230:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -72487,7 +72238,7 @@ function createControlBarMachine(_ref) {
 var _default = createControlBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":210}],235:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":206}],231:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -72610,17 +72361,15 @@ function createResizeBarMachine(_ref) {
 var _default = createResizeBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":210}],236:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":206}],232:[function(require,module,exports){
 "use strict";
-
-require("core-js/modules/es.object.define-property.js");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 
-require("core-js/modules/es.parse-int.js");
+require("core-js/modules/es.object.define-property.js");
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
@@ -72761,7 +72510,9 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     setInitialDimensions: (0, _xstate.assign)(function (context, event) {
       var videoElement = event.videoElement;
       var videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
-      var aspectCorrectHeight = parseInt(DEFAULT_WIDTH / videoAspectRatio, 10);
+
+      var aspectCorrectHeight = _lodash["default"].round(DEFAULT_WIDTH / videoAspectRatio);
+
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
@@ -72907,4 +72658,4 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 var _default = gifGenerationSystemMachine;
 exports["default"] = _default;
 
-},{"../services/gif-service":233,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.parse-int.js":153,"lodash":168,"xstate":210}]},{},[231]);
+},{"../services/gif-service":229,"core-js/modules/es.object.define-property.js":145,"lodash":168,"xstate":206}]},{},[227]);

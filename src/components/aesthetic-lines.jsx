@@ -38,9 +38,9 @@ function AestheticLines (props) {
           { x: widthRef.current.offsetLeft + (widthRef.current.offsetWidth / 2),
             y: widthRef.current.offsetTop },
           { x: widthRef.current.offsetLeft + (widthRef.current.offsetWidth / 2),
-            y: widthBarRef.current.offsetTop - 30 },
+            y: widthBarRef.current.offsetTop - 20 },
           { x: widthBarRef.current.offsetLeft + (widthBarRef.current.offsetWidth / 2),
-            y: widthBarRef.current.offsetTop - 30 },
+            y: widthBarRef.current.offsetTop - 20 },
           { x: widthBarRef.current.offsetLeft + (widthBarRef.current.offsetWidth / 2),
             y: widthBarRef.current.offsetTop }
         ]}
@@ -68,9 +68,9 @@ function AestheticLines (props) {
           { x: startRef.current.offsetLeft + (startRef.current.offsetWidth / 2),
             y: startRef.current.offsetTop },
           { x: startRef.current.offsetLeft + (startRef.current.offsetWidth / 2),
-            y: startRef.current.offsetTop - 18 },
+            y: startRef.current.offsetTop - 13 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-            y: startRef.current.offsetTop - 18 },
+            y: startRef.current.offsetTop - 13 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}
@@ -84,9 +84,9 @@ function AestheticLines (props) {
           { x: endRef.current.offsetLeft + (endRef.current.offsetWidth / 2),
             y: endRef.current.offsetTop },
           { x: endRef.current.offsetLeft + (endRef.current.offsetWidth / 2),
-            y: endRef.current.offsetTop - 22 },
+            y: endRef.current.offsetTop - 18 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-            y: endRef.current.offsetTop - 22 },
+            y: endRef.current.offsetTop - 18 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}

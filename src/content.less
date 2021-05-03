@@ -100,6 +100,7 @@ input[type=number] {
 .ggs {
 	transform: translateZ(0.1); // perf?
 	position: relative;
+	padding-top: 20px;
 	
 	input[type="text"],
 	input[type="number"] {
@@ -147,13 +148,13 @@ input[type=number] {
 	display: grid;
 	grid-gap: 20px;
 	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: 35px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-rows: minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
-		"header header header"
 		". width-bar ."
 		"dimensions workspace quality-and-frame-rate"
 		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
+	padding-top: 20px;
 }
 
 .ggs__corner {
@@ -270,7 +271,6 @@ input[type=number] {
 	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
-	padding-top: 10px;
 }
 
 .ggs__start,
@@ -280,14 +280,12 @@ input[type=number] {
 
 .ggs__time__bar {
 	flex-basis: 100%;
-	margin: 0 0 10px 0;
 }
 
 .ggs__footer {
 	grid-area: footer;
 	align-self: center;
 	justify-self: center;
-	margin-top: 15px;
 }
 
 .ggs__action {
