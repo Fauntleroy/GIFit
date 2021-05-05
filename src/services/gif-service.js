@@ -11,9 +11,11 @@ const gifJsWorkerBlob = new Blob([gifJsWorker], {
 function asyncSeek (video, time, callback) {
   function doneSeeking () {
     video.removeEventListener('seeked', doneSeeking);
-    if (callback) {
-      return callback();
-    }
+    return setTimeout(() => {
+      if (callback) {
+        return callback();
+      }
+    }, 10);
   }
   video.addEventListener('seeked', doneSeeking);
   video.currentTime = time;
@@ -56,7 +58,7 @@ class GifService extends EventEmitter {
       repeat: 0,
       width: config.width,
       height: config.height,
-      dither: 'FloydSteinberg-serpentine',
+      dither: 'FalseFloydSteinberg-serpentine',
       workerScript: URL.createObjectURL(gifJsWorkerBlob)
     });
 
@@ -87,7 +89,7 @@ class GifService extends EventEmitter {
 
     const currentTime = videoElement.currentTime * 1000;
 
-    if (currentTime > config.end) {
+    if (currentTime >= config.end) {
       this.emit('frames complete');
       // render the GIF
       this.gif.render();
@@ -100,7 +102,11 @@ class GifService extends EventEmitter {
     const trueGifDuration = (gifDuration - (gifDuration % frameInterval));
 
     // Draw current frame on canvas, then transfer that to gif.js
-    this.context.drawImage(videoElement, 0, 0, config.width, config.height);
+    this.context.drawImage(
+      videoElement,
+      0, 0, videoElement.videoWidth, videoElement.videoHeight,
+      0, 0, config.width, config.height
+    );
     this.gif.addFrame(this.canvasElement, {
       delay: frameInterval,
       dispose: 1,

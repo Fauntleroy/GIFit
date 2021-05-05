@@ -16,7 +16,7 @@ const gifGenerationSystemMachine = new Machine({
     width: 0,
     height: 0,
     quality: 5,
-    fps: 12,
+    fps: 10,
     start: 0,
     end: 1.5
   },

@@ -2,7 +2,7 @@
 	--hsl-aluminum-blue: 225deg, 100%, 80%;
 	--color-shade: hsla(0, 0%, 0%, 0.175);
 	--color-shadeactive: hsla(0, 0%, 0%, 0.35);
-	--color-nightshade: hsla(240, 21.6%, 18.5%, 0.95);
+	--color-nightshade: hsla(240deg, 21.6%, 18.5%, 0.95);
 	--color-intensity-red: hsl(350deg, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
 	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.35);
@@ -25,24 +25,7 @@ input[type=number] {
 }
 
 .gifit-app {
-	position: fixed;
-	z-index: 5000000;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background: var(--color-nightshade);
-
-	font-family: Inter, sans-serif;
-	font-size: 11px;
-	text-transform: uppercase;
-	font-weight: 500;
-	letter-spacing: 3px;
-	color: white;
-
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	perspective: 600px;
 
 	* {
 		box-sizing: border-box;
@@ -98,7 +81,6 @@ input[type=number] {
 }
 
 .ggs {
-	transform: translateZ(0.1); // perf?
 	position: relative;
 	padding-top: 20px;
 	
@@ -162,7 +144,8 @@ input[type=number] {
 	display: block;
 	width: 4px;
 	height: 10px;
-	border: var(--color-system) 1px solid;
+	color: var(--color-system);
+	border: currentColor 1px solid;
 	border-radius: 2px;
 	opacity: var(--system-interface-opacity);
 	
@@ -200,7 +183,7 @@ input[type=number] {
 
 .ggs__label {
 	padding: 4px 20px;
-	border: var(--color-system) 1px solid;
+	border: currentColor 1px solid;
 	border-radius: 3px;
 	opacity: var(--system-interface-opacity);
 	color: var(--color-system);
@@ -242,11 +225,18 @@ input[type=number] {
 }
 
 .ggs__workspace {
+	position: relative;
+	z-index: 5;
 	grid-area: workspace;	
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: var(--color-shade);
+	perspective: 600px;
+}
+
+.ggs__result {
+	border-radius: 2px;
 }
 
 .ggs__canvas {
