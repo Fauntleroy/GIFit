@@ -1,0 +1,172 @@
+.ggs {
+	position: relative;
+	padding-top: 20px;
+	
+	input[type="text"],
+	input[type="number"] {
+		position: relative;
+		display: inline-block;
+		width: 0;
+		min-width: 100px;
+		margin-left: -8px;
+		margin-right: -8px;
+		padding: 5px 12px;
+		border-radius: 4px;
+		border: none;
+		color: currentColor;
+		background: var(--color-shade);
+
+		font-family: 'Space Grotesk', sans-serif;
+		font-size: 28px;
+		font-weight: bold;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+
+		transition: background 250ms;
+
+		&::after {
+			content: '';
+			display: block;
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: black;
+			position: absolute;
+			top: 3px;
+			right: 4px;
+		}
+
+		&:hover,
+		&:focus {
+			outline: none;
+			background: var(--color-shadeactive);
+		}
+	}
+}
+
+.form {
+	display: grid;
+	grid-gap: 20px;
+	grid-template-columns: 150px minmax(150px, 1fr) 150px;
+	grid-template-rows: minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-areas:
+		". width-bar video-info"
+		"dimensions workspace quality-and-frame-rate"
+		"start-and-end start-and-end start-and-end"
+		"footer footer footer";
+	padding-top: 20px;
+}
+
+.head {
+	grid-area: header;
+	align-self: center;
+	justify-self: center;
+	margin-bottom: 15px;
+}
+
+.widthBar {
+	grid-area: width-bar;
+	justify-self: center;
+	width: 100%;
+	margin-top: 25px;
+}
+
+.videoInfo {
+	grid-area: video-info;
+	justify-self: center;
+	font-size: var(--ggs-font-size-micro);
+	color: var(--color-subsystem);
+}
+
+.dimensions {
+	grid-area: dimensions;
+	align-self: stretch;
+	justify-self: end;
+	grid-column-gap: 10px;
+	display: grid;
+	align-items: center;
+	grid-template-rows: 1fr 1fr;
+	grid-template-columns: 1fr 10px;
+	grid-template-areas: "width height-bar" "height height-bar";
+}
+
+.width {
+	grid-area: width;
+}
+
+.height {
+	grid-area: height;
+}
+
+.heightBar {
+	grid-area: height-bar;
+	height: 315px;
+	width: 2px;
+	background: white;
+}
+
+.workspace {
+	position: relative;
+	z-index: 5;
+	width: 100%;
+	height: 100%;
+	grid-area: workspace;
+}
+
+.qualityAndFrameRate {
+	grid-area: quality-and-frame-rate;
+	display: flex;
+	flex-direction: column;
+	padding-left: 10px;
+	align-self: stretch;
+	justify-content: space-around;
+}
+
+.startAndEnd {
+	grid-area: start-and-end;
+	display: grid;
+	grid-template-columns: minmax(min-content, max-content) 1fr minmax(min-content, max-content);
+	grid-template-rows: minmax(min-content, max-content) minmax(min-content, max-content);
+	grid-template-areas:
+		"time-bar time-bar time-bar"
+		"start frames end";
+	grid-gap: 5px;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.timeBar {
+	grid-area: time-bar;
+	flex-basis: 100%;
+}
+
+.start,
+.end {
+	padding-top: 15px;
+}
+
+.start {
+	grid-area: start;
+}
+
+.end {
+	grid-area: end;
+}
+
+.frames {
+	grid-area: frames;
+	justify-self: center;
+}
+
+.footer {
+	grid-area: footer;
+	align-self: center;
+	justify-self: center;
+}
+
+.actions {
+}
+
+.action {
+	margin: 0 5px;
+}

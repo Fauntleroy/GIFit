@@ -1,0 +1,23 @@
+.frames {
+	margin: 10px;
+	width: 150px;
+	line-height: 1px;
+	text-align: center;
+	color: var(--color-subsystem);
+}
+
+.frame {
+	display: inline-block;
+	width: 1px;
+	height: 2px;
+	margin: 1px;
+	background: currentColor;
+}
+
+.count {
+	font-size: var(--ggs-font-size-micro);
+	letter-spacing: normal;
+	line-height: 1;
+	float: left;
+	margin: 1px;
+}

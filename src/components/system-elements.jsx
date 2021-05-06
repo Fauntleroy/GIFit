@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 
+import * as css from './system-elements.module.css';
+
 const DELAY = 0.75;
 const ACTIVE_COLOR = 'rgba(65, 255, 193, 1)';
 
@@ -16,7 +18,7 @@ function SystemElements (props) {
   return (
     <>
       <motion.div
-        className="ggs__label"
+        className={css.label}
         style={{
           position: 'absolute',
           left: '50%',
@@ -31,7 +33,7 @@ function SystemElements (props) {
         GIF Generation System
       </motion.div>
 
-      <motion.span className="ggs__corner"
+      <motion.span className={css.corner}
         style={{ rotateZ: '-45deg' }}
         initial={{
           left: '175px', top: '175px'
@@ -40,7 +42,7 @@ function SystemElements (props) {
           left: currentHorizontal, top: currentVertical, color: currentColor
         }}
         transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
-      <motion.span className="ggs__corner"
+      <motion.span className={css.corner}
         style={{ rotateZ: '45deg' }}
         initial={{
           right: '175px', top: '175px'
@@ -49,7 +51,7 @@ function SystemElements (props) {
           right: currentHorizontal, top: currentVertical, color: currentColor
         }}
         transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
-      <motion.span className="ggs__corner"
+      <motion.span className={css.corner}
         style={{ rotateZ: '-45deg' }}
         initial={{
           right: '175px', bottom: '175px'
@@ -58,7 +60,7 @@ function SystemElements (props) {
           right: currentHorizontal, bottom: currentVertical, color: currentColor
         }}
         transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
-      <motion.span className="ggs__corner"
+      <motion.span className={css.corner}
         style={{ rotateZ: '45deg' }}
         initial={{
           left: '175px', bottom: '175px'

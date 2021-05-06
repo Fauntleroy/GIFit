@@ -3,6 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMachine } from '@xstate/react';
 
+import * as css from './gif-generation-system.module.css';
+
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
 import Button from './button.jsx';
 import ControlBar from './control-bar.jsx';
@@ -10,6 +12,10 @@ import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
 import AestheticLines from '$components/aesthetic-lines.jsx';
 import SystemElements from '$components/system-elements.jsx';
+import SystemInput from '$components/system-input.jsx';
+import SystemFrames from '$components/system-frames.jsx';
+import SystemVideoInfo from '$components/system-video-info.jsx';
+import SystemWorkspace from '$components/system-workspace.jsx';
 
 import ArrowDown from '$icons/arrow-down.svg';
 import Cancel from '$icons/cancel.svg';
@@ -18,34 +24,9 @@ import Refresh from '$icons/refresh.svg';
 
 const FADED_INPUT_OPACITY = 0.05;
 
-function LabelledInput ({ name, width, value, onChange, addendum, ...passthroughProps }) {
-  return (
-    <label className="gifit__labelled-input">
-      <span className="gifit__labelled-input__label">{name}</span>
-      <div className="gifit__labelled-input__data">
-        <input
-          className="gifit__labelled-input__input"
-          type="number"
-          style={{
-            width: `${width}px`
-          }}
-          value={value}
-          onChange={onChange}
-          {...passthroughProps} />
-        {addendum && <span className="gifit__labelled-input__addendum">{addendum}</span>}
-      </div>
-    </label>
-  );
-}
-
-LabelledInput.defaultProps = {
-  width: 100
-};
-
 function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
 
-  const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const widthRef = useRef(null);
   const widthBarRef = useRef(null);
@@ -58,24 +39,6 @@ function GifGenerationSystem (props) {
   const contextRef = useRef(state.context);
   const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
 
-  // draw the video to the preview canvas
-  function drawFrame () {
-    if (canvasRef.current && videoRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      context.drawImage(
-        videoRef.current,
-        0, 0, videoRef.current.videoWidth, videoRef.current.videoHeight,
-        0, 0, contextRef.current.width, contextRef.current.height
-      );
-    }
-  }
-
-  const debouncedDrawFrame = _.debounce(drawFrame, 375);
-
-  useEffect(() => {
-    debouncedDrawFrame();
-  }, [state.context.width, state.context.height, state.context.gifData]);
-
   // set a reference to the state machine's context for use in other callbacks
   useEffect(() => {
     contextRef.current = state.context;
@@ -86,16 +49,9 @@ function GifGenerationSystem (props) {
     const videoElements = document.querySelectorAll('video');
     videoRef.current = videoElements[0];
 
-    videoRef.current.pause();
-    videoRef.current.addEventListener('seeked', drawFrame);
-
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
-
-    return () => {
-      videoRef.current.removeEventListener('seeked', drawFrame);
-    };
   }, []);
 
   // TODO don't seek on initial open
@@ -212,14 +168,14 @@ function GifGenerationSystem (props) {
 
   return (
     <motion.div
-      className="gif-generation-system ggs"
+      className={css.ggs}
       style={{ rotateX: '3deg' }}
       transition={{ type: 'spring', damping: 45, delay: 1, stiffness: 500 }}>
 
       <SystemElements state={state} />
 
       <motion.form
-        className="ggs__form"
+        className={css.form}
         initial={{ opacity: 0, translateZ: '-50px' }}
         animate={{ opacity: 1, translateZ: '0px' }}
         transition={{ type: 'spring', damping: 45, delay: 1.15, stiffness: 500 }}
@@ -227,7 +183,7 @@ function GifGenerationSystem (props) {
         ref={formRef}>
 
         <motion.div
-          className="ggs__width__bar"
+          className={css.widthBar}
           style={{ width: `${state.context.width}px` }}
           initial={{ opacity: 1 }}
           animate={{
@@ -241,33 +197,41 @@ function GifGenerationSystem (props) {
             disabled={!state.matches('configuring')} />
         </motion.div>
 
+        <div className={css.videoInfo}>
+          <SystemVideoInfo video={state.context.videoElement} gifUrl={gifUrl} />
+        </div>
+
         <motion.div
-          className="ggs__dimensions"
+          className={css.dimensions}
           initial={{ opacity: 1 }}
           animate={{
             opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
           }}
           transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
-          <div className="ggs__width" ref={widthRef}>
-            <LabelledInput
+          <div className={css.width} ref={widthRef}>
+            <SystemInput
               name="Width"
-              addendum="px"
-              value={state.context.width}
-              onChange={handleWidthInputChange}
-              width={100}
-              disabled={!state.matches('configuring')} />
+              addendum="px">
+              <input
+                type="number"
+                value={state.context.width}
+                onChange={handleWidthInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
           </div>
-          <div className="ggs__height" ref={heightRef}>
-            <LabelledInput
+          <div className={css.height} ref={heightRef}>
+            <SystemInput
               name="Height"
-              addendum="px"
-              value={state.context.height}
-              onChange={handleHeightInputChange}
-              width={100}
-              disabled={!state.matches('configuring')} />
+              addendum="px">
+              <input
+                type="number"
+                value={state.context.height}
+                onChange={handleHeightInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
           </div>
           <div
-            className="ggs__height__bar"
+            className={css.heightBar}
             style={{ height: `${state.context.height}px` }}
             ref={heightBarRef}>
             <ResizeBar
@@ -277,121 +241,94 @@ function GifGenerationSystem (props) {
               disabled={!state.matches('configuring')} />
           </div>
         </motion.div>
+        
+        <div className={css.workspace}>
+          <SystemWorkspace state={state} gifUrl={gifUrl} />
+        </div>
+
         <motion.div
-          className="ggs__workspace"
-          animate={{
-            translateY: state.matches('generating') ? '35px' : '0px'
-          }}
-          transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
-          <AnimatePresence>
-            {state.matches({ generating: { generatingGif: 'succeeded' }}) &&
-            <motion.img
-              className="ggs__result"
-              src={gifUrl}
-              style={{ position: 'absolute' }}
-              initial={{
-                translateZ: '0px'
-              }}
-              animate={{
-                translateZ: '50px'
-              }}
-              exit={{
-                translateZ: '0px'
-              }}
-              transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.2, delay: 0.25 }}
-              key="generated-gif" />}
-            {!state.matches({ generating: { generatingGif: 'succeeded' }}) &&
-            <motion.canvas
-              className="ggs__canvas"
-              ref={canvasRef}
-              style={{ willChange: 'width, height' }}
-              initial={{ width: state.context.width, height: state.context.height }}
-              animate={{ width: state.context.width, height: state.context.height }}
-              transition={{ type: 'spring', bounce: 0, delay: 0.75 }}
-              height={state.context.height}
-              width={state.context.width} />}
-          </AnimatePresence>
-        </motion.div>
-        <motion.div
-          className="ggs__quality-and-frame-rate"
+          className={css.qualityAndFrameRate}
           initial={{ opacity: 1 }}
           animate={{
             opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
           }}
           transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
-          <LabelledInput
-            name="Quality"
-            value={state.context.quality}
-            onChange={handleQualityInputChange}
-            disabled={!state.matches('configuring')} />
-          <LabelledInput
+          <SystemInput
+            name="Quality">
+            <input
+              type="number"
+              value={state.context.quality}
+              onChange={handleQualityInputChange}
+              disabled={!state.matches('configuring')} />
+          </SystemInput>
+          <SystemInput
             name="Frame Rate"
-            addendum="fps"
-            value={state.context.fps}
-            onChange={handleFrameRateInputChange}
-            disabled={!state.matches('configuring')} />
+            addendum="fps">
+            <input
+              type="number"
+              value={state.context.fps}
+              onChange={handleFrameRateInputChange}
+              disabled={!state.matches('configuring')} />
+          </SystemInput>
         </motion.div>
+
         <motion.div
-          className="ggs__start-and-end"
+          className={css.startAndEnd}
           initial={{ opacity: 1 }}
           animate={{
             opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
           }}
           transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
-          <div className="ggs__time__bar" ref={timeBarRef}>
+          <div className={css.timeBar} ref={timeBarRef}>
             <ControlBar
               startValue={state.context.start / videoRef.current.duration}
               endValue={state.context.end / videoRef.current.duration}
               onChange={handleStartEndControlBarChange}
               disabled={!state.matches('configuring')} />
           </div>
-          <div className="ggs__start">
-            <label className="gifit__labelled-input" ref={startRef}>
-              <span className="gifit__labelled-input__label">Start</span>
-              <div className="gifit__labelled-input__data">
-                <IncrementableInput
-                  value={state.context.start}
-                  increment={1 / state.context.fps}
-                  min={0}
-                  max={state.context.end}
-                  width="200px"
-                  onChange={handleStartInputChange}
-                  disabled={!state.matches('configuring')} />
-              </div>
-            </label>
+
+          <div className={css.start}>
+            <SystemInput
+              name="start"
+              ref={startRef}>
+              <IncrementableInput
+                value={state.context.start}
+                increment={1 / state.context.fps}
+                min={0}
+                max={state.context.end}
+                width="200px"
+                onChange={handleStartInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
           </div>
 
-          <div className="gifit__frames-viz">
-            {_.times(frameCount, (i) => (
-              <span key={i} className="gifit__frames-viz__frame"></span>
-            ))}
-            <span className="gifit__frames-viz__count">{frameCount}</span>
+          <div className={css.frames}>
+            <SystemFrames frameCount={frameCount} />
           </div>
           
-          <div className="ggs__end">
-            <label className="gifit__labelled-input" ref={endRef}>
-              <span className="gifit__labelled-input__label">End</span>
-              <div className="gifit__labelled-input__data">
-                <IncrementableInput
-                  value={state.context.end}
-                  increment={1 / state.context.fps}
-                  min={state.context.start}
-                  max={videoRef.current.duration}
-                  width="200px"
-                  onChange={handleEndInputChange}
-                  disabled={!state.matches('configuring')} />
-              </div>
-            </label>
+          <div className={css.end}>
+            <SystemInput
+              name="end"
+              ref={endRef}>
+              <IncrementableInput
+                value={state.context.end}
+                increment={1 / state.context.fps}
+                min={state.context.start}
+                max={videoRef.current.duration}
+                width="200px"
+                onChange={handleEndInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
           </div>
         </motion.div>
 
-        <footer className="ggs__footer">
+        <footer className={css.footer}>
           <motion.div
-            className="ggs__actions"
+            className={css.actions}
             initial={{ translateY: '0px' }}
-            animate={{ translateY: state.matches('generating') ? '-80px' : '0px' }}
+            animate={{ translateY: state.matches('generating') ? '-70px' : '0px' }}
             transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
-            <span className="ggs__action">
+            <span className={css.action}>
               <Button
                 type="submit"
                 icon={submitButtonContents[1]}>
@@ -399,7 +336,7 @@ function GifGenerationSystem (props) {
               </Button>
             </span>
             <a
-              className="ggs__save ggs__action"
+              className={css.action}
               href={gifUrl}
               download={`gifit_${Date.now()}.gif`}>
               <Button

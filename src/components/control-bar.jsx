@@ -1,70 +1,10 @@
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { css, cx } from '@emotion/css';
 import { useMachine } from '@xstate/react';
 
+import * as css from './control-bar.module.css';
 import createControlBarMachine from '../state-machines/create-control-bar-machine';
-
-const controlBarClassName = css`
-  position: relative;
-  height: 12px;
-  width: 100%;
-  cursor: pointer;
-  user-select: none;
-
-  .total {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--color-system);
-    opacity: 0.5;
-  }
-  
-  .start,
-  .end {
-    position: absolute;
-    padding: 0;
-    width: 3px;
-    height: 12px;
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      bottom: -4px;
-      left: -4px;
-    }
-  }
-
-  .start {
-    bottom: 0;
-    left: 0;
-  }
-
-  .end {
-    bottom: 0;
-    left: 0;
-  }
-
-  .range {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: white;
-  }
-
-  .start,
-  .end,
-  .range {
-    transition: transform 250ms;
-  }
-`;
 
 function getPosition (controlBarElement, event) {
   const { left, width } = controlBarElement.getBoundingClientRect();
@@ -127,14 +67,24 @@ function ControlBar (props) {
   }, [props.disabled]);
 
   return (
-    <div className={controlBarClassName} onMouseDown={handleMouseDown} ref={controlBarRef}>
-      <div className="total" />
-      <button className="start" type="button" style={{ left: `${state.context.start * 100}%` }} />
-      <span className="range" style={{
-        left: `${state.context.start * 100}%`,
-        right: `${(1 - state.context.end) * 100}%`
-      }} />
-      <button className="end" type="button" style={{ left: `${state.context.end * 100}%` }} />
+    <div
+      className={css.controlBar}
+      onMouseDown={handleMouseDown}
+      ref={controlBarRef}>
+      <div className={css.total} />
+      <button
+        className={css.start}
+        type="button" style={{ left: `${state.context.start * 100}%` }} />
+      <span
+        className={`${css.range} range`}
+        style={{
+          left: `${state.context.start * 100}%`,
+          right: `${(1 - state.context.end) * 100}%`
+        }} />
+      <button
+        className={css.end}
+        type="button"
+        style={{ left: `${state.context.end * 100}%` }} />
     </div>
   );
 }

@@ -1,0 +1,43 @@
+.label {
+	padding: 4px 20px;
+	border: currentColor 1px solid;
+	border-radius: 3px;
+	opacity: var(--system-interface-opacity);
+	color: var(--color-system);
+	line-height: 1.25;
+}
+
+.corner {
+	position: absolute;
+	display: block;
+	width: 4px;
+	height: 10px;
+	color: var(--color-system);
+	border: currentColor 1px solid;
+	border-radius: 1px;
+	opacity: var(--system-interface-opacity);
+	
+	&:nth-of-type(1) {
+		top: 0;
+		left: 0;
+		transform: rotate(-45deg);
+	}
+
+	&:nth-of-type(2) {
+		top: 0;
+		right: 0;
+		transform: rotate(45deg);
+	}
+
+	&:nth-of-type(3) {
+		bottom: 0;
+		right: 0;
+		transform: rotate(-45deg);
+	}
+
+	&:nth-of-type(4) {
+		bottom: 0;
+		left: 0;
+		transform: rotate(45deg);
+	}
+}

@@ -1,0 +1,35 @@
+.systemInput {
+	display: block;
+	margin: 15px;
+	color: white;
+	transition: color 250ms;
+
+	&:focus-within {
+		color: var(--color-highlight);
+
+    .addendum {
+      color: var(--color-highlight);
+    }
+	}
+}
+
+.name {
+  display: inline-block;
+  margin-bottom: 5px;
+  color: currentColor;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.addendum {
+  font-family: var(--ggs-font-numeric);
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-system);
+}

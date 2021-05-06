@@ -1,0 +1,86 @@
+:root {
+	--hsl-aluminum-blue: 225deg, 100%, 80%;
+	--color-shade: hsla(0, 0%, 0%, 0.175);
+	--color-shadeactive: hsla(0, 0%, 0%, 0.35);
+	--color-nightshade: hsla(240deg, 21.6%, 18.5%, 0.95);
+	--color-intensity-red: hsl(350deg, 100%, 60%);
+	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
+	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.35);
+	--color-highlight: var(--color-intensity-red);
+
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+	--ggs-font-numeric: 'Space Grotesk', sans-serif;
+	--ggs-font-size-micro: 8px;
+}
+
+.backdrop {
+  position: fixed;
+  z-index: 5000000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateZ(-500px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--color-nightshade);
+}
+
+.app {
+  position: fixed;
+  z-index: 5000001;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: Inter, sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: white;
+
+  perspective: 600px;
+}
+
+.app :global {
+  * {
+    box-sizing: border-box;
+  }
+
+  .icon {
+    width: 1rem;
+    fill: currentColor;
+  }
+
+  button {
+    border: none;
+    cursor: pointer;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield; /* Firefox */
+  }
+}
+
+.actions {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+}

@@ -1,0 +1,49 @@
+.workspace {
+  position: relative;
+  perspective: 500px;
+  display: flex;
+  height: 100%;
+  width: 100%;
+	justify-content: center;
+  align-items: center;
+
+  background: var(--color-shade);
+
+	&:before,
+	&:after {
+		content: '';
+		box-sizing: border-box;
+		display: block;
+		width: 2px;
+		height: 7px;
+		border-radius: 1px;
+		border: var(--color-subsystem) 1px solid;
+		position: absolute;
+		transform: rotate(-45deg);
+		z-index: 1;
+		opacity: 0.5;
+	}
+
+	&:before {
+		top: 6px;
+		left: 8px;
+	}
+
+	&:after {
+		bottom: 6px;
+		right: 8px;
+	}
+}
+
+.result {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  z-index: 7;
+}
+
+.canvas {
+  background: black;
+	z-index: 6;
+}

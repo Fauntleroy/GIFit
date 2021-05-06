@@ -1,19 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { css, cx } from '@emotion/css';
 
+import * as css from './aesthetic-lines.module.css';
 import useFrameRate from '$hooks/use-frame-rate';
 
 import PathLine from '$components/pathline.jsx';
-
-const aestheticLinesClassName = css`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-`;
 
 function AestheticLines (props) {
   const {
@@ -22,17 +13,16 @@ function AestheticLines (props) {
     startRef, endRef, timeBarRef
   } = props;
 
-  const [frame] = useFrameRate({ fps: 45 });
-
-  if (!widthRef.current) {
+  if (!widthRef.current || !timeBarRef.current) {
     return <svg />;
   }
 
+  useFrameRate(60);
   const rangeElement = timeBarRef.current.querySelector('.range');
 
   return (
     <svg
-      className={aestheticLinesClassName}>
+      className={css.aestheticLines}>
       <PathLine
         points={[
           { x: widthRef.current.offsetLeft + (widthRef.current.offsetWidth / 2),

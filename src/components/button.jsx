@@ -1,74 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { css, cx } from '@emotion/css';
-
-const buttonClassName = css`
-  display: inline-flex;
-  justify-content: space-around;
-  align-content: center;
-  align-items: stretch;
-
-  cursor: pointer;
-  font-family: Inter, sans-serif;
-  font-size: 11px;
-  text-transform: uppercase;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: 3px;
-  text-decoration: none;
-
-  min-width: 175px;
-  border: none;
-  border-radius: 3px;
-  padding: 0;
-
-  background: white;
-  color: rgb(25, 25, 25);
-
-  transition: all 250ms var(--ease-out-expo);
-
-  &:hover {
-    background: var(--color-highlight);
-  }
-
-  &:active {
-    transform: scale(0.975);
-    transition: transform 0ms;
-  }
-
-  &:disabled {
-    filter: contrast(0.5);
-    background: var(--color-system);
-    opacity: 0.75;
-    transform: scale(0.95);
-  }
-
-  .children {
-    flex-basis: 100%;
-    padding: 7px 10px;
-  }
-
-  .button__icon {
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    border-left: var(--color-shade) 1px solid;
-    padding: 2px 5px;
-  }
-`;
+import * as css from './button.module.css';
 
 function Button ({ type, children, icon, ...passthroughProps }) {
   return (
     <button
-      className={buttonClassName}
+      className={css.button}
       type={type}
       {...passthroughProps}>
-      <span className="children">
+      <span className={css.children}>
         {children}
       </span>
       {icon &&
-      <span className="button__icon">
+      <span className={css.icon}>
         {icon}
       </span>
       }

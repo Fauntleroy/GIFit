@@ -1,99 +1,16 @@
-import _, { range } from 'lodash';
+import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { css, cx } from '@emotion/css';
 import { useMachine } from '@xstate/react';
 
+import * as css from './resize-bar.module.css';
 import createResizeBarMachine from '../state-machines/create-resize-bar-machine';
-
-function generateResizeBarClassName (props) {
-  const { orientation } = props;
-  let barWidth, barHeight, handleWidth, handleHeight, startPosition, endPosition, rangeDimensions;
-  if (orientation === 'horizontal') {
-    barWidth = '100%';
-    barHeight = '12px';
-    handleWidth = '3px';
-    handleHeight = '12px';
-    startPosition = 'top: 0; left: 0;';
-    endPosition = 'top: 0; right: 0;';
-    rangeDimensions = 'height: 2px;';
-  } else {
-    barWidth = '12px';
-    barHeight = '100%';
-    handleWidth = '12px';
-    handleHeight = '3px';
-    startPosition = 'top: 0; left: 0;';
-    endPosition = 'bottom: 0; left: 0;';
-    rangeDimensions = 'width: 2px;';
-  }
-
-  const resizeBarClassName = css`
-    position: relative;
-    height: ${barHeight};
-    width: ${barWidth};
-    cursor: pointer;
-    user-select: none;
-
-    .total {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.5);
-    }
-    
-    .start,
-    .end {
-      position: absolute;
-      z-index: 1;
-      padding: 0;
-      width: ${handleWidth};
-      height: ${handleHeight};
-
-      &:before {
-        content: '';
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        bottom: -4px;
-        left: -4px;
-      }
-    }
-
-    .start {
-      ${startPosition};
-    }
-
-    .end {
-      ${endPosition};
-    }
-
-    .range {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      ${rangeDimensions}
-      background: white;
-    }
-
-    .start,
-    .end,
-    .range {
-      transition: transform 250ms;
-    }
-  `;
-
-  return resizeBarClassName;
-}
 
 function getPosition (x, y, orientation) {
   return (orientation === 'horizontal') ? x : y;
 }
 
-function ControlBar (props) {
-  const resizeBarClassName = generateResizeBarClassName(props);
+function ResizeBar (props) {
   const resizeBarMachine = createResizeBarMachine({
     id: 'width',
     initialSize: props.value,
@@ -156,21 +73,41 @@ function ControlBar (props) {
     }
   }, [props.disabled]);
 
-  const rangeStyle = (props.orientation === 'horizontal')
-    ? { left: 0, right: 0, height: '2px' }
-    : { top: 0, bottom: 0, width: '2px' };
+  let barWidth, barHeight, handleWidth, handleHeight, startPosition, endPosition, rangeStyle;
+  if (props.orientation === 'horizontal') {
+    barWidth = '100%';
+    barHeight = '12px';
+    handleWidth = '3px';
+    handleHeight = '12px';
+    startPosition = { top: 0, left: 0 };
+    endPosition = { top: 0, right: 0 };
+    rangeStyle = { left: 0, right: 0, height: '2px' };
+  } else {
+    barWidth = '12px';
+    barHeight = '100%';
+    handleWidth = '12px';
+    handleHeight = '3px';
+    startPosition = { top: 0, left: 0 };
+    endPosition = { bottom: 0, left: 0 };
+    rangeStyle = { top: 0, bottom: 0, width: '2px' };
+  }
 
   return (
-    <div className={resizeBarClassName} ref={controlBarRef}>
-      <div className="total" />
+    <div
+      className={css.resizeBar}
+      style={{ width: barWidth, height: barHeight }}
+      ref={controlBarRef}>
+      <div className={css.total} />
       <button
-        className="start"
+        className={css.start}
+        style={{ width: handleWidth, height: handleHeight, ...startPosition }}
         type="button"
         onMouseDown={handleMouseDown}
         data-handle="start" />
-      <span className="range" style={rangeStyle} />
+      <span className={css.range} style={{ ...rangeStyle }} />
       <button
-        className="end"
+        className={css.end}
+        style={{ width: handleWidth, height: handleHeight, ...endPosition }}
         type="button"
         onMouseDown={handleMouseDown}
         data-handle="end" />
@@ -178,7 +115,7 @@ function ControlBar (props) {
   );
 }
 
-ControlBar.propTypes = {
+ResizeBar.propTypes = {
   value: PropTypes.number.isRequired,
   minimum: PropTypes.number,
   onChange: PropTypes.func.isRequired,
@@ -186,10 +123,10 @@ ControlBar.propTypes = {
   orientation: PropTypes.oneOf(['horizontal', 'vertical'])
 };
 
-ControlBar.defaultProps = {
+ResizeBar.defaultProps = {
   disabled: false,
   minimum: 10,
   orientation: 'horizontal'
 };
 
-export default ControlBar;
+export default ResizeBar;

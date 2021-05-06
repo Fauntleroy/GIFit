@@ -1,42 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { css, cx } from '@emotion/css';
 
 import ChevronLeft from '$icons/chevron-left.svg';
 import ChevronRight from '$icons/chevron-right.svg';
 
-const incrementableInputClassName = css`
-  display: flex;
-  align-items: center;
-  position: relative;
-
-  .input[type="text"] {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-
-  .decrementor,
-  .incrementor {
-    display: flex;
-    position: absolute;
-    padding: 7px 1px;
-    color: currentColor;
-    z-index: 1;
-    background: transparent;
-
-    &:hover {
-      background: transparent;
-    }
-  }
-
-  .decrementor {
-    left: 0;
-  }
-
-  .incrementor {
-    right: 0;
-  }
-`;
+import * as css from './incrementable-input.module.css';
 
 function IncrementableInput ({
   increment, onChange, value, min, max, width, disabled,
@@ -53,16 +21,16 @@ function IncrementableInput ({
   }
 
   return (
-    <span className={incrementableInputClassName}>
+    <span className={css.incrementableInput}>
       <button
-        className="decrementor"
+        className={css.decrementor}
         type="button"
         onClick={handleDecrement}
         disabled={disabled}>
         <ChevronLeft style={{ width: '14px' }} />
       </button>
       <input
-        className="input"
+        className={css.input}
         type="text"
         inputMode="numeric"
         value={value}
@@ -73,7 +41,7 @@ function IncrementableInput ({
         disabled={disabled}
         {...passthroughProps} />
       <button
-        className="incrementor"
+        className={css.incrementor}
         type="button"
         onClick={handleIncrement}
         disabled={disabled}>
