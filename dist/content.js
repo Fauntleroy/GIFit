@@ -69728,8 +69728,16 @@ function GifGenerationSystem(props) {
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: css.workspace
   }, /*#__PURE__*/_react["default"].createElement(_systemWorkspace["default"], {
-    state: state,
-    gifUrl: gifUrl
+    videoElement: state.context.videoElement,
+    width: state.context.width,
+    height: state.context.height,
+    gifUrl: gifUrl,
+    isGenerating: state.matches('generating'),
+    isComplete: state.matches({
+      generating: {
+        generatingGif: 'succeeded'
+      }
+    })
   })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.qualityAndFrameRate,
     initial: {
@@ -70928,40 +70936,41 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function SystemWorkspace(props) {
-  var state = props.state;
+  var videoElement = props.videoElement,
+      width = props.width,
+      height = props.height,
+      isGenerating = props.isGenerating,
+      isComplete = props.isComplete;
   var canvasRef = (0, _react.useRef)(null);
-  var contextRef = (0, _react.useRef)(state.context); // draw the video to the preview canvas
+  var dimensionsRef = (0, _react.useRef)([0, 0]); // draw the video to the preview canvas
 
   function drawFrame() {
-    if (canvasRef.current && contextRef.current.videoElement) {
+    if (canvasRef.current && videoElement) {
       var context = canvasRef.current.getContext('2d');
-      var _contextRef$current = contextRef.current,
-          videoElement = _contextRef$current.videoElement,
-          width = _contextRef$current.width,
-          height = _contextRef$current.height;
-      context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight, 0, 0, width, height);
+      context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight, 0, 0, dimensionsRef.current[0], dimensionsRef.current[1]);
     }
   }
 
-  var debouncedDrawFrame = _lodash["default"].debounce(drawFrame, 375);
+  var throttledDrawFrame = _lodash["default"].throttle(drawFrame, 1000 / 120); // used to keep drawframe from being crazy
+
 
   (0, _react.useEffect)(function () {
-    debouncedDrawFrame();
-  }, [state.context.width, state.context.height, state.context.gifData]);
+    dimensionsRef.current = [width, height];
+  }, [width, height]);
   (0, _react.useEffect)(function () {
-    state.context.videoElement.pause();
-    state.context.videoElement.addEventListener('seeked', drawFrame);
+    throttledDrawFrame();
+  }, [width, height, isComplete]);
+  (0, _react.useEffect)(function () {
+    videoElement.pause();
+    videoElement.addEventListener('seeked', drawFrame);
     return function () {
-      state.context.videoElement.removeEventListener('seeked', drawFrame);
+      videoElement.removeEventListener('seeked', drawFrame);
     };
-  }, [state.context.videoElement]);
-  (0, _react.useEffect)(function () {
-    contextRef.current = state.context;
-  }, [state.context]);
+  }, [videoElement]);
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.workspace,
     animate: {
-      translateY: state.matches('generating') ? '35px' : '0px'
+      translateY: isGenerating ? '35px' : '0px'
     },
     transition: {
       type: 'spring',
@@ -70970,11 +70979,7 @@ function SystemWorkspace(props) {
       mass: 0.25,
       delay: 0.25
     }
-  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, state.matches({
-    generating: {
-      generatingGif: 'succeeded'
-    }
-  }) && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.img, {
+  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, isComplete && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.img, {
     className: css.result,
     src: props.gifUrl,
     initial: {
@@ -70997,40 +71002,49 @@ function SystemWorkspace(props) {
       delay: 0.25
     },
     key: "generated-gif"
-  }), !state.matches({
-    generating: {
-      generatingGif: 'succeeded'
-    }
-  }) && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.canvas, {
+  }), !isComplete && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.canvas, {
     className: css.canvas,
     ref: canvasRef,
     style: {
       willChange: 'width, height'
     },
     initial: {
-      width: state.context.width,
-      height: state.context.height
+      width: width,
+      height: height
     },
     animate: {
-      width: state.context.width,
-      height: state.context.height
+      width: width,
+      height: height
     },
     transition: {
       type: 'spring',
       bounce: 0,
       delay: 0.75
     },
-    height: state.context.height,
-    width: state.context.width
+    height: height,
+    width: width
   })));
 }
 
 SystemWorkspace.defaultProps = {
-  gifUrl: null
+  gifUrl: null,
+  videoElement: null,
+  isComplete: false,
+  isGenerating: false
 };
 SystemWorkspace.propTypes = {
   gifUrl: _propTypes["default"].object,
-  state: _propTypes["default"].object.isRequired
+  videoElement: _propTypes["default"].shape({
+    videoHeight: _propTypes["default"].number,
+    videoWidth: _propTypes["default"].number,
+    pause: _propTypes["default"].func.isRequired,
+    addEventListener: _propTypes["default"].func.isRequired,
+    removeEventListener: _propTypes["default"].func.isRequired
+  }),
+  width: _propTypes["default"].number.isRequired,
+  height: _propTypes["default"].number.isRequired,
+  isComplete: _propTypes["default"].bool.isRequired,
+  isGenerating: _propTypes["default"].bool.isRequired
 };
 var _default = SystemWorkspace;
 exports["default"] = _default;

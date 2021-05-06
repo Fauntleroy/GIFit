@@ -243,7 +243,13 @@ function GifGenerationSystem (props) {
         </motion.div>
         
         <div className={css.workspace}>
-          <SystemWorkspace state={state} gifUrl={gifUrl} />
+          <SystemWorkspace
+            videoElement={state.context.videoElement}
+            width={state.context.width}
+            height={state.context.height}
+            gifUrl={gifUrl}
+            isGenerating={state.matches('generating')}
+            isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
         </div>
 
         <motion.div
