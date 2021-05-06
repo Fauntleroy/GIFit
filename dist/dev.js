@@ -70672,7 +70672,7 @@ Refresh.defaultProps = {
   xmlns: "http://www.w3.org/2000/svg",
   viewBox: "0 0 24 24"
 };
-var FADED_INPUT_OPACITY = 0.125;
+var FADED_INPUT_OPACITY = 0.05;
 
 function LabelledInput(_ref) {
   var name = _ref.name,
@@ -72712,11 +72712,12 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 
       var aspectCorrectHeight = _lodash["default"].round(DEFAULT_WIDTH / videoAspectRatio);
 
+      console.log(videoElement.currentTime - 1, videoElement.duration - 1);
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
-        start: videoElement.currentTime,
-        end: videoElement.currentTime + 1.5,
+        start: videoElement.currentTime >= videoElement.duration - 1 ? videoElement.duration - 1 : videoElement.currentTime,
+        end: Math.min(videoElement.currentTime + 1.5, videoElement.duration),
         videoAspectRatio: videoAspectRatio,
         videoElement: videoElement
       };

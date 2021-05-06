@@ -16,7 +16,7 @@ import Cancel from '$icons/cancel.svg';
 import MediaPlay from '$icons/media-play.svg';
 import Refresh from '$icons/refresh.svg';
 
-const FADED_INPUT_OPACITY = 0.125;
+const FADED_INPUT_OPACITY = 0.05;
 
 function LabelledInput ({ name, width, value, onChange, addendum, ...passthroughProps }) {
   return (

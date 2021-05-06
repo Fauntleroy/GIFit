@@ -138,8 +138,10 @@ const gifGenerationSystemMachine = new Machine({
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
-        start: videoElement.currentTime,
-        end: videoElement.currentTime + 1.5,
+        start: (videoElement.currentTime >= (videoElement.duration - 1))
+          ? videoElement.duration - 1
+          : videoElement.currentTime,
+        end: Math.min(videoElement.currentTime + 1.5, videoElement.duration),
         videoAspectRatio,
         videoElement
       };

@@ -25,7 +25,7 @@
     "build:background-js": "browserify src/background.js -o dist/background.js -t [ babelify ]",
     "build:dev-js": "NODE_ENV=production browserify src/dev.jsx -o dist/dev.js -t [ babelify ] -t [ brfs ] -p [ tinyify ]",
     "build:js": "NODE_ENV=production browserify src/content.jsx -o dist/content.js -t [ babelify ] -t [ brfs ] -p [ tinyify ]",
-    "dev": "npm run build && npm-run-all -p watch:* serve",
+    "dev": "npm-run-all -p watch:* serve",
     "lint": "eslint src/*/**.{js,jsx} --ignore-pattern \"src/vendor/**/*\"",
     "watch": "npm-run-all -p watch:*",
     "watch:copy": "chokidar 'src/**/*.{png,json,html,webm}' -c 'npm run build:copy'",
