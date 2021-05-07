@@ -57,9 +57,9 @@ function SystemWorkspace (props) {
         <motion.img
           className={css.result}
           src={props.gifUrl}
-          initial={{ translateZ: '0px', filter: 'drop-shadow(rgba(0,0,0,0) 0 0px 0px)' }}
-          animate={{ translateZ: '50px', filter: 'drop-shadow(rgba(0,0,0,0.35) 0 10px 25px)' }}
-          exit={{ translateZ: '0px', filter: 'drop-shadow(rgba(0,0,0,0) 0 0px 0px)' }}
+          initial={{ translateZ: '0px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)' }}
+          animate={{ translateZ: '50px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)' }}
+          exit={{ translateZ: '0px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)' }}
           transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.2, delay: 0.25 }}
           key="generated-gif" />}
         {!isComplete &&

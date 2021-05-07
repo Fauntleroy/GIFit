@@ -69673,8 +69673,20 @@ function GifGenerationSystem(props) {
     value: state.context.width,
     onChange: handleWidthControlBarChange,
     disabled: !state.matches('configuring')
-  })), /*#__PURE__*/_react["default"].createElement("div", {
-    className: css.videoInfo
+  })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    className: css.videoInfo,
+    initial: {
+      opacity: 1
+    },
+    animate: {
+      opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
+    },
+    transition: {
+      type: 'spring',
+      tension: 400,
+      damping: 25,
+      mass: 0.5
+    }
   }, /*#__PURE__*/_react["default"].createElement(_systemVideoInfo["default"], {
     video: state.context.videoElement,
     gifUrl: gifUrl
@@ -70984,15 +70996,15 @@ function SystemWorkspace(props) {
     src: props.gifUrl,
     initial: {
       translateZ: '0px',
-      filter: 'drop-shadow(rgba(0,0,0,0) 0 0px 0px)'
+      filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
     },
     animate: {
       translateZ: '50px',
-      filter: 'drop-shadow(rgba(0,0,0,0.35) 0 10px 25px)'
+      filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
     },
     exit: {
       translateZ: '0px',
-      filter: 'drop-shadow(rgba(0,0,0,0) 0 0px 0px)'
+      filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
     },
     transition: {
       type: 'spring',

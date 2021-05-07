@@ -197,9 +197,13 @@ function GifGenerationSystem (props) {
             disabled={!state.matches('configuring')} />
         </motion.div>
 
-        <div className={css.videoInfo}>
+        <motion.div
+          className={css.videoInfo}
+          initial={{ opacity: 1 }}
+          animate={{ opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1 }}
+          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
           <SystemVideoInfo video={state.context.videoElement} gifUrl={gifUrl} />
-        </div>
+        </motion.div>
 
         <motion.div
           className={css.dimensions}
