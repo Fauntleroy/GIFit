@@ -52,6 +52,10 @@ function GifGenerationSystem (props) {
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
+
+    return () => {
+      videoRef.current.currentTime = contextRef.current.originalTime;
+    };
   }, []);
 
   // TODO don't seek on initial open

@@ -18,7 +18,8 @@ const gifGenerationSystemMachine = new Machine({
     quality: 5,
     fps: 10,
     start: 0,
-    end: 1.5
+    end: 1.5,
+    originalTime: 0
   },
 
   states: {
@@ -27,7 +28,7 @@ const gifGenerationSystemMachine = new Machine({
       on: {
         INITIALIZE_COMPLETE: {
           target: 'configuring',
-          actions: ['setInitialDimensions']
+          actions: ['setInitialContext']
         }
       }
     },
@@ -130,7 +131,7 @@ const gifGenerationSystemMachine = new Machine({
   }
 }, {
   actions: {
-    setInitialDimensions: assign((context, event) => {
+    setInitialContext: assign((context, event) => {
       const { videoElement } = event;
       const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
       const aspectCorrectHeight = _.round(DEFAULT_WIDTH / videoAspectRatio);
@@ -143,7 +144,8 @@ const gifGenerationSystemMachine = new Machine({
           : videoElement.currentTime,
         end: Math.min(videoElement.currentTime + 1.5, videoElement.duration),
         videoAspectRatio,
-        videoElement
+        videoElement,
+        originalTime: videoElement.currentTime
       };
     }),
     updateInput: assign((context, event) => {

@@ -69448,6 +69448,9 @@ function GifGenerationSystem(props) {
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
+    return function () {
+      videoRef.current.currentTime = contextRef.current.originalTime;
+    };
   }, []); // TODO don't seek on initial open
   // scrub the video to the start timecode when it changes
 
@@ -71721,7 +71724,8 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     quality: 5,
     fps: 10,
     start: 0,
-    end: 1.5
+    end: 1.5,
+    originalTime: 0
   },
   states: {
     // initialization animation
@@ -71729,7 +71733,7 @@ var gifGenerationSystemMachine = new _xstate.Machine({
       on: {
         INITIALIZE_COMPLETE: {
           target: 'configuring',
-          actions: ['setInitialDimensions']
+          actions: ['setInitialContext']
         }
       }
     },
@@ -71833,7 +71837,7 @@ var gifGenerationSystemMachine = new _xstate.Machine({
   }
 }, {
   actions: {
-    setInitialDimensions: (0, _xstate.assign)(function (context, event) {
+    setInitialContext: (0, _xstate.assign)(function (context, event) {
       var videoElement = event.videoElement;
       var videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
 
@@ -71845,7 +71849,8 @@ var gifGenerationSystemMachine = new _xstate.Machine({
         start: videoElement.currentTime >= videoElement.duration - 1 ? videoElement.duration - 1 : videoElement.currentTime,
         end: Math.min(videoElement.currentTime + 1.5, videoElement.duration),
         videoAspectRatio: videoAspectRatio,
-        videoElement: videoElement
+        videoElement: videoElement,
+        originalTime: videoElement.currentTime
       };
     }),
     updateInput: (0, _xstate.assign)(function (context, event) {
