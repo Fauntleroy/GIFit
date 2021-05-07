@@ -313,7 +313,12 @@
   width: 100%;
   cursor: pointer;
   user-select: none;
+  color: white;
 }
+
+  ._src_components_control_bar_module__controlBar:focus-within {
+    color: var(--color-highlight);
+  }
 
 ._src_components_control_bar_module__total {
   position: absolute;
@@ -331,6 +336,9 @@
   padding: 0;
   width: 3px;
   height: 12px;
+  border-radius: 2px;
+  color: currentColor;
+  background: currentColor;
 }
 
 ._src_components_control_bar_module__start:before, ._src_components_control_bar_module__end:before {
@@ -358,7 +366,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: white;
+  background: currentColor;
 }
 
 ._src_components_control_bar_module__start,
@@ -411,7 +419,12 @@
   position: relative;
   cursor: pointer;
   user-select: none;
+  color: white;
 }
+
+  ._src_components_resize_bar_module__resizeBar:focus-within {
+    color: var(--color-highlight);
+  }
 
 ._src_components_resize_bar_module__total {
   position: absolute;
@@ -419,7 +432,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-system);
 }
 
 ._src_components_resize_bar_module__start,
@@ -427,6 +440,9 @@
   position: absolute;
   z-index: 1;
   padding: 0;
+  border-radius: 2px;
+  color: currentColor;
+  background: currentColor;
 }
 
 ._src_components_resize_bar_module__start:before, ._src_components_resize_bar_module__end:before {
@@ -443,7 +459,7 @@
   top: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: currentColor;
 }._src_components_aesthetic_lines_module__aestheticLines {
   position: absolute;
   top: 0;

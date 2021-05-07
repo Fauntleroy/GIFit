@@ -4,6 +4,11 @@
   width: 100%;
   cursor: pointer;
   user-select: none;
+  color: white;
+
+  &:focus-within {
+    color: var(--color-highlight);
+  }
 }
 
 .total {
@@ -22,6 +27,9 @@
   padding: 0;
   width: 3px;
   height: 12px;
+  border-radius: 2px;
+  color: currentColor;
+  background: currentColor;
 
   &:before {
     content: '';
@@ -49,7 +57,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: white;
+  background: currentColor;
 }
 
 .start,
