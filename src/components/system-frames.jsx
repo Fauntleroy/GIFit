@@ -5,20 +5,40 @@ import { AnimateSharedLayout, motion } from 'framer-motion';
 
 import * as css from './system-frames.module.css';
 
+const MAX_VISIBLE_FRAMES = 100;
+const PRIMARY_SYSTEM_COLOR = 'rgb(231, 231, 253)'; // framer can't read my css var?
+const ACTIVE_COLOR = 'rgba(65, 255, 193, 1)';
+const SUBSYSTEM_COLOR = 'rgba(153, 179, 255, 0.35)';
+
 function SystemFrames (props) {
   const { state } = props;
-  const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
+  const frameCount = Math.ceil((state.context.end - state.context.start) * state.context.fps);
   const { framesComplete } = state.context;
   const framesIncomplete = frameCount - framesComplete;
+  const incompleteRatio = framesIncomplete / frameCount;
+  const completeRatio = 1 - incompleteRatio;
+  const totalCount = Math.min(MAX_VISIBLE_FRAMES, frameCount);
+  const incompleteCount = Math.floor(totalCount * incompleteRatio);
+  const completeCount = Math.ceil(totalCount * completeRatio);
+  const isGenerating = state.matches('generating');
+  const isCompleted = state.matches({ generating: { generatingGif: 'succeeded' }});
 
   return (
-    <div
+    <motion.div
+      initial={{ marginLeft: '0px', marginRight: '0px' }}
+      animate={{
+        marginLeft: isGenerating ? '-125px' : '0px',
+        marginRight: isGenerating ? '-125px' : '0px'
+      }}
       className={css.frames}>
       <AnimateSharedLayout>
         <motion.div
           className={css.pending}
+          animate={{
+            color: isGenerating ? PRIMARY_SYSTEM_COLOR : SUBSYSTEM_COLOR
+          }}
           layout={true}>
-          {_.times(framesIncomplete, (i) => (
+          {_.times(incompleteCount, (i) => (
             <motion.span
               className={css.frame}
               key={i}
@@ -27,22 +47,28 @@ function SystemFrames (props) {
           ))}
           <span className={css.count}>{framesIncomplete}</span>
         </motion.div>
-        {state.matches('generating') &&
+        {(isGenerating && !isCompleted) &&
         <motion.div
           className={css.complete}
+          animate={{
+            color: !isCompleted ? ACTIVE_COLOR : PRIMARY_SYSTEM_COLOR
+          }}
           layout={true}>
-          {_.times(framesComplete, (i) => (
+          {_.times(completeCount, (i) => (
             <motion.span
               className={`${css.frame} ${css.frameComplete}`}
-              key={(frameCount - i) - 1}
+              key={(totalCount - i) - 1}
+              style={{ width: `${100 / totalCount}%` }}
               layout={true}
-              layoutId={(frameCount - i) - 1} />
-          )).reverse()}
-          <span className={`${css.count} ${css.countComplete}`}>{framesComplete}</span>
+              layoutId={(totalCount - i) - 1} />
+          ))}
+          <span className={`${css.count} ${css.countComplete}`}>
+            <var className={css.total}>{frameCount}</var> ︱ {framesComplete}
+          </span>
         </motion.div>
         }
       </AnimateSharedLayout>
-    </div>
+    </motion.div>
   );
 }
 

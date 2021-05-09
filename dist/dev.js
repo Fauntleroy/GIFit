@@ -136,7 +136,7 @@ function useActor(actorRef, getSnapshot) {
 }
 exports.useActor = useActor;
 
-},{"./useConstant":6,"react":179,"use-isomorphic-layout-effect":188}],6:[function(require,module,exports){
+},{"./useConstant":6,"react":178,"use-isomorphic-layout-effect":187}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = require("react");
@@ -149,7 +149,7 @@ function useConstant(fn) {
 }
 exports.default = useConstant;
 
-},{"react":179}],7:[function(require,module,exports){
+},{"react":178}],7:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __assign = (this && this.__assign) || function () {
@@ -266,7 +266,7 @@ function useInterpret(getMachine, options, observerOrListener) {
 exports.useInterpret = useInterpret;
 
 }).call(this)}).call(this,require('_process'))
-},{"./useConstant":6,"./useReactEffectActions":9,"_process":165,"react":179,"use-isomorphic-layout-effect":188,"xstate":198}],8:[function(require,module,exports){
+},{"./useConstant":6,"./useReactEffectActions":9,"_process":164,"react":178,"use-isomorphic-layout-effect":187,"xstate":197}],8:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -354,7 +354,7 @@ function useMachine(getMachine, options) {
 }
 exports.useMachine = useMachine;
 
-},{"./types":4,"./useInterpret":7,"react":179,"xstate":198}],9:[function(require,module,exports){
+},{"./types":4,"./useInterpret":7,"react":178,"xstate":197}],9:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -423,7 +423,7 @@ function useReactEffectActions(service) {
 }
 exports.useReactEffectActions = useReactEffectActions;
 
-},{"./types":4,"./useMachine":8,"./utils":12,"react":179,"use-isomorphic-layout-effect":188}],10:[function(require,module,exports){
+},{"./types":4,"./useMachine":8,"./utils":12,"react":178,"use-isomorphic-layout-effect":187}],10:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -481,7 +481,7 @@ function useSelector(actor, selector, compare, getSnapshot) {
 }
 exports.useSelector = useSelector;
 
-},{"./useActor":5,"./useService":11,"react":179}],11:[function(require,module,exports){
+},{"./useActor":5,"./useService":11,"react":178}],11:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
@@ -520,7 +520,7 @@ function useService(service) {
 exports.useService = useService;
 
 }).call(this)}).call(this,require('_process'))
-},{"./useActor":5,"_process":165}],12:[function(require,module,exports){
+},{"./useActor":5,"_process":164}],12:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -3239,26 +3239,6 @@ $({ target: 'Array', proto: true, forced: !STRICT_METHOD || CHROME_BUG }, {
 },{"../internals/array-method-is-strict":23,"../internals/array-reduce":24,"../internals/engine-is-node":43,"../internals/engine-v8-version":45,"../internals/export":47}],128:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
-var isArray = require('../internals/is-array');
-
-var nativeReverse = [].reverse;
-var test = [1, 2];
-
-// `Array.prototype.reverse` method
-// https://tc39.es/ecma262/#sec-array.prototype.reverse
-// fix for Safari 12.0 bug
-// https://bugs.webkit.org/show_bug.cgi?id=188794
-$({ target: 'Array', proto: true, forced: String(test) === String(test.reverse()) }, {
-  reverse: function reverse() {
-    // eslint-disable-next-line no-self-assign -- dirty hack
-    if (isArray(this)) this.length = this.length;
-    return nativeReverse.call(this);
-  }
-});
-
-},{"../internals/export":47,"../internals/is-array":66}],129:[function(require,module,exports){
-'use strict';
-var $ = require('../internals/export');
 var isObject = require('../internals/is-object');
 var isArray = require('../internals/is-array');
 var toAbsoluteIndex = require('../internals/to-absolute-index');
@@ -3305,7 +3285,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
   }
 });
 
-},{"../internals/array-method-has-species-support":22,"../internals/create-property":37,"../internals/export":47,"../internals/is-array":66,"../internals/is-object":68,"../internals/to-absolute-index":106,"../internals/to-indexed-object":107,"../internals/to-length":109,"../internals/well-known-symbol":116}],130:[function(require,module,exports){
+},{"../internals/array-method-has-species-support":22,"../internals/create-property":37,"../internals/export":47,"../internals/is-array":66,"../internals/is-object":68,"../internals/to-absolute-index":106,"../internals/to-indexed-object":107,"../internals/to-length":109,"../internals/well-known-symbol":116}],129:[function(require,module,exports){
 var $ = require('../internals/export');
 
 // `Date.now` method
@@ -3316,7 +3296,7 @@ $({ target: 'Date', stat: true }, {
   }
 });
 
-},{"../internals/export":47}],131:[function(require,module,exports){
+},{"../internals/export":47}],130:[function(require,module,exports){
 var redefine = require('../internals/redefine');
 
 var DatePrototype = Date.prototype;
@@ -3335,7 +3315,7 @@ if (new Date(NaN) + '' != INVALID_DATE) {
   });
 }
 
-},{"../internals/redefine":96}],132:[function(require,module,exports){
+},{"../internals/redefine":96}],131:[function(require,module,exports){
 var DESCRIPTORS = require('../internals/descriptors');
 var defineProperty = require('../internals/object-define-property').f;
 
@@ -3359,7 +3339,7 @@ if (DESCRIPTORS && !(NAME in FunctionPrototype)) {
   });
 }
 
-},{"../internals/descriptors":40,"../internals/object-define-property":82}],133:[function(require,module,exports){
+},{"../internals/descriptors":40,"../internals/object-define-property":82}],132:[function(require,module,exports){
 var $ = require('../internals/export');
 var assign = require('../internals/object-assign');
 
@@ -3370,7 +3350,7 @@ $({ target: 'Object', stat: true, forced: Object.assign !== assign }, {
   assign: assign
 });
 
-},{"../internals/export":47,"../internals/object-assign":79}],134:[function(require,module,exports){
+},{"../internals/export":47,"../internals/object-assign":79}],133:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var create = require('../internals/object-create');
@@ -3381,7 +3361,7 @@ $({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
   create: create
 });
 
-},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-create":80}],135:[function(require,module,exports){
+},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-create":80}],134:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var defineProperties = require('../internals/object-define-properties');
@@ -3392,7 +3372,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperties: defineProperties
 });
 
-},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-define-properties":81}],136:[function(require,module,exports){
+},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-define-properties":81}],135:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var objectDefinePropertyModile = require('../internals/object-define-property');
@@ -3403,7 +3383,7 @@ $({ target: 'Object', stat: true, forced: !DESCRIPTORS, sham: !DESCRIPTORS }, {
   defineProperty: objectDefinePropertyModile.f
 });
 
-},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-define-property":82}],137:[function(require,module,exports){
+},{"../internals/descriptors":40,"../internals/export":47,"../internals/object-define-property":82}],136:[function(require,module,exports){
 var $ = require('../internals/export');
 var fails = require('../internals/fails');
 var toIndexedObject = require('../internals/to-indexed-object');
@@ -3421,7 +3401,7 @@ $({ target: 'Object', stat: true, forced: FORCED, sham: !DESCRIPTORS }, {
   }
 });
 
-},{"../internals/descriptors":40,"../internals/export":47,"../internals/fails":48,"../internals/object-get-own-property-descriptor":83,"../internals/to-indexed-object":107}],138:[function(require,module,exports){
+},{"../internals/descriptors":40,"../internals/export":47,"../internals/fails":48,"../internals/object-get-own-property-descriptor":83,"../internals/to-indexed-object":107}],137:[function(require,module,exports){
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
 var ownKeys = require('../internals/own-keys');
@@ -3447,7 +3427,7 @@ $({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
   }
 });
 
-},{"../internals/create-property":37,"../internals/descriptors":40,"../internals/export":47,"../internals/object-get-own-property-descriptor":83,"../internals/own-keys":93,"../internals/to-indexed-object":107}],139:[function(require,module,exports){
+},{"../internals/create-property":37,"../internals/descriptors":40,"../internals/export":47,"../internals/object-get-own-property-descriptor":83,"../internals/own-keys":93,"../internals/to-indexed-object":107}],138:[function(require,module,exports){
 var $ = require('../internals/export');
 var fails = require('../internals/fails');
 var toObject = require('../internals/to-object');
@@ -3465,7 +3445,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES, sham: !CORRECT_PR
 });
 
 
-},{"../internals/correct-prototype-getter":33,"../internals/export":47,"../internals/fails":48,"../internals/object-get-prototype-of":87,"../internals/to-object":110}],140:[function(require,module,exports){
+},{"../internals/correct-prototype-getter":33,"../internals/export":47,"../internals/fails":48,"../internals/object-get-prototype-of":87,"../internals/to-object":110}],139:[function(require,module,exports){
 var $ = require('../internals/export');
 var toObject = require('../internals/to-object');
 var nativeKeys = require('../internals/object-keys');
@@ -3481,7 +3461,7 @@ $({ target: 'Object', stat: true, forced: FAILS_ON_PRIMITIVES }, {
   }
 });
 
-},{"../internals/export":47,"../internals/fails":48,"../internals/object-keys":89,"../internals/to-object":110}],141:[function(require,module,exports){
+},{"../internals/export":47,"../internals/fails":48,"../internals/object-keys":89,"../internals/to-object":110}],140:[function(require,module,exports){
 var $ = require('../internals/export');
 var setPrototypeOf = require('../internals/object-set-prototype-of');
 
@@ -3491,7 +3471,7 @@ $({ target: 'Object', stat: true }, {
   setPrototypeOf: setPrototypeOf
 });
 
-},{"../internals/export":47,"../internals/object-set-prototype-of":91}],142:[function(require,module,exports){
+},{"../internals/export":47,"../internals/object-set-prototype-of":91}],141:[function(require,module,exports){
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var redefine = require('../internals/redefine');
 var toString = require('../internals/object-to-string');
@@ -3502,7 +3482,7 @@ if (!TO_STRING_TAG_SUPPORT) {
   redefine(Object.prototype, 'toString', toString, { unsafe: true });
 }
 
-},{"../internals/object-to-string":92,"../internals/redefine":96,"../internals/to-string-tag-support":112}],143:[function(require,module,exports){
+},{"../internals/object-to-string":92,"../internals/redefine":96,"../internals/to-string-tag-support":112}],142:[function(require,module,exports){
 var $ = require('../internals/export');
 var parseFloatImplementation = require('../internals/number-parse-float');
 
@@ -3512,7 +3492,7 @@ $({ global: true, forced: parseFloat != parseFloatImplementation }, {
   parseFloat: parseFloatImplementation
 });
 
-},{"../internals/export":47,"../internals/number-parse-float":77}],144:[function(require,module,exports){
+},{"../internals/export":47,"../internals/number-parse-float":77}],143:[function(require,module,exports){
 var $ = require('../internals/export');
 var parseIntImplementation = require('../internals/number-parse-int');
 
@@ -3522,7 +3502,7 @@ $({ global: true, forced: parseInt != parseIntImplementation }, {
   parseInt: parseIntImplementation
 });
 
-},{"../internals/export":47,"../internals/number-parse-int":78}],145:[function(require,module,exports){
+},{"../internals/export":47,"../internals/number-parse-int":78}],144:[function(require,module,exports){
 var $ = require('../internals/export');
 var getBuiltIn = require('../internals/get-built-in');
 var aFunction = require('../internals/a-function');
@@ -3575,7 +3555,7 @@ $({ target: 'Reflect', stat: true, forced: FORCED, sham: FORCED }, {
   }
 });
 
-},{"../internals/a-function":13,"../internals/an-object":17,"../internals/export":47,"../internals/fails":48,"../internals/function-bind":51,"../internals/get-built-in":52,"../internals/is-object":68,"../internals/object-create":80}],146:[function(require,module,exports){
+},{"../internals/a-function":13,"../internals/an-object":17,"../internals/export":47,"../internals/fails":48,"../internals/function-bind":51,"../internals/get-built-in":52,"../internals/is-object":68,"../internals/object-create":80}],145:[function(require,module,exports){
 'use strict';
 var charAt = require('../internals/string-multibyte').charAt;
 var InternalStateModule = require('../internals/internal-state');
@@ -3606,7 +3586,7 @@ defineIterator(String, 'String', function (iterated) {
   return { value: point, done: false };
 });
 
-},{"../internals/define-iterator":38,"../internals/internal-state":64,"../internals/string-multibyte":103}],147:[function(require,module,exports){
+},{"../internals/define-iterator":38,"../internals/internal-state":64,"../internals/string-multibyte":103}],146:[function(require,module,exports){
 // `Symbol.prototype.description` getter
 // https://tc39.es/ecma262/#sec-symbol.prototype.description
 'use strict';
@@ -3658,14 +3638,14 @@ if (DESCRIPTORS && typeof NativeSymbol == 'function' && (!('description' in Nati
   });
 }
 
-},{"../internals/copy-constructor-properties":32,"../internals/descriptors":40,"../internals/export":47,"../internals/global":55,"../internals/has":56,"../internals/is-object":68,"../internals/object-define-property":82}],148:[function(require,module,exports){
+},{"../internals/copy-constructor-properties":32,"../internals/descriptors":40,"../internals/export":47,"../internals/global":55,"../internals/has":56,"../internals/is-object":68,"../internals/object-define-property":82}],147:[function(require,module,exports){
 var defineWellKnownSymbol = require('../internals/define-well-known-symbol');
 
 // `Symbol.iterator` well-known symbol
 // https://tc39.es/ecma262/#sec-symbol.iterator
 defineWellKnownSymbol('iterator');
 
-},{"../internals/define-well-known-symbol":39}],149:[function(require,module,exports){
+},{"../internals/define-well-known-symbol":39}],148:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var global = require('../internals/global');
@@ -3978,7 +3958,7 @@ setToStringTag($Symbol, SYMBOL);
 
 hiddenKeys[HIDDEN] = true;
 
-},{"../internals/an-object":17,"../internals/array-iteration":21,"../internals/create-non-enumerable-property":35,"../internals/create-property-descriptor":36,"../internals/define-well-known-symbol":39,"../internals/descriptors":40,"../internals/export":47,"../internals/fails":48,"../internals/get-built-in":52,"../internals/global":55,"../internals/has":56,"../internals/hidden-keys":57,"../internals/internal-state":64,"../internals/is-array":66,"../internals/is-object":68,"../internals/is-pure":69,"../internals/native-symbol":74,"../internals/object-create":80,"../internals/object-define-property":82,"../internals/object-get-own-property-descriptor":83,"../internals/object-get-own-property-names":85,"../internals/object-get-own-property-names-external":84,"../internals/object-get-own-property-symbols":86,"../internals/object-keys":89,"../internals/object-property-is-enumerable":90,"../internals/redefine":96,"../internals/set-to-string-tag":99,"../internals/shared":102,"../internals/shared-key":100,"../internals/to-indexed-object":107,"../internals/to-object":110,"../internals/to-primitive":111,"../internals/uid":113,"../internals/use-symbol-as-uid":114,"../internals/well-known-symbol":116,"../internals/well-known-symbol-wrapped":115}],150:[function(require,module,exports){
+},{"../internals/an-object":17,"../internals/array-iteration":21,"../internals/create-non-enumerable-property":35,"../internals/create-property-descriptor":36,"../internals/define-well-known-symbol":39,"../internals/descriptors":40,"../internals/export":47,"../internals/fails":48,"../internals/get-built-in":52,"../internals/global":55,"../internals/has":56,"../internals/hidden-keys":57,"../internals/internal-state":64,"../internals/is-array":66,"../internals/is-object":68,"../internals/is-pure":69,"../internals/native-symbol":74,"../internals/object-create":80,"../internals/object-define-property":82,"../internals/object-get-own-property-descriptor":83,"../internals/object-get-own-property-names":85,"../internals/object-get-own-property-names-external":84,"../internals/object-get-own-property-symbols":86,"../internals/object-keys":89,"../internals/object-property-is-enumerable":90,"../internals/redefine":96,"../internals/set-to-string-tag":99,"../internals/shared":102,"../internals/shared-key":100,"../internals/to-indexed-object":107,"../internals/to-object":110,"../internals/to-primitive":111,"../internals/uid":113,"../internals/use-symbol-as-uid":114,"../internals/well-known-symbol":116,"../internals/well-known-symbol-wrapped":115}],149:[function(require,module,exports){
 'use strict';
 var global = require('../internals/global');
 var redefineAll = require('../internals/redefine-all');
@@ -4048,7 +4028,7 @@ if (NATIVE_WEAK_MAP && IS_IE11) {
   });
 }
 
-},{"../internals/collection":31,"../internals/collection-weak":30,"../internals/global":55,"../internals/internal-metadata":63,"../internals/internal-state":64,"../internals/is-object":68,"../internals/native-weak-map":76,"../internals/redefine-all":95}],151:[function(require,module,exports){
+},{"../internals/collection":31,"../internals/collection-weak":30,"../internals/global":55,"../internals/internal-metadata":63,"../internals/internal-state":64,"../internals/is-object":68,"../internals/native-weak-map":76,"../internals/redefine-all":95}],150:[function(require,module,exports){
 var global = require('../internals/global');
 var DOMIterables = require('../internals/dom-iterables');
 var forEach = require('../internals/array-for-each');
@@ -4065,7 +4045,7 @@ for (var COLLECTION_NAME in DOMIterables) {
   }
 }
 
-},{"../internals/array-for-each":18,"../internals/create-non-enumerable-property":35,"../internals/dom-iterables":42,"../internals/global":55}],152:[function(require,module,exports){
+},{"../internals/array-for-each":18,"../internals/create-non-enumerable-property":35,"../internals/dom-iterables":42,"../internals/global":55}],151:[function(require,module,exports){
 var global = require('../internals/global');
 var DOMIterables = require('../internals/dom-iterables');
 var ArrayIteratorMethods = require('../modules/es.array.iterator');
@@ -4100,7 +4080,7 @@ for (var COLLECTION_NAME in DOMIterables) {
   }
 }
 
-},{"../internals/create-non-enumerable-property":35,"../internals/dom-iterables":42,"../internals/global":55,"../internals/well-known-symbol":116,"../modules/es.array.iterator":124}],153:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":35,"../internals/dom-iterables":42,"../internals/global":55,"../internals/well-known-symbol":116,"../modules/es.array.iterator":124}],152:[function(require,module,exports){
 var $ = require('../internals/export');
 var global = require('../internals/global');
 var userAgent = require('../internals/engine-user-agent');
@@ -4130,7 +4110,7 @@ $({ global: true, bind: true, forced: MSIE }, {
   setInterval: wrap(global.setInterval)
 });
 
-},{"../internals/engine-user-agent":44,"../internals/export":47,"../internals/global":55}],154:[function(require,module,exports){
+},{"../internals/engine-user-agent":44,"../internals/export":47,"../internals/global":55}],153:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.array.iterator');
@@ -4479,7 +4459,7 @@ module.exports = {
   getState: getInternalParamsState
 };
 
-},{"../internals/an-instance":16,"../internals/an-object":17,"../internals/classof":29,"../internals/create-iterator-constructor":34,"../internals/create-property-descriptor":36,"../internals/export":47,"../internals/function-bind-context":50,"../internals/get-built-in":52,"../internals/get-iterator":54,"../internals/get-iterator-method":53,"../internals/has":56,"../internals/internal-state":64,"../internals/is-object":68,"../internals/native-url":75,"../internals/object-create":80,"../internals/redefine":96,"../internals/redefine-all":95,"../internals/set-to-string-tag":99,"../internals/well-known-symbol":116,"../modules/es.array.iterator":124}],155:[function(require,module,exports){
+},{"../internals/an-instance":16,"../internals/an-object":17,"../internals/classof":29,"../internals/create-iterator-constructor":34,"../internals/create-property-descriptor":36,"../internals/export":47,"../internals/function-bind-context":50,"../internals/get-built-in":52,"../internals/get-iterator":54,"../internals/get-iterator-method":53,"../internals/has":56,"../internals/internal-state":64,"../internals/is-object":68,"../internals/native-url":75,"../internals/object-create":80,"../internals/redefine":96,"../internals/redefine-all":95,"../internals/set-to-string-tag":99,"../internals/well-known-symbol":116,"../modules/es.array.iterator":124}],154:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.string.iterator');
@@ -5486,7 +5466,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
   URL: URLConstructor
 });
 
-},{"../internals/an-instance":16,"../internals/array-from":19,"../internals/descriptors":40,"../internals/export":47,"../internals/global":55,"../internals/has":56,"../internals/internal-state":64,"../internals/native-url":75,"../internals/object-assign":79,"../internals/object-define-properties":81,"../internals/redefine":96,"../internals/set-to-string-tag":99,"../internals/string-multibyte":103,"../internals/string-punycode-to-ascii":104,"../modules/es.string.iterator":146,"../modules/web.url-search-params":154}],156:[function(require,module,exports){
+},{"../internals/an-instance":16,"../internals/array-from":19,"../internals/descriptors":40,"../internals/export":47,"../internals/global":55,"../internals/has":56,"../internals/internal-state":64,"../internals/native-url":75,"../internals/object-assign":79,"../internals/object-define-properties":81,"../internals/redefine":96,"../internals/set-to-string-tag":99,"../internals/string-multibyte":103,"../internals/string-punycode-to-ascii":104,"../modules/es.string.iterator":145,"../modules/web.url-search-params":153}],155:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5985,7 +5965,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],157:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -5995,8 +5975,8 @@ var tslib = require('tslib');
 var React = require('react');
 var heyListen = require('hey-listen');
 var styleValueTypes = require('style-value-types');
-var popmotion = require('popmotion');
 var sync = require('framesync');
+var popmotion = require('popmotion');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -6289,7 +6269,7 @@ function useMotionRef(visualState, visualElement, externalRef) {
                 externalRef.current = instance;
             }
         }
-    }, [visualElement]);
+    }, [visualElement, externalRef]);
 }
 
 /**
@@ -6795,9 +6775,8 @@ function buildHTMLStyles(state, latestValues, projection, layoutState, options, 
              * If layout projection is on, and we need to perform scale correction for this
              * value type, perform it.
              */
-            if (layoutState &&
-                projection &&
-                layoutState.isHydrated &&
+            if ((projection === null || projection === void 0 ? void 0 : projection.isHydrated) &&
+                (layoutState === null || layoutState === void 0 ? void 0 : layoutState.isHydrated) &&
                 valueScaleCorrection[key]) {
                 var correctedValue = valueScaleCorrection[key].process(value, layoutState, projection);
                 /**
@@ -7558,11 +7537,72 @@ function isDragActive() {
     return false;
 }
 
+var unresolvedJobs = new Set();
+var layoutState = {
+    isMeasuringLayout: false,
+};
+function pushJob(stack, job, pointer) {
+    if (!stack[pointer])
+        stack[pointer] = [];
+    stack[pointer].push(job);
+}
+function batchLayout(callback) {
+    unresolvedJobs.add(callback);
+    return function () { return unresolvedJobs.delete(callback); };
+}
+function flushLayout() {
+    if (!unresolvedJobs.size)
+        return;
+    var pointer = 0;
+    var reads = [[]];
+    var writes = [];
+    var setRead = function (job) { return pushJob(reads, job, pointer); };
+    var setWrite = function (job) {
+        pushJob(writes, job, pointer);
+        pointer++;
+    };
+    /**
+     * Resolve jobs into their array stacks
+     */
+    unresolvedJobs.forEach(function (callback) {
+        callback(setRead, setWrite);
+        pointer = 0;
+    });
+    unresolvedJobs.clear();
+    /**
+     * Mark that we're currently measuring layouts. This allows us to, for instance, ignore
+     * hover events that might be triggered as a result of resetting transforms.
+     *
+     * The postRender/setTimeout combo seems like an odd bit of scheduling but what it's saying
+     * is *after* the next render, wait 10ms before re-enabling hover events. Waiting until the
+     * next frame completely will result in missed, valid hover events. But events seem to
+     * be fired async from their actual action, so setting this to false too soon can still
+     * trigger events from layout measurements.
+     *
+     * Note: If we figure out a way of measuring layout while transforms remain applied, this can be removed.
+     * I have attempted unregistering event listeners and setting CSS to pointer-events: none
+     * but neither seem to work as expected.
+     */
+    layoutState.isMeasuringLayout = true;
+    sync__default['default'].postRender(function () {
+        setTimeout(function () { return (layoutState.isMeasuringLayout = false); }, 10);
+    });
+    /**
+     * Execute jobs
+     */
+    var numStacks = writes.length;
+    for (var i = 0; i <= numStacks; i++) {
+        reads[i] && reads[i].forEach(executeJob);
+        writes[i] && writes[i].forEach(executeJob);
+    }
+}
+var executeJob = function (job) { return job(); };
+
 function createHoverEvent(visualElement, isActive, callback) {
     return function (event, info) {
         var _a;
         if (!isMouseEvent(event) ||
-            !visualElement.isHoverEventsEnabled ||
+            layoutState.isMeasuringLayout ||
             isDragActive()) {
             return;
         }
@@ -9466,37 +9506,28 @@ var compareByDepth = function (a, b) {
     return a.depth - b.depth;
 };
 
-function updateTreeLayoutMeasurements(visualElement, isRelativeDrag) {
-    withoutTreeTransform(visualElement, function () {
-        var allChildren = collectProjectingChildren(visualElement);
-        batchResetAndMeasure(allChildren);
-        updateLayoutMeasurement(visualElement);
-    });
-    !isRelativeDrag &&
-        visualElement.rebaseProjectionTarget(true, visualElement.measureViewportBox(false));
+function isProjecting(visualElement) {
+    var isEnabled = visualElement.projection.isEnabled;
+    return isEnabled || visualElement.shouldResetTransform();
+}
+function collectProjectingAncestors(visualElement, ancestors) {
+    if (ancestors === void 0) { ancestors = []; }
+    var parent = visualElement.parent;
+    if (parent)
+        collectProjectingAncestors(parent, ancestors);
+    if (isProjecting(visualElement))
+        ancestors.push(visualElement);
+    return ancestors;
 }
 function collectProjectingChildren(visualElement) {
     var children = [];
     var addChild = function (child) {
-        if (child.projection.isEnabled || child.shouldResetTransform()) {
+        if (isProjecting(child))
             children.push(child);
-        }
         child.children.forEach(addChild);
     };
     visualElement.children.forEach(addChild);
     return children.sort(compareByDepth);
-}
-/**
- * Perform the callback after temporarily unapplying the transform
- * upwards through the tree.
- */
-function withoutTreeTransform(visualElement, callback) {
-    var parent = visualElement.parent;
-    var isEnabled = visualElement.projection.isEnabled;
-    var shouldReset = isEnabled || visualElement.shouldResetTransform();
-    shouldReset && visualElement.resetTransform();
-    parent ? withoutTreeTransform(parent, callback) : callback();
-    shouldReset && visualElement.restoreTransform();
 }
 /**
  * Update the layoutState by measuring the DOM layout. This
@@ -9525,16 +9556,6 @@ function snapshotViewportBox(visualElement) {
      * that targetBox is affected by scroll in the same way as the measured box
      */
     visualElement.rebaseProjectionTarget(false, visualElement.prevViewportBox);
-}
-function batchResetAndMeasure(order) {
-    /**
-     * Write: Reset any transforms on children elements so we can read their actual layout
-     */
-    order.forEach(function (child) { return child.resetTransform(); });
-    /**
-     * Read: Measure the actual layout
-     */
-    order.forEach(updateLayoutMeasurement);
 }
 
 function tweenAxis(target, prev, next, p) {
@@ -9810,50 +9831,82 @@ var VisualElementDragControls = /** @class */ (function () {
         var _this = this;
         var _b = _a === void 0 ? {} : _a, _c = _b.snapToCursor, snapToCursor = _c === void 0 ? false : _c, cursorProgress = _b.cursorProgress;
         var onSessionStart = function (event) {
+            var _a;
             // Stop any animations on both axis values immediately. This allows the user to throw and catch
             // the component.
             _this.stopMotion();
             /**
-             * Ensure that this element's layout measurements are updated.
-             * We'll need these to accurately project the element and figure out its constraints.
+             * Save the initial point. We'll use this to calculate the pointer's position rather
+             * than the one we receive when the gesture actually starts. By then, the pointer will
+             * have already moved, and the perception will be of the pointer "slipping" across the element
              */
-            _this.updateLayoutMeasurements();
-            /**
-             * If this drag session has been manually triggered by the user, it might be from an event
-             * outside the draggable element. If snapToCursor is set to true, we need to measure the position
-             * of the element and snap it to the cursor.
-             */
-            snapToCursor && _this.snapToCursor(originEvent);
-            /**
-             * Apply a simple lock to the projection target. This ensures no animations
-             * can run on the projection box while this lock is active.
-             */
-            _this.isLayoutDrag() && _this.visualElement.lockProjectionTarget();
-            /**
-             * When dragging starts, we want to find where the cursor is relative to the bounding box
-             * of the element. Every frame, we calculate a new bounding box using this relative position
-             * and let the visualElement renderer figure out how to reproject the element into this bounding
-             * box.
-             *
-             * By doing it this way, rather than applying an x/y transform directly to the element,
-             * we can ensure the component always visually sticks to the cursor as we'd expect, even
-             * if the DOM element itself changes layout as a result of React updates the user might
-             * make based on the drag position.
-             */
-            var point = getViewportPointFromEvent(event).point;
-            eachAxis(function (axis) {
-                var _a = _this.visualElement.projection.target[axis], min = _a.min, max = _a.max;
-                _this.cursorProgress[axis] = cursorProgress
-                    ? cursorProgress[axis]
-                    : popmotion.progress(min, max, point[axis]);
+            var initialPoint = getViewportPointFromEvent(event).point;
+            (_a = _this.cancelLayout) === null || _a === void 0 ? void 0 : _a.call(_this);
+            _this.cancelLayout = batchLayout(function (read, write) {
+                var ancestors = collectProjectingAncestors(_this.visualElement);
+                var children = collectProjectingChildren(_this.visualElement);
+                var tree = tslib.__spreadArray(tslib.__spreadArray([], tslib.__read(ancestors)), tslib.__read(children));
+                var hasManuallySetCursorOrigin = false;
                 /**
-                 * If we have external drag MotionValues, record their origin point. On pointermove
-                 * we'll apply the pan gesture offset directly to this value.
+                 * Apply a simple lock to the projection target. This ensures no animations
+                 * can run on the projection box while this lock is active.
                  */
-                var axisValue = _this.getAxisMotionValue(axis);
-                if (axisValue) {
-                    _this.originPoint[axis] = axisValue.get();
-                }
+                _this.isLayoutDrag() && _this.visualElement.lockProjectionTarget();
+                write(function () {
+                    tree.forEach(function (element) { return element.resetTransform(); });
+                });
+                read(function () {
+                    updateLayoutMeasurement(_this.visualElement);
+                    children.forEach(updateLayoutMeasurement);
+                });
+                write(function () {
+                    tree.forEach(function (element) { return element.restoreTransform(); });
+                    if (snapToCursor) {
+                        hasManuallySetCursorOrigin = _this.snapToCursor(initialPoint);
+                    }
+                });
+                read(function () {
+                    var isRelativeDrag = Boolean(_this.getAxisMotionValue("x") && !_this.isExternalDrag());
+                    if (!isRelativeDrag) {
+                        _this.visualElement.rebaseProjectionTarget(true, _this.visualElement.measureViewportBox(false));
+                    }
+                    _this.visualElement.scheduleUpdateLayoutProjection();
+                    /**
+                     * When dragging starts, we want to find where the cursor is relative to the bounding box
+                     * of the element. Every frame, we calculate a new bounding box using this relative position
+                     * and let the visualElement renderer figure out how to reproject the element into this bounding
+                     * box.
+                     *
+                     * By doing it this way, rather than applying an x/y transform directly to the element,
+                     * we can ensure the component always visually sticks to the cursor as we'd expect, even
+                     * if the DOM element itself changes layout as a result of React updates the user might
+                     * make based on the drag position.
+                     */
+                    var projection = _this.visualElement.projection;
+                    eachAxis(function (axis) {
+                        if (!hasManuallySetCursorOrigin) {
+                            var _a = projection.target[axis], min = _a.min, max = _a.max;
+                            _this.cursorProgress[axis] = cursorProgress
+                                ? cursorProgress[axis]
+                                : popmotion.progress(min, max, initialPoint[axis]);
+                        }
+                        /**
+                         * If we have external drag MotionValues, record their origin point. On pointermove
+                         * we'll apply the pan gesture offset directly to this value.
+                         */
+                        var axisValue = _this.getAxisMotionValue(axis);
+                        if (axisValue) {
+                            _this.originPoint[axis] = axisValue.get();
+                        }
+                    });
+                });
+                write(function () {
+                    sync.flushSync.update();
+                    sync.flushSync.preRender();
+                    sync.flushSync.render();
+                    sync.flushSync.postRender();
+                });
+                read(function () { return _this.resolveDragConstraints(); });
             });
         };
         var onStart = function (event, info) {
@@ -9868,12 +9921,7 @@ var VisualElementDragControls = /** @class */ (function () {
                 if (!_this.openGlobalLock)
                     return;
             }
-            /**
-             * Resolve the drag constraints. These are either set as top/right/bottom/left constraints
-             * relative to the element's layout, or a ref to another element. Both need converting to
-             * viewport coordinates.
-             */
-            _this.resolveDragConstraints();
+            flushLayout();
             // Set current drag status
             _this.isDragging = true;
             _this.currentDirection = null;
@@ -9898,8 +9946,8 @@ var VisualElementDragControls = /** @class */ (function () {
                 return;
             }
             // Update each point with the latest position
-            _this.updateAxis("x", event, offset);
-            _this.updateAxis("y", event, offset);
+            _this.updateAxis("x", info.point, offset);
+            _this.updateAxis("y", info.point, offset);
             // Fire onDrag event
             (_d = (_c = _this.props).onDrag) === null || _d === void 0 ? void 0 : _d.call(_c, event, info);
             // Update the last pointer event
@@ -9914,13 +9962,9 @@ var VisualElementDragControls = /** @class */ (function () {
             onEnd: onEnd,
         }, { transformPagePoint: transformPagePoint });
     };
-    VisualElementDragControls.prototype.updateLayoutMeasurements = function () {
-        updateTreeLayoutMeasurements(this.visualElement, Boolean(this.getAxisMotionValue("x") && !this.isExternalDrag()));
-    };
     VisualElementDragControls.prototype.resolveDragConstraints = function () {
         var _this = this;
         var _a = this.props, dragConstraints = _a.dragConstraints, dragElastic = _a.dragElastic;
-        this.visualElement.updateLayoutProjection();
         var layout = this.visualElement.getLayoutState().layoutCorrected;
         if (dragConstraints) {
             this.constraints = isRefObject(dragConstraints)
@@ -9963,7 +10007,8 @@ var VisualElementDragControls = /** @class */ (function () {
         return measuredConstraints;
     };
     VisualElementDragControls.prototype.cancelDrag = function () {
-        var _a;
+        var _a, _b;
+        (_a = this.cancelLayout) === null || _a === void 0 ? void 0 : _a.call(this);
         this.isDragging = false;
         this.panSession && this.panSession.end();
         this.panSession = null;
@@ -9971,7 +10016,7 @@ var VisualElementDragControls = /** @class */ (function () {
             this.openGlobalLock();
             this.openGlobalLock = null;
         }
-        (_a = this.visualElement.animationState) === null || _a === void 0 ? void 0 : _a.setActive(AnimationType.Drag, false);
+        (_b = this.visualElement.animationState) === null || _b === void 0 ? void 0 : _b.setActive(AnimationType.Drag, false);
     };
     VisualElementDragControls.prototype.stop = function (event, info) {
         var _a, _b, _c;
@@ -9986,16 +10031,15 @@ var VisualElementDragControls = /** @class */ (function () {
         this.animateDragEnd(velocity);
         (_c = (_b = this.props).onDragEnd) === null || _c === void 0 ? void 0 : _c.call(_b, event, info);
     };
-    VisualElementDragControls.prototype.snapToCursor = function (event) {
+    VisualElementDragControls.prototype.snapToCursor = function (point) {
         var _this = this;
-        eachAxis(function (axis) {
+        return eachAxis(function (axis) {
             var drag = _this.props.drag;
             // If we're not dragging this axis, do an early return.
             if (!shouldDrag(axis, drag, _this.currentDirection))
                 return;
             var axisValue = _this.getAxisMotionValue(axis);
             if (axisValue) {
-                var point = getViewportPointFromEvent(event).point;
                 var box = _this.visualElement.getLayoutState().layout;
                 var length_1 = box[axis].max - box[axis].min;
                 var center = box[axis].min + length_1 / 2;
@@ -10005,21 +10049,21 @@ var VisualElementDragControls = /** @class */ (function () {
             }
             else {
                 _this.cursorProgress[axis] = 0.5;
-                _this.updateVisualElementAxis(axis, event);
+                return true;
             }
-        });
+        }).includes(true);
     };
     /**
      * Update the specified axis with the latest pointer information.
      */
-    VisualElementDragControls.prototype.updateAxis = function (axis, event, offset) {
+    VisualElementDragControls.prototype.updateAxis = function (axis, point, offset) {
         var drag = this.props.drag;
         // If we're not dragging this axis, do an early return.
         if (!shouldDrag(axis, drag, this.currentDirection))
             return;
         return this.getAxisMotionValue(axis)
             ? this.updateAxisMotionValue(axis, offset)
-            : this.updateVisualElementAxis(axis, event);
+            : this.updateVisualElementAxis(axis, point);
     };
     VisualElementDragControls.prototype.updateAxisMotionValue = function (axis, offset) {
         var axisValue = this.getAxisMotionValue(axis);
@@ -10031,7 +10075,7 @@ var VisualElementDragControls = /** @class */ (function () {
             : nextValue;
         axisValue.set(update);
     };
-    VisualElementDragControls.prototype.updateVisualElementAxis = function (axis, event) {
+    VisualElementDragControls.prototype.updateVisualElementAxis = function (axis, point) {
         var _a;
         // Get the actual layout bounding box of the element
         var axisLayout = this.visualElement.getLayoutState().layout[axis];
@@ -10040,7 +10084,6 @@ var VisualElementDragControls = /** @class */ (function () {
         var axisLength = axisLayout.max - axisLayout.min;
         // Get the initial progress that the pointer sat on this axis on gesture start.
         var axisProgress = this.cursorProgress[axis];
-        var point = getViewportPointFromEvent(event).point;
         // Calculate a new min point based on the latest pointer position, constraints and elastic
         var min = calcConstrainedMinPoint(point[axis], axisLength, axisProgress, (_a = this.constraints) === null || _a === void 0 ? void 0 : _a[axis], this.elastic[axis]);
         // Update the axis viewport target with this new min and the length
@@ -10172,15 +10215,38 @@ var VisualElementDragControls = /** @class */ (function () {
          * Then, using the latest layout and constraints measurements, reposition the new layout axis
          * proportionally within the constraints.
          */
-        this.updateLayoutMeasurements();
-        this.resolveDragConstraints();
-        eachAxis(function (axis) {
-            if (!shouldDrag(axis, drag, null))
-                return;
-            // Calculate the position of the targetBox relative to the constraintsBox using the
-            // previously calculated progress
-            var _a = calcPositionFromProgress(_this.visualElement.projection.target[axis], _this.constraintsBox[axis], boxProgress[axis]), min = _a.min, max = _a.max;
-            _this.visualElement.setProjectionTargetAxis(axis, min, max);
+        this.updateConstraints(function () {
+            eachAxis(function (axis) {
+                if (!shouldDrag(axis, drag, null))
+                    return;
+                // Calculate the position of the targetBox relative to the constraintsBox using the
+                // previously calculated progress
+                var _a = calcPositionFromProgress(_this.visualElement.projection.target[axis], _this.constraintsBox[axis], boxProgress[axis]), min = _a.min, max = _a.max;
+                _this.visualElement.setProjectionTargetAxis(axis, min, max);
+            });
+        });
+        /**
+         * If any other draggable components are queuing the same tasks synchronously
+         * this will wait until they've all been scheduled before flushing.
+         */
+        setTimeout(flushLayout, 1);
+    };
+    VisualElementDragControls.prototype.updateConstraints = function (onReady) {
+        var _this = this;
+        this.cancelLayout = batchLayout(function (read, write) {
+            var ancestors = collectProjectingAncestors(_this.visualElement);
+            write(function () {
+                return ancestors.forEach(function (element) { return element.resetTransform(); });
+            });
+            read(function () { return updateLayoutMeasurement(_this.visualElement); });
+            write(function () {
+                return ancestors.forEach(function (element) { return element.restoreTransform(); });
+            });
+            read(function () {
+                _this.resolveDragConstraints();
+            });
+            if (onReady)
+                write(onReady);
         });
     };
     VisualElementDragControls.prototype.mount = function (visualElement) {
@@ -10205,8 +10271,9 @@ var VisualElementDragControls = /** @class */ (function () {
          * whenever its layout changes.
          */
         var stopLayoutUpdateListener = visualElement.onLayoutUpdate(function () {
-            if (_this.isDragging)
+            if (_this.isDragging) {
                 _this.resolveDragConstraints();
+            }
         });
         /**
          * If the previous component with this same layoutId was dragging at the time
@@ -10777,47 +10844,61 @@ function createBatcher() {
         add: function (child) { return queue.add(child); },
         flush: function (_a) {
             var _b = _a === void 0 ? defaultHandler : _a, layoutReady = _b.layoutReady, parent = _b.parent;
-            var order = Array.from(queue).sort(compareByDepth);
-            if (parent) {
-                withoutTreeTransform(parent, function () {
-                    batchResetAndMeasure(order);
+            batchLayout(function (read, write) {
+                var order = Array.from(queue).sort(compareByDepth);
+                var ancestors = parent
+                    ? collectProjectingAncestors(parent)
+                    : [];
+                write(function () {
+                    var allElements = tslib.__spreadArray(tslib.__spreadArray([], tslib.__read(ancestors)), tslib.__read(order));
+                    allElements.forEach(function (element) { return element.resetTransform(); });
                 });
-            }
-            else {
-                batchResetAndMeasure(order);
-            }
-            /**
-             * Write: Notify the VisualElements they're ready for further write operations.
-             */
-            order.forEach(layoutReady);
-            /**
-             * After all children have started animating, ensure any Entering components are set to Present.
-             * If we add deferred animations (set up all animations and then start them in two loops) this
-             * could be moved to the start loop. But it needs to happen after all the animations configs
-             * are generated in AnimateSharedLayout as this relies on presence data
-             */
-            order.forEach(function (child) {
-                if (child.isPresent)
-                    child.presence = Presence.Present;
+                read(function () {
+                    order.forEach(updateLayoutMeasurement);
+                });
+                write(function () {
+                    ancestors.forEach(function (element) { return element.restoreTransform(); });
+                    order.forEach(layoutReady);
+                });
+                read(function () {
+                    /**
+                     * After all children have started animating, ensure any Entering components are set to Present.
+                     * If we add deferred animations (set up all animations and then start them in two loops) this
+                     * could be moved to the start loop. But it needs to happen after all the animations configs
+                     * are generated in AnimateSharedLayout as this relies on presence data
+                     */
+                    order.forEach(function (child) {
+                        if (child.isPresent)
+                            child.presence = Presence.Present;
+                    });
+                });
+                write(function () {
+                    /**
+                     * Starting these animations will have queued jobs on the frame loop. In some situations,
+                     * like when removing an element, these will be processed too late after the DOM is manipulated,
+                     * leaving a flash of incorrectly-projected content. By manually flushing these jobs
+                     * we ensure there's no flash.
+                     */
+                    sync.flushSync.preRender();
+                    sync.flushSync.render();
+                });
+                read(function () {
+                    /**
+                     * Schedule a callback at the end of the following frame to assign the latest projection
+                     * box to the prevViewportBox snapshot. Once global batching is in place this could be run
+                     * synchronously. But for now it ensures that if any nested `AnimateSharedLayout` top-level
+                     * child attempts to calculate its previous relative position against a prevViewportBox
+                     * it will be against its latest projection box instead, as the snapshot is useless beyond this
+                     * render.
+                     */
+                    sync__default['default'].postRender(function () {
+                        return order.forEach(assignProjectionToSnapshot);
+                    });
+                    queue.clear();
+                });
             });
-            /**
-             * Starting these animations will have queued jobs on the frame loop. In some situations,
-             * like when removing an element, these will be processed too late after the DOM is manipulated,
-             * leaving a flash of incorrectly-projected content. By manually flushing these jobs
-             * we ensure there's no flash.
-             */
-            sync.flushSync.preRender();
-            sync.flushSync.render();
-            /**
-             * Schedule a callback at the end of the following frame to assign the latest projection
-             * box to the prevViewportBox snapshot. Once global batching is in place this could be run
-             * synchronously. But for now it ensures that if any nested `AnimateSharedLayout` top-level
-             * child attempts to calculate its previous relative position against a prevViewportBox
-             * it will be against its latest projection box instead, as the snapshot is useless beyond this
-             * render.
-             */
-            sync__default['default'].postRender(function () { return order.forEach(assignProjectionToSnapshot); });
-            queue.clear();
+            // TODO: Need to find a layout-synchronous way of flushing this
+            flushLayout();
         },
     };
 }
@@ -10899,6 +10980,7 @@ var layoutAnimations = {
 
 var createProjectionState = function () { return ({
     isEnabled: false,
+    isHydrated: false,
     isTargetLocked: false,
     target: axisBox(),
     targetFinal: axisBox(),
@@ -11224,6 +11306,8 @@ var visualElement = function (_a) {
             lifecycles.notifyUpdate(latestValues);
         }
         function updateLayoutProjection() {
+            if (!element.isProjectionReady())
+                return;
             var delta = layoutState.delta, treeScale = layoutState.treeScale;
             var prevTreeScaleX = treeScale.x;
             var prevTreeScaleY = treeScale.x;
@@ -11328,13 +11412,6 @@ var visualElement = function (_a) {
              */
             blockInitialAnimation: blockInitialAnimation, 
             /**
-             * A boolean that can be used to determine whether to respect hover events.
-             * For layout measurements we often have to reposition the instance by
-             * removing its transform. This can trigger hover events, which is
-             * undesired.
-             */
-            isHoverEventsEnabled: true, 
-            /**
              * Determine whether this component has mounted yet. This is mostly used
              * by variant children to determine whether they need to trigger their
              * own animations on mount.
@@ -11436,22 +11513,6 @@ var visualElement = function (_a) {
             makeTargetAnimatable: function (target, canMutate) {
                 if (canMutate === void 0) { canMutate = true; }
                 return makeTargetAnimatable(element, target, props, canMutate);
-            },
-            /**
-             * Temporarily suspend hover events while we remove transforms in order to measure the layout.
-             *
-             * This seems like an odd bit of scheduling but what we're doing is saying after
-             * the next render, wait 10 milliseconds before reenabling hover events. Waiting until
-             * the next frame results in missed, valid hover events. But triggering on the postRender
-             * frame is too soon to avoid triggering events with layout measurements.
-             *
-             * Note: If we figure out a way of measuring layout while transforms remain applied, this can be removed.
-             */
-            suspendHoverEvents: function () {
-                element.isHoverEventsEnabled = false;
-                sync__default['default'].postRender(function () {
-                    return setTimeout(function () { return (element.isHoverEventsEnabled = true); }, 10);
-                });
             },
             // Motion values ========================
             /**
@@ -11604,7 +11665,11 @@ var visualElement = function (_a) {
                 projection.isTargetLocked = false;
             }, getLayoutState: function () { return layoutState; }, setCrossfader: function (newCrossfader) {
                 crossfader = newCrossfader;
-            }, isProjectionReady: function () { return projection.isEnabled && layoutState.isHydrated; }, 
+            }, isProjectionReady: function () {
+                return projection.isEnabled &&
+                    projection.isHydrated &&
+                    layoutState.isHydrated;
+            }, 
             /**
              * Start a layout animation on a given axis.
              */
@@ -11671,6 +11736,7 @@ var visualElement = function (_a) {
                     projection.relativeTarget = undefined;
                     target = projection.target[axis];
                 }
+                projection.isHydrated = true;
                 target.min = min;
                 target.max = max;
                 // Flag that we want to fire the onViewportBoxUpdate event handler
@@ -11719,6 +11785,7 @@ var visualElement = function (_a) {
                  * update projections.
                  */
                 sync__default['default'].preRender(updateTreeLayoutProjection, false, true);
+                // sync.postRender(() => element.scheduleUpdateLayoutProjection())
             },
             getProjectionParent: function () {
                 if (projectionParent === undefined) {
@@ -12070,12 +12137,6 @@ var htmlConfig = {
      * works
      */
     resetTransform: function (element, domElement, props) {
-        /**
-         * When we reset the transform of an element, there's a fair possibility that
-         * the element will visually move from underneath the pointer, triggering attached
-         * pointerenter/leave events. We temporarily suspend these while measurement takes place.
-         */
-        element.suspendHoverEvents();
         var transformTemplate = props.transformTemplate;
         domElement.style.transform = transformTemplate
             ? transformTemplate({}, "")
@@ -13869,11 +13930,12 @@ var DragControls = /** @class */ (function () {
             controls.start(event.nativeEvent || event, options);
         });
     };
-    DragControls.prototype.updateConstraints = function () {
+    DragControls.prototype.updateConstraints = function (flush) {
+        if (flush === void 0) { flush = true; }
         this.componentControls.forEach(function (controls) {
-            controls.updateLayoutMeasurements();
-            controls.resolveDragConstraints();
+            controls.updateConstraints();
         });
+        flush && flushLayout();
     };
     return DragControls;
 }());
@@ -14051,12 +14113,14 @@ exports.addScaleCorrection = addScaleCorrection;
 exports.animate = animate;
 exports.animateVisualElement = animateVisualElement;
 exports.animationControls = animationControls;
+exports.batchLayout = batchLayout;
 exports.createBatcher = createBatcher;
 exports.createCrossfader = createCrossfader;
 exports.createDomMotionComponent = createDomMotionComponent;
 exports.createMotionComponent = createMotionComponent;
 exports.domAnimation = domAnimation;
 exports.domMax = domMax;
+exports.flushLayout = flushLayout;
 exports.isValidMotionProp = isValidMotionProp;
 exports.m = m;
 exports.motion = motion;
@@ -14083,7 +14147,7 @@ exports.useViewportScroll = useViewportScroll;
 exports.visualElement = visualElement;
 
 }).call(this)}).call(this,require('_process'))
-},{"@emotion/is-prop-valid":1,"_process":165,"framesync":159,"hey-listen":160,"popmotion":163,"react":179,"style-value-types":186,"tslib":158}],158:[function(require,module,exports){
+},{"@emotion/is-prop-valid":1,"_process":164,"framesync":158,"hey-listen":159,"popmotion":162,"react":178,"style-value-types":185,"tslib":157}],157:[function(require,module,exports){
 (function (global){(function (){
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -14389,7 +14453,7 @@ var __createBinding;
 });
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],159:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -14521,7 +14585,7 @@ exports.default = sync;
 exports.flushSync = flushSync;
 exports.getFrameData = getFrameData;
 
-},{}],160:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -14543,7 +14607,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":165}],161:[function(require,module,exports){
+},{"_process":164}],160:[function(require,module,exports){
 (function (global){(function (){
 /**
  * @license
@@ -31756,7 +31820,7 @@ if (process.env.NODE_ENV !== 'production') {
 }.call(this));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],162:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -31848,7 +31912,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],163:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -32838,9 +32902,9 @@ exports.velocityPerFrame = velocityPerFrame;
 exports.velocityPerSecond = velocityPerSecond;
 exports.wrap = wrap;
 
-},{"framesync":159,"hey-listen":160,"style-value-types":186,"tslib":164}],164:[function(require,module,exports){
-arguments[4][158][0].apply(exports,arguments)
-},{"dup":158}],165:[function(require,module,exports){
+},{"framesync":158,"hey-listen":159,"style-value-types":185,"tslib":163}],163:[function(require,module,exports){
+arguments[4][157][0].apply(exports,arguments)
+},{"dup":157}],164:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -33026,7 +33090,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],166:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -33130,7 +33194,7 @@ checkPropTypes.resetWarningCache = function() {
 
 module.exports = checkPropTypes;
 
-},{"./lib/ReactPropTypesSecret":170}],167:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":169}],166:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -33196,7 +33260,7 @@ module.exports = function() {
   return ReactPropTypes;
 };
 
-},{"./lib/ReactPropTypesSecret":170}],168:[function(require,module,exports){
+},{"./lib/ReactPropTypesSecret":169}],167:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -33789,7 +33853,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
   return ReactPropTypes;
 };
 
-},{"./checkPropTypes":166,"./lib/ReactPropTypesSecret":170,"object-assign":162,"react-is":176}],169:[function(require,module,exports){
+},{"./checkPropTypes":165,"./lib/ReactPropTypesSecret":169,"object-assign":161,"react-is":175}],168:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -33810,7 +33874,7 @@ if ("development" !== 'production') {
   module.exports = require('./factoryWithThrowingShims')();
 }
 
-},{"./factoryWithThrowingShims":167,"./factoryWithTypeCheckers":168,"react-is":176}],170:[function(require,module,exports){
+},{"./factoryWithThrowingShims":166,"./factoryWithTypeCheckers":167,"react-is":175}],169:[function(require,module,exports){
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
  *
@@ -33824,7 +33888,7 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
-},{}],171:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 /** @license React v17.0.2
  * react-dom.development.js
  *
@@ -60088,7 +60152,7 @@ exports.version = ReactVersion;
   })();
 }
 
-},{"object-assign":162,"react":179,"scheduler":184,"scheduler/tracing":185}],172:[function(require,module,exports){
+},{"object-assign":161,"react":178,"scheduler":183,"scheduler/tracing":184}],171:[function(require,module,exports){
 /** @license React v17.0.2
  * react-dom.production.min.js
  *
@@ -60387,7 +60451,7 @@ exports.findDOMNode=function(a){if(null==a)return null;if(1===a.nodeType)return 
 exports.render=function(a,b,c){if(!rk(b))throw Error(y(200));return tk(null,a,b,!1,c)};exports.unmountComponentAtNode=function(a){if(!rk(a))throw Error(y(40));return a._reactRootContainer?(Xj(function(){tk(null,null,a,!1,function(){a._reactRootContainer=null;a[ff]=null})}),!0):!1};exports.unstable_batchedUpdates=Wj;exports.unstable_createPortal=function(a,b){return uk(a,b,2<arguments.length&&void 0!==arguments[2]?arguments[2]:null)};
 exports.unstable_renderSubtreeIntoContainer=function(a,b,c,d){if(!rk(c))throw Error(y(200));if(null==a||void 0===a._reactInternals)throw Error(y(38));return tk(a,b,c,!1,d)};exports.version="17.0.2";
 
-},{"object-assign":162,"react":179,"scheduler":184}],173:[function(require,module,exports){
+},{"object-assign":161,"react":178,"scheduler":183}],172:[function(require,module,exports){
 'use strict';
 
 function checkDCE() {
@@ -60427,7 +60491,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react-dom.development.js');
 }
 
-},{"./cjs/react-dom.development.js":171,"./cjs/react-dom.production.min.js":172}],174:[function(require,module,exports){
+},{"./cjs/react-dom.development.js":170,"./cjs/react-dom.production.min.js":171}],173:[function(require,module,exports){
 (function (process){(function (){
 /** @license React v16.13.1
  * react-is.development.js
@@ -60612,7 +60676,7 @@ exports.typeOf = typeOf;
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":165}],175:[function(require,module,exports){
+},{"_process":164}],174:[function(require,module,exports){
 /** @license React v16.13.1
  * react-is.production.min.js
  *
@@ -60629,7 +60693,7 @@ exports.Profiler=g;exports.StrictMode=f;exports.Suspense=p;exports.isAsyncMode=f
 exports.isMemo=function(a){return z(a)===r};exports.isPortal=function(a){return z(a)===d};exports.isProfiler=function(a){return z(a)===g};exports.isStrictMode=function(a){return z(a)===f};exports.isSuspense=function(a){return z(a)===p};
 exports.isValidElementType=function(a){return"string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===w||a.$$typeof===x||a.$$typeof===y||a.$$typeof===v)};exports.typeOf=z;
 
-},{}],176:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 (function (process){(function (){
 'use strict';
 
@@ -60640,7 +60704,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"./cjs/react-is.development.js":174,"./cjs/react-is.production.min.js":175,"_process":165}],177:[function(require,module,exports){
+},{"./cjs/react-is.development.js":173,"./cjs/react-is.production.min.js":174,"_process":164}],176:[function(require,module,exports){
 /** @license React v17.0.2
  * react.development.js
  *
@@ -62975,7 +63039,7 @@ exports.version = ReactVersion;
   })();
 }
 
-},{"object-assign":162}],178:[function(require,module,exports){
+},{"object-assign":161}],177:[function(require,module,exports){
 /** @license React v17.0.2
  * react.production.min.js
  *
@@ -63000,7 +63064,7 @@ key:d,ref:k,props:e,_owner:h}};exports.createContext=function(a,b){void 0===b&&(
 exports.lazy=function(a){return{$$typeof:v,_payload:{_status:-1,_result:a},_init:Q}};exports.memo=function(a,b){return{$$typeof:u,type:a,compare:void 0===b?null:b}};exports.useCallback=function(a,b){return S().useCallback(a,b)};exports.useContext=function(a,b){return S().useContext(a,b)};exports.useDebugValue=function(){};exports.useEffect=function(a,b){return S().useEffect(a,b)};exports.useImperativeHandle=function(a,b,c){return S().useImperativeHandle(a,b,c)};
 exports.useLayoutEffect=function(a,b){return S().useLayoutEffect(a,b)};exports.useMemo=function(a,b){return S().useMemo(a,b)};exports.useReducer=function(a,b,c){return S().useReducer(a,b,c)};exports.useRef=function(a){return S().useRef(a)};exports.useState=function(a){return S().useState(a)};exports.version="17.0.2";
 
-},{"object-assign":162}],179:[function(require,module,exports){
+},{"object-assign":161}],178:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -63009,7 +63073,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/react.development.js');
 }
 
-},{"./cjs/react.development.js":177,"./cjs/react.production.min.js":178}],180:[function(require,module,exports){
+},{"./cjs/react.development.js":176,"./cjs/react.production.min.js":177}],179:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler-tracing.development.js
  *
@@ -63358,7 +63422,7 @@ exports.unstable_wrap = unstable_wrap;
   })();
 }
 
-},{}],181:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler-tracing.production.min.js
  *
@@ -63369,7 +63433,7 @@ exports.unstable_wrap = unstable_wrap;
  */
 'use strict';var b=0;exports.__interactionsRef=null;exports.__subscriberRef=null;exports.unstable_clear=function(a){return a()};exports.unstable_getCurrent=function(){return null};exports.unstable_getThreadID=function(){return++b};exports.unstable_subscribe=function(){};exports.unstable_trace=function(a,d,c){return c()};exports.unstable_unsubscribe=function(){};exports.unstable_wrap=function(a){return a};
 
-},{}],182:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler.development.js
  *
@@ -64017,7 +64081,7 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
   })();
 }
 
-},{}],183:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 /** @license React v0.20.2
  * scheduler.production.min.js
  *
@@ -64039,7 +64103,7 @@ exports.unstable_next=function(a){switch(P){case 1:case 2:case 3:var b=3;break;d
 exports.unstable_scheduleCallback=function(a,b,c){var d=exports.unstable_now();"object"===typeof c&&null!==c?(c=c.delay,c="number"===typeof c&&0<c?d+c:d):c=d;switch(a){case 1:var e=-1;break;case 2:e=250;break;case 5:e=1073741823;break;case 4:e=1E4;break;default:e=5E3}e=c+e;a={id:N++,callback:b,priorityLevel:a,startTime:c,expirationTime:e,sortIndex:-1};c>d?(a.sortIndex=c,H(M,a),null===J(L)&&a===J(M)&&(S?h():S=!0,g(U,c-d))):(a.sortIndex=e,H(L,a),R||Q||(R=!0,f(V)));return a};
 exports.unstable_wrapCallback=function(a){var b=P;return function(){var c=P;P=b;try{return a.apply(this,arguments)}finally{P=c}}};
 
-},{}],184:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -64048,7 +64112,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler.development.js');
 }
 
-},{"./cjs/scheduler.development.js":182,"./cjs/scheduler.production.min.js":183}],185:[function(require,module,exports){
+},{"./cjs/scheduler.development.js":181,"./cjs/scheduler.production.min.js":182}],184:[function(require,module,exports){
 'use strict';
 
 if ("development" === 'production') {
@@ -64057,7 +64121,7 @@ if ("development" === 'production') {
   module.exports = require('./cjs/scheduler-tracing.development.js');
 }
 
-},{"./cjs/scheduler-tracing.development.js":180,"./cjs/scheduler-tracing.production.min.js":181}],186:[function(require,module,exports){
+},{"./cjs/scheduler-tracing.development.js":179,"./cjs/scheduler-tracing.production.min.js":180}],185:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -64291,9 +64355,9 @@ exports.scale = scale;
 exports.vh = vh;
 exports.vw = vw;
 
-},{"tslib":187}],187:[function(require,module,exports){
-arguments[4][158][0].apply(exports,arguments)
-},{"dup":158}],188:[function(require,module,exports){
+},{"tslib":186}],186:[function(require,module,exports){
+arguments[4][157][0].apply(exports,arguments)
+},{"dup":157}],187:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -64304,7 +64368,7 @@ var index =  react.useLayoutEffect ;
 
 exports.default = index;
 
-},{"react":179}],189:[function(require,module,exports){
+},{"react":178}],188:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isSpawnedActor = exports.isActor = exports.createDeferredActor = exports.createInvocableActor = exports.createNullActor = void 0;
@@ -64367,7 +64431,7 @@ function isSpawnedActor(item) {
 }
 exports.isSpawnedActor = isSpawnedActor;
 
-},{"./serviceScope":206,"./utils":209}],190:[function(require,module,exports){
+},{"./serviceScope":205,"./utils":208}],189:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createMachine = exports.Machine = void 0;
@@ -64388,7 +64452,7 @@ function createMachine(config, options) {
 }
 exports.createMachine = createMachine;
 
-},{"./StateNode":192}],191:[function(require,module,exports){
+},{"./StateNode":191}],190:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -64625,7 +64689,7 @@ var State = /** @class */ (function () {
 }());
 exports.State = State;
 
-},{"./actions":194,"./constants":195,"./stateUtils":207,"./utils":209}],192:[function(require,module,exports){
+},{"./actions":193,"./constants":194,"./stateUtils":206,"./utils":208}],191:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -66008,7 +66072,7 @@ var StateNode = /** @class */ (function () {
 }());
 exports.StateNode = StateNode;
 
-},{"./Actor":189,"./State":191,"./actionTypes":193,"./actions":194,"./constants":195,"./environment":197,"./invokeUtils":200,"./stateUtils":207,"./types":208,"./utils":209}],193:[function(require,module,exports){
+},{"./Actor":188,"./State":190,"./actionTypes":192,"./actions":193,"./constants":194,"./environment":196,"./invokeUtils":199,"./stateUtils":206,"./types":207,"./utils":208}],192:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pure = exports.choose = exports.update = exports.error = exports.errorPlatform = exports.errorExecution = exports.invoke = exports.init = exports.log = exports.doneState = exports.after = exports.assign = exports.nullEvent = exports.cancel = exports.send = exports.raise = exports.stop = exports.start = void 0;
@@ -66033,7 +66097,7 @@ exports.update = types_1.ActionTypes.Update;
 exports.choose = types_1.ActionTypes.Choose;
 exports.pure = types_1.ActionTypes.Pure;
 
-},{"./types":208}],194:[function(require,module,exports){
+},{"./types":207}],193:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -66495,7 +66559,7 @@ function resolveActions(machine, currentState, currentContext, _event, actions) 
 }
 exports.resolveActions = resolveActions;
 
-},{"./actionTypes":193,"./environment":197,"./types":208,"./utils":209}],195:[function(require,module,exports){
+},{"./actionTypes":192,"./environment":196,"./types":207,"./utils":208}],194:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TARGETLESS_KEY = exports.DEFAULT_GUARD_TYPE = exports.EMPTY_ACTIVITY_MAP = exports.STATE_DELIMITER = void 0;
@@ -66504,7 +66568,7 @@ exports.EMPTY_ACTIVITY_MAP = {};
 exports.DEFAULT_GUARD_TYPE = 'xstate.guard';
 exports.TARGETLESS_KEY = '';
 
-},{}],196:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -66543,7 +66607,7 @@ function registerService(service) {
 exports.registerService = registerService;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./environment":197}],197:[function(require,module,exports){
+},{"./environment":196}],196:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -66551,7 +66615,7 @@ exports.IS_PRODUCTION = void 0;
 exports.IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 }).call(this)}).call(this,require('_process'))
-},{"_process":165}],198:[function(require,module,exports){
+},{"_process":164}],197:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -66613,7 +66677,7 @@ var actions = {
 exports.actions = actions;
 __exportStar(require("./types"), exports);
 
-},{"./Machine":190,"./State":191,"./StateNode":192,"./actions":194,"./interpreter":199,"./mapState":201,"./match":202,"./schema":205,"./types":208,"./utils":209}],199:[function(require,module,exports){
+},{"./Machine":189,"./State":190,"./StateNode":191,"./actions":193,"./interpreter":198,"./mapState":200,"./match":201,"./schema":204,"./types":207,"./utils":208}],198:[function(require,module,exports){
 (function (global){(function (){
 "use strict";
 var __assign = (this && this.__assign) || function () {
@@ -67716,7 +67780,7 @@ function interpret(machine, options) {
 exports.interpret = interpret;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./Actor":189,"./State":191,"./actionTypes":193,"./actions":194,"./devTools":196,"./environment":197,"./registry":203,"./scheduler":204,"./serviceScope":206,"./stateUtils":207,"./types":208,"./utils":209}],200:[function(require,module,exports){
+},{"./Actor":188,"./State":190,"./actionTypes":192,"./actions":193,"./devTools":195,"./environment":196,"./registry":202,"./scheduler":203,"./serviceScope":205,"./stateUtils":206,"./types":207,"./utils":208}],199:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -67760,7 +67824,7 @@ function toInvokeDefinition(invokeConfig) {
 }
 exports.toInvokeDefinition = toInvokeDefinition;
 
-},{"./actions":194}],201:[function(require,module,exports){
+},{"./actions":193}],200:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -67799,7 +67863,7 @@ function mapState(stateMap, stateId) {
 }
 exports.mapState = mapState;
 
-},{"./utils":209}],202:[function(require,module,exports){
+},{"./utils":208}],201:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -67853,7 +67917,7 @@ function matchState(state, patterns, defaultValue) {
 }
 exports.matchState = matchState;
 
-},{"./State":191}],203:[function(require,module,exports){
+},{"./State":190}],202:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registry = void 0;
@@ -67875,7 +67939,7 @@ exports.registry = {
     }
 };
 
-},{}],204:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -67951,7 +68015,7 @@ var Scheduler = /** @class */ (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{}],205:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSchema = void 0;
@@ -67960,7 +68024,7 @@ function createSchema(schema) {
 }
 exports.createSchema = createSchema;
 
-},{}],206:[function(require,module,exports){
+},{}],205:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.consume = exports.provide = void 0;
@@ -67979,7 +68043,7 @@ exports.provide = provide;
 var consume = function (fn) { return fn(serviceStack[serviceStack.length - 1]); };
 exports.consume = consume;
 
-},{}],207:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -68207,7 +68271,7 @@ function isInFinalState(configuration, stateNode) {
 }
 exports.isInFinalState = isInFinalState;
 
-},{"./utils":209}],208:[function(require,module,exports){
+},{"./utils":208}],207:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpecialTargets = exports.ActionTypes = void 0;
@@ -68240,7 +68304,7 @@ var SpecialTargets;
     SpecialTargets["Internal"] = "#_internal";
 })(SpecialTargets = exports.SpecialTargets || (exports.SpecialTargets = {}));
 
-},{}],209:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -68867,7 +68931,7 @@ function toObserver(nextHandler, errorHandler, completionHandler) {
 }
 exports.toObserver = toObserver;
 
-},{"./constants":195,"./environment":197}],210:[function(require,module,exports){
+},{"./constants":194,"./environment":196}],209:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -69018,9 +69082,9 @@ AestheticLines.propTypes = {
 var _default = AestheticLines;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":236,"./aesthetic-lines.module.css":211,"./pathline.jsx":222,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"prop-types":169,"react":179}],211:[function(require,module,exports){
+},{"../hooks/use-frame-rate":235,"./aesthetic-lines.module.css":210,"./pathline.jsx":221,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],210:[function(require,module,exports){
 module.exports = {"aestheticLines":"_src_components_aesthetic_lines_module__aestheticLines"}
-},{}],212:[function(require,module,exports){
+},{}],211:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -69102,9 +69166,9 @@ Button.defaultProps = {
 var _default = Button;
 exports["default"] = _default;
 
-},{"./button.module.css":213,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":133,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.keys.js":140,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"prop-types":169,"react":179}],213:[function(require,module,exports){
+},{"./button.module.css":212,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],212:[function(require,module,exports){
 module.exports = {"button":"_src_components_button_module__button","children":"_src_components_button_module__children","icon":"_src_components_button_module__icon"}
-},{}],214:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -69289,9 +69353,9 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-control-bar-machine":238,"./control-bar.module.css":215,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"lodash":161,"prop-types":169,"react":179}],215:[function(require,module,exports){
+},{"../state-machines/create-control-bar-machine":237,"./control-bar.module.css":214,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],214:[function(require,module,exports){
 module.exports = {"controlBar":"_src_components_control_bar_module__controlBar","total":"_src_components_control_bar_module__total","start":"_src_components_control_bar_module__start","end":"_src_components_control_bar_module__end","range":"_src_components_control_bar_module__range"}
-},{}],216:[function(require,module,exports){
+},{}],215:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -69891,9 +69955,9 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":240,"./aesthetic-lines.jsx":210,"./button.jsx":212,"./control-bar.jsx":214,"./gif-generation-system.module.css":217,"./incrementable-input.jsx":220,"./resize-bar.jsx":223,"./system-elements.jsx":225,"./system-frames.jsx":227,"./system-input.jsx":229,"./system-video-info.jsx":231,"./system-workspace.jsx":233,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.date.now.js":130,"core-js/modules/es.date.to-string.js":131,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.parse-float.js":143,"core-js/modules/es.parse-int.js":144,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"core-js/modules/web.url.js":155,"framer-motion":157,"lodash":161,"react":179}],217:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":239,"./aesthetic-lines.jsx":209,"./button.jsx":211,"./control-bar.jsx":213,"./gif-generation-system.module.css":216,"./incrementable-input.jsx":219,"./resize-bar.jsx":222,"./system-elements.jsx":224,"./system-frames.jsx":226,"./system-input.jsx":228,"./system-video-info.jsx":230,"./system-workspace.jsx":232,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.date.now.js":129,"core-js/modules/es.date.to-string.js":130,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.parse-float.js":142,"core-js/modules/es.parse-int.js":143,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.url.js":154,"framer-motion":156,"lodash":160,"react":178}],216:[function(require,module,exports){
 module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
-},{}],218:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70015,9 +70079,9 @@ GifitApp.defaultProps = {
 var _default = GifitApp;
 exports["default"] = _default;
 
-},{"./button.jsx":212,"./gif-generation-system.jsx":216,"./gifit-app.module.css":219,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"framer-motion":157,"prop-types":169,"react":179}],219:[function(require,module,exports){
+},{"./button.jsx":211,"./gif-generation-system.jsx":215,"./gifit-app.module.css":218,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"prop-types":168,"react":178}],218:[function(require,module,exports){
 module.exports = {"backdrop":"_src_components_gifit_app_module__backdrop","app":"_src_components_gifit_app_module__app","actions":"_src_components_gifit_app_module__actions"}
-},{}],220:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70167,9 +70231,9 @@ IncrementableInput.defaultProps = {
 var _default = IncrementableInput;
 exports["default"] = _default;
 
-},{"./incrementable-input.module.css":221,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":133,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.keys.js":140,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"prop-types":169,"react":179}],221:[function(require,module,exports){
+},{"./incrementable-input.module.css":220,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],220:[function(require,module,exports){
 module.exports = {"incrementableInput":"_src_components_incrementable_input_module__incrementableInput","input":"_src_components_incrementable_input_module__input","decrementor":"_src_components_incrementable_input_module__decrementor","incrementor":"_src_components_incrementable_input_module__incrementor"}
-},{}],222:[function(require,module,exports){
+},{}],221:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -70269,7 +70333,7 @@ PathLine.propTypes = {
 var _default = PathLine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.join.js":125,"core-js/modules/es.array.map.js":126,"core-js/modules/es.array.reduce.js":127,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.object.assign.js":133,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.keys.js":140,"core-js/modules/es.symbol.js":149,"prop-types":169,"react":179}],223:[function(require,module,exports){
+},{"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.join.js":125,"core-js/modules/es.array.map.js":126,"core-js/modules/es.array.reduce.js":127,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.symbol.js":148,"prop-types":168,"react":178}],222:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70510,9 +70574,9 @@ ResizeBar.defaultProps = {
 var _default = ResizeBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":239,"./resize-bar.module.css":224,"@xstate/react":3,"core-js/modules/es.array.filter.js":119,"core-js/modules/es.array.for-each.js":120,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.define-properties.js":135,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.get-own-property-descriptors.js":138,"core-js/modules/es.object.keys.js":140,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.for-each.js":151,"core-js/modules/web.dom-collections.iterator.js":152,"lodash":161,"prop-types":169,"react":179}],224:[function(require,module,exports){
+},{"../state-machines/create-resize-bar-machine":238,"./resize-bar.module.css":223,"@xstate/react":3,"core-js/modules/es.array.filter.js":119,"core-js/modules/es.array.for-each.js":120,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-properties.js":134,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.get-own-property-descriptors.js":137,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.for-each.js":150,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],223:[function(require,module,exports){
 module.exports = {"resizeBar":"_src_components_resize_bar_module__resizeBar","total":"_src_components_resize_bar_module__total","start":"_src_components_resize_bar_module__start","end":"_src_components_resize_bar_module__end","range":"_src_components_resize_bar_module__range"}
-},{}],225:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70684,9 +70748,9 @@ SystemElements.propTypes = {
 var _default = SystemElements;
 exports["default"] = _default;
 
-},{"./system-elements.module.css":226,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"framer-motion":157,"prop-types":169,"react":179}],226:[function(require,module,exports){
+},{"./system-elements.module.css":225,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"prop-types":168,"react":178}],225:[function(require,module,exports){
 module.exports = {"label":"_src_components_system_elements_module__label","corner":"_src_components_system_elements_module__corner"}
-},{}],227:[function(require,module,exports){
+},{}],226:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70716,8 +70780,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-require("core-js/modules/es.array.reverse.js");
-
 require("core-js/modules/es.array.concat.js");
 
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -70736,17 +70798,45 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+var MAX_VISIBLE_FRAMES = 100;
+var PRIMARY_SYSTEM_COLOR = 'rgb(231, 231, 253)'; // framer can't read my css var?
+
+var ACTIVE_COLOR = 'rgba(65, 255, 193, 1)';
+var SUBSYSTEM_COLOR = 'rgba(153, 179, 255, 0.35)';
+
 function SystemFrames(props) {
   var state = props.state;
-  var frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
+  var frameCount = Math.ceil((state.context.end - state.context.start) * state.context.fps);
   var framesComplete = state.context.framesComplete;
   var framesIncomplete = frameCount - framesComplete;
-  return /*#__PURE__*/_react["default"].createElement("div", {
+  var incompleteRatio = framesIncomplete / frameCount;
+  var completeRatio = 1 - incompleteRatio;
+  var totalCount = Math.min(MAX_VISIBLE_FRAMES, frameCount);
+  var incompleteCount = Math.floor(totalCount * incompleteRatio);
+  var completeCount = Math.ceil(totalCount * completeRatio);
+  var isGenerating = state.matches('generating');
+  var isCompleted = state.matches({
+    generating: {
+      generatingGif: 'succeeded'
+    }
+  });
+  return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    initial: {
+      marginLeft: '0px',
+      marginRight: '0px'
+    },
+    animate: {
+      marginLeft: isGenerating ? '-125px' : '0px',
+      marginRight: isGenerating ? '-125px' : '0px'
+    },
     className: css.frames
   }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimateSharedLayout, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.pending,
+    animate: {
+      color: isGenerating ? PRIMARY_SYSTEM_COLOR : SUBSYSTEM_COLOR
+    },
     layout: true
-  }, _lodash["default"].times(framesIncomplete, function (i) {
+  }, _lodash["default"].times(incompleteCount, function (i) {
     return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
       className: css.frame,
       key: i,
@@ -70755,19 +70845,27 @@ function SystemFrames(props) {
     });
   }), /*#__PURE__*/_react["default"].createElement("span", {
     className: css.count
-  }, framesIncomplete)), state.matches('generating') && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+  }, framesIncomplete)), isGenerating && !isCompleted && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.complete,
+    animate: {
+      color: !isCompleted ? ACTIVE_COLOR : PRIMARY_SYSTEM_COLOR
+    },
     layout: true
-  }, _lodash["default"].times(framesComplete, function (i) {
+  }, _lodash["default"].times(completeCount, function (i) {
     return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
       className: "".concat(css.frame, " ").concat(css.frameComplete),
-      key: frameCount - i - 1,
+      key: totalCount - i - 1,
+      style: {
+        width: "".concat(100 / totalCount, "%")
+      },
       layout: true,
-      layoutId: frameCount - i - 1
+      layoutId: totalCount - i - 1
     });
-  }).reverse(), /*#__PURE__*/_react["default"].createElement("span", {
+  }), /*#__PURE__*/_react["default"].createElement("span", {
     className: "".concat(css.count, " ").concat(css.countComplete)
-  }, framesComplete))));
+  }, /*#__PURE__*/_react["default"].createElement("var", {
+    className: css.total
+  }, frameCount), " \uFE31 ", framesComplete))));
 }
 
 SystemFrames.propTypes = {
@@ -70776,9 +70874,9 @@ SystemFrames.propTypes = {
 var _default = SystemFrames;
 exports["default"] = _default;
 
-},{"./system-frames.module.css":228,"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.reverse.js":128,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"framer-motion":157,"lodash":161,"prop-types":169,"react":179}],228:[function(require,module,exports){
-module.exports = {"frames":"_src_components_system_frames_module__frames","frame":"_src_components_system_frames_module__frame","frameComplete":"_src_components_system_frames_module__frameComplete","pending":"_src_components_system_frames_module__pending","complete":"_src_components_system_frames_module__complete","count":"_src_components_system_frames_module__count","countComplete":"_src_components_system_frames_module__countComplete"}
-},{}],229:[function(require,module,exports){
+},{"./system-frames.module.css":227,"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],227:[function(require,module,exports){
+module.exports = {"frames":"_src_components_system_frames_module__frames","frame":"_src_components_system_frames_module__frame","frameComplete":"_src_components_system_frames_module__frameComplete","pending":"_src_components_system_frames_module__pending","complete":"_src_components_system_frames_module__complete","count":"_src_components_system_frames_module__count","countComplete":"_src_components_system_frames_module__countComplete","total":"_src_components_system_frames_module__total"}
+},{}],228:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70864,9 +70962,9 @@ SystemInput.defaultProps = {
 var _default = SystemInput;
 exports["default"] = _default;
 
-},{"./system-input.module.css":230,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.assign.js":133,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.keys.js":140,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"prop-types":169,"react":179}],230:[function(require,module,exports){
+},{"./system-input.module.css":229,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],229:[function(require,module,exports){
 module.exports = {"systemInput":"_src_components_system_input_module__systemInput","addendum":"_src_components_system_input_module__addendum","name":"_src_components_system_input_module__name","inputContainer":"_src_components_system_input_module__inputContainer"}
-},{}],231:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70934,9 +71032,9 @@ function SystemVideoInfo(props) {
 var _default = SystemVideoInfo;
 exports["default"] = _default;
 
-},{"./system-video-info.module.css":232,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"react":179}],232:[function(require,module,exports){
+},{"./system-video-info.module.css":231,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178}],231:[function(require,module,exports){
 module.exports = {"infoList":"_src_components_system_video_info_module__infoList","infoListTerm":"_src_components_system_video_info_module__infoListTerm","infoListDetails":"_src_components_system_video_info_module__infoListDetails","value":"_src_components_system_video_info_module__value","unit":"_src_components_system_video_info_module__unit"}
-},{}],233:[function(require,module,exports){
+},{}],232:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71097,9 +71195,9 @@ SystemWorkspace.propTypes = {
 var _default = SystemWorkspace;
 exports["default"] = _default;
 
-},{"./system-workspace.module.css":234,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"framer-motion":157,"lodash":161,"prop-types":169,"react":179}],234:[function(require,module,exports){
+},{"./system-workspace.module.css":233,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],233:[function(require,module,exports){
 module.exports = {"workspace":"_src_components_system_workspace_module__workspace","images":"_src_components_system_workspace_module__images","result":"_src_components_system_workspace_module__result","canvas":"_src_components_system_workspace_module__canvas"}
-},{}],235:[function(require,module,exports){
+},{}],234:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71190,7 +71288,7 @@ document.body.appendChild(gifitElement);
 
 _reactDom["default"].render( /*#__PURE__*/_react["default"].createElement(TestGifitApp, null), gifitElement);
 
-},{"./components/gifit-app.jsx":218,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-own-property-descriptor.js":137,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/es.weak-map.js":150,"core-js/modules/web.dom-collections.iterator.js":152,"react":179,"react-dom":173}],236:[function(require,module,exports){
+},{"./components/gifit-app.jsx":217,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178,"react-dom":172}],235:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -71292,7 +71390,7 @@ function useFrameRate(config) {
 var _default = useFrameRate;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":129,"core-js/modules/es.function.name.js":132,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/web.dom-collections.iterator.js":152,"lodash":161,"react":179}],237:[function(require,module,exports){
+},{"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"react":178}],236:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71503,7 +71601,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.create.js":134,"core-js/modules/es.object.define-property.js":136,"core-js/modules/es.object.get-prototype-of.js":139,"core-js/modules/es.object.set-prototype-of.js":141,"core-js/modules/es.object.to-string.js":142,"core-js/modules/es.reflect.construct.js":145,"core-js/modules/es.string.iterator.js":146,"core-js/modules/es.symbol.description.js":147,"core-js/modules/es.symbol.iterator.js":148,"core-js/modules/es.symbol.js":149,"core-js/modules/web.dom-collections.iterator.js":152,"core-js/modules/web.timers.js":153,"core-js/modules/web.url.js":155,"events":156}],238:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.create.js":133,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-prototype-of.js":138,"core-js/modules/es.object.set-prototype-of.js":140,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.reflect.construct.js":144,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.timers.js":152,"core-js/modules/web.url.js":154,"events":155}],237:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -71603,7 +71701,7 @@ function createControlBarMachine(_ref) {
 var _default = createControlBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":136,"lodash":161,"xstate":198}],239:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],238:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -71726,7 +71824,7 @@ function createResizeBarMachine(_ref) {
 var _default = createResizeBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":136,"lodash":161,"xstate":198}],240:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],239:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -72042,4 +72140,4 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 var _default = gifGenerationSystemMachine;
 exports["default"] = _default;
 
-},{"../services/gif-service":237,"core-js/modules/es.object.define-property.js":136,"lodash":161,"xstate":198}]},{},[235]);
+},{"../services/gif-service":236,"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}]},{},[234]);

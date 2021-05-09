@@ -18,6 +18,7 @@
 .value {
   font-weight: bold;
   font-style: normal;
+  font-variant-numeric: tabular-nums;
 }
 
 .unit:before {

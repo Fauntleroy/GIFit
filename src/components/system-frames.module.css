@@ -1,6 +1,6 @@
 .frames {
-	min-width: 150px;
 	height: 100%;
+	padding: 10px;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
@@ -9,38 +9,59 @@
 
 .frame {
 	display: inline-block;
-	width: 1px;
-	height: 2px;
-	margin: 1px;
 	background: currentColor;
+	width: 2px;
+	height: 2px;
+	border-radius: 2px;
 }
 
 .frameComplete {
-	width: 3px;
-	height: 4px;
-	margin: 0;
+	display: block;
+	width: 95%;
+	height: 100%;
 }
 
 .pending,
 .complete {
-	max-height: 75px;
 	line-height: 1px;
-	text-align: center;
+	position: relative;
+}
+
+.pending {
+	width: 25%;
+	height: 32px;
+	display: grid;
+	grid-template-columns: repeat(20, 1fr);
+	grid-auto-rows: 1fr;
 }
 
 .complete {
-	color: var(--color-active);
+	width: 50%;
+	height: 16px;
+	direction: rtl;
+	display: flex;
+	padding: 1px;
+	border: var(--color-subsystem) 1px dotted;
+	border-radius: 2px;
 }
 
 .count {
 	font-size: var(--ggs-font-size-micro);
+	font-weight: bold;
+	font-variant-numeric: tabular-nums;
 	letter-spacing: normal;
 	line-height: 1;
-	margin: 1px;
-	float: left;
+	position: absolute;
+	bottom: -15px;
+	left: 0;
 }
 
 .countComplete {
-	float: right;
 	font-size: 10px;
+	right: 0;
+}
+
+.total {
+	font-weight: normal;
+	font-style: normal;
 }
