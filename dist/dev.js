@@ -69082,7 +69082,7 @@ AestheticLines.propTypes = {
 var _default = AestheticLines;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":235,"./aesthetic-lines.module.css":210,"./pathline.jsx":221,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],210:[function(require,module,exports){
+},{"../hooks/use-frame-rate":237,"./aesthetic-lines.module.css":210,"./pathline.jsx":221,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],210:[function(require,module,exports){
 module.exports = {"aestheticLines":"_src_components_aesthetic_lines_module__aestheticLines"}
 },{}],211:[function(require,module,exports){
 "use strict";
@@ -69353,7 +69353,7 @@ ControlBar.defaultProps = {
 var _default = ControlBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-control-bar-machine":237,"./control-bar.module.css":214,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],214:[function(require,module,exports){
+},{"../state-machines/create-control-bar-machine":239,"./control-bar.module.css":214,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],214:[function(require,module,exports){
 module.exports = {"controlBar":"_src_components_control_bar_module__controlBar","total":"_src_components_control_bar_module__total","start":"_src_components_control_bar_module__start","end":"_src_components_control_bar_module__end","range":"_src_components_control_bar_module__range"}
 },{}],215:[function(require,module,exports){
 "use strict";
@@ -69424,6 +69424,8 @@ var _resizeBar = _interopRequireDefault(require("./resize-bar.jsx"));
 var _incrementableInput = _interopRequireDefault(require("./incrementable-input.jsx"));
 
 var _aestheticLines = _interopRequireDefault(require("./aesthetic-lines.jsx"));
+
+var _systemComms = _interopRequireDefault(require("./system-comms.jsx"));
 
 var _systemElements = _interopRequireDefault(require("./system-elements.jsx"));
 
@@ -69759,7 +69761,11 @@ function GifGenerationSystem(props) {
     },
     onSubmit: handleFormSubmit,
     ref: formRef
-  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    className: css.comms
+  }, /*#__PURE__*/_react["default"].createElement(_systemComms["default"], {
+    ggsState: state
+  })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.widthBar,
     style: {
       width: "".concat(state.context.width, "px")
@@ -69955,8 +69961,8 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":239,"./aesthetic-lines.jsx":209,"./button.jsx":211,"./control-bar.jsx":213,"./gif-generation-system.module.css":216,"./incrementable-input.jsx":219,"./resize-bar.jsx":222,"./system-elements.jsx":224,"./system-frames.jsx":226,"./system-input.jsx":228,"./system-video-info.jsx":230,"./system-workspace.jsx":232,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.date.now.js":129,"core-js/modules/es.date.to-string.js":130,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.parse-float.js":142,"core-js/modules/es.parse-int.js":143,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.url.js":154,"framer-motion":156,"lodash":160,"react":178}],216:[function(require,module,exports){
-module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
+},{"../state-machines/gif-generation-system":241,"./aesthetic-lines.jsx":209,"./button.jsx":211,"./control-bar.jsx":213,"./gif-generation-system.module.css":216,"./incrementable-input.jsx":219,"./resize-bar.jsx":222,"./system-comms.jsx":224,"./system-elements.jsx":226,"./system-frames.jsx":228,"./system-input.jsx":230,"./system-video-info.jsx":232,"./system-workspace.jsx":234,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.date.now.js":129,"core-js/modules/es.date.to-string.js":130,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.parse-float.js":142,"core-js/modules/es.parse-int.js":143,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.url.js":154,"framer-motion":156,"lodash":160,"react":178}],216:[function(require,module,exports){
+module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
 },{}],217:[function(require,module,exports){
 "use strict";
 
@@ -70574,9 +70580,150 @@ ResizeBar.defaultProps = {
 var _default = ResizeBar;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":238,"./resize-bar.module.css":223,"@xstate/react":3,"core-js/modules/es.array.filter.js":119,"core-js/modules/es.array.for-each.js":120,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-properties.js":134,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.get-own-property-descriptors.js":137,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.for-each.js":150,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],223:[function(require,module,exports){
+},{"../state-machines/create-resize-bar-machine":240,"./resize-bar.module.css":223,"@xstate/react":3,"core-js/modules/es.array.filter.js":119,"core-js/modules/es.array.for-each.js":120,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-properties.js":134,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.get-own-property-descriptors.js":137,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.for-each.js":150,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"prop-types":168,"react":178}],223:[function(require,module,exports){
 module.exports = {"resizeBar":"_src_components_resize_bar_module__resizeBar","total":"_src_components_resize_bar_module__total","start":"_src_components_resize_bar_module__start","end":"_src_components_resize_bar_module__end","range":"_src_components_resize_bar_module__range"}
 },{}],224:[function(require,module,exports){
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+require("core-js/modules/es.symbol.js");
+
+require("core-js/modules/es.symbol.description.js");
+
+require("core-js/modules/es.object.to-string.js");
+
+require("core-js/modules/es.symbol.iterator.js");
+
+require("core-js/modules/es.string.iterator.js");
+
+require("core-js/modules/es.array.iterator.js");
+
+require("core-js/modules/web.dom-collections.iterator.js");
+
+require("core-js/modules/es.array.slice.js");
+
+require("core-js/modules/es.function.name.js");
+
+require("core-js/modules/es.array.from.js");
+
+require("core-js/modules/es.weak-map.js");
+
+require("core-js/modules/es.object.define-property.js");
+
+require("core-js/modules/es.object.get-own-property-descriptor.js");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+require("core-js/modules/es.array.is-array.js");
+
+var _lodash = _interopRequireDefault(require("lodash"));
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+var _react2 = require("@xstate/react");
+
+var _framerMotion = require("framer-motion");
+
+var css = _interopRequireWildcard(require("./system-comms.module.css"));
+
+var _systemComms = _interopRequireDefault(require("../state-machines/system-comms"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var IDLE_PHRASES = ['System ready.', 'Good to go.', 'Ready to GIF.', 'Ready to go.', 'Down to GIF.', 'Awaiting instructions.', "Let's do this."];
+var COMPLETE_PHRASES = ['GIF created successfully.', 'GIF complete.', 'GIF ready.', 'You did great.', "You're doing great.", "Let's GIF again."];
+
+function SystemComms(props) {
+  var _useMachine = (0, _react2.useMachine)(_systemComms["default"]),
+      _useMachine2 = _slicedToArray(_useMachine, 2),
+      state = _useMachine2[0],
+      send = _useMachine2[1];
+
+  var ggsState = props.ggsState;
+  (0, _react.useEffect)(function () {
+    switch (ggsState.event.type) {
+      case 'INITIALIZE_COMPLETE':
+      case 'ABORT':
+      case 'RESET':
+        send('MESSAGE', {
+          text: _lodash["default"].sample(IDLE_PHRASES)
+        });
+        break;
+
+      case 'FRAMES_PROGRESS':
+        send('MESSAGE', {
+          text: "Collating frames."
+        });
+        break;
+
+      case 'GENERATION_SUCCESS':
+        send('MESSAGE', {
+          text: _lodash["default"].sample(COMPLETE_PHRASES)
+        });
+        break;
+
+      default:
+        break;
+    }
+  }, [ggsState]);
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    className: css.comms
+  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    className: css.message,
+    key: state.context.message,
+    initial: {
+      y: '50px',
+      opacity: 0
+    },
+    animate: {
+      y: '0px',
+      opacity: 1
+    },
+    exit: {
+      y: '-50px',
+      opacity: 0
+    },
+    transition: {
+      type: 'spring',
+      tension: 75,
+      damping: 7,
+      mass: 0.25,
+      delay: 0.15
+    }
+  }, state.context.message)));
+}
+
+SystemComms.propTypes = {
+  ggsState: _propTypes["default"].object.isRequired
+};
+var _default = SystemComms;
+exports["default"] = _default;
+
+},{"../state-machines/system-comms":242,"./system-comms.module.css":225,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],225:[function(require,module,exports){
+module.exports = {"comms":"_src_components_system_comms_module__comms","message":"_src_components_system_comms_module__message"}
+},{}],226:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70748,9 +70895,9 @@ SystemElements.propTypes = {
 var _default = SystemElements;
 exports["default"] = _default;
 
-},{"./system-elements.module.css":225,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"prop-types":168,"react":178}],225:[function(require,module,exports){
+},{"./system-elements.module.css":227,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"prop-types":168,"react":178}],227:[function(require,module,exports){
 module.exports = {"label":"_src_components_system_elements_module__label","corner":"_src_components_system_elements_module__corner"}
-},{}],226:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70874,9 +71021,9 @@ SystemFrames.propTypes = {
 var _default = SystemFrames;
 exports["default"] = _default;
 
-},{"./system-frames.module.css":227,"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],227:[function(require,module,exports){
+},{"./system-frames.module.css":229,"core-js/modules/es.array.concat.js":118,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],229:[function(require,module,exports){
 module.exports = {"frames":"_src_components_system_frames_module__frames","frame":"_src_components_system_frames_module__frame","frameComplete":"_src_components_system_frames_module__frameComplete","pending":"_src_components_system_frames_module__pending","complete":"_src_components_system_frames_module__complete","count":"_src_components_system_frames_module__count","countComplete":"_src_components_system_frames_module__countComplete","total":"_src_components_system_frames_module__total"}
-},{}],228:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -70962,9 +71109,9 @@ SystemInput.defaultProps = {
 var _default = SystemInput;
 exports["default"] = _default;
 
-},{"./system-input.module.css":229,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],229:[function(require,module,exports){
+},{"./system-input.module.css":231,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.keys.js":139,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"prop-types":168,"react":178}],231:[function(require,module,exports){
 module.exports = {"systemInput":"_src_components_system_input_module__systemInput","addendum":"_src_components_system_input_module__addendum","name":"_src_components_system_input_module__name","inputContainer":"_src_components_system_input_module__inputContainer"}
-},{}],230:[function(require,module,exports){
+},{}],232:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71032,9 +71179,9 @@ function SystemVideoInfo(props) {
 var _default = SystemVideoInfo;
 exports["default"] = _default;
 
-},{"./system-video-info.module.css":231,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178}],231:[function(require,module,exports){
+},{"./system-video-info.module.css":233,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178}],233:[function(require,module,exports){
 module.exports = {"infoList":"_src_components_system_video_info_module__infoList","infoListTerm":"_src_components_system_video_info_module__infoListTerm","infoListDetails":"_src_components_system_video_info_module__infoListDetails","value":"_src_components_system_video_info_module__value","unit":"_src_components_system_video_info_module__unit"}
-},{}],232:[function(require,module,exports){
+},{}],234:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71195,9 +71342,9 @@ SystemWorkspace.propTypes = {
 var _default = SystemWorkspace;
 exports["default"] = _default;
 
-},{"./system-workspace.module.css":233,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],233:[function(require,module,exports){
+},{"./system-workspace.module.css":235,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"framer-motion":156,"lodash":160,"prop-types":168,"react":178}],235:[function(require,module,exports){
 module.exports = {"workspace":"_src_components_system_workspace_module__workspace","images":"_src_components_system_workspace_module__images","result":"_src_components_system_workspace_module__result","canvas":"_src_components_system_workspace_module__canvas"}
-},{}],234:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71288,7 +71435,7 @@ document.body.appendChild(gifitElement);
 
 _reactDom["default"].render( /*#__PURE__*/_react["default"].createElement(TestGifitApp, null), gifitElement);
 
-},{"./components/gifit-app.jsx":217,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178,"react-dom":172}],235:[function(require,module,exports){
+},{"./components/gifit-app.jsx":217,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"react":178,"react-dom":172}],237:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.symbol.js");
@@ -71390,7 +71537,7 @@ function useFrameRate(config) {
 var _default = useFrameRate;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"react":178}],236:[function(require,module,exports){
+},{"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"lodash":160,"react":178}],238:[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -71601,7 +71748,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
 var _default = GifService;
 exports["default"] = _default;
 
-},{"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.create.js":133,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-prototype-of.js":138,"core-js/modules/es.object.set-prototype-of.js":140,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.reflect.construct.js":144,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.timers.js":152,"core-js/modules/web.url.js":154,"events":155}],237:[function(require,module,exports){
+},{"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.create.js":133,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-prototype-of.js":138,"core-js/modules/es.object.set-prototype-of.js":140,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.reflect.construct.js":144,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.timers.js":152,"core-js/modules/web.url.js":154,"events":155}],239:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -71701,7 +71848,7 @@ function createControlBarMachine(_ref) {
 var _default = createControlBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],238:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],240:[function(require,module,exports){
 "use strict";
 
 require("core-js/modules/es.object.define-property.js");
@@ -71824,7 +71971,7 @@ function createResizeBarMachine(_ref) {
 var _default = createResizeBarMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],239:[function(require,module,exports){
+},{"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],241:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -72140,4 +72287,49 @@ var gifGenerationSystemMachine = new _xstate.Machine({
 var _default = gifGenerationSystemMachine;
 exports["default"] = _default;
 
-},{"../services/gif-service":236,"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}]},{},[234]);
+},{"../services/gif-service":238,"core-js/modules/es.object.define-property.js":135,"lodash":160,"xstate":197}],242:[function(require,module,exports){
+"use strict";
+
+require("core-js/modules/es.object.define-property.js");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+var _xstate = require("xstate");
+
+var systemCommsMachine = new _xstate.Machine({
+  id: 'system-comms',
+  initial: 'active',
+  context: {
+    message: null
+  },
+  states: {
+    active: {
+      on: {
+        MESSAGE: {
+          actions: ['updateMessage']
+        },
+        DEACTIVATE: 'inactive'
+      }
+    },
+    inactive: {
+      on: {
+        ACTIVATE: 'active'
+      }
+    }
+  }
+}, {
+  actions: {
+    updateMessage: (0, _xstate.assign)(function (context, event) {
+      return {
+        message: event.text
+      };
+    })
+  }
+});
+var _default = systemCommsMachine;
+exports["default"] = _default;
+
+},{"core-js/modules/es.object.define-property.js":135,"xstate":197}]},{},[236]);

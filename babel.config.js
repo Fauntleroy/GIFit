@@ -5,7 +5,8 @@ const plugins = [
     'alias': {
       '$components': './src/components',
       '$icons': './src/icons',
-      '$hooks': './src/hooks'
+      '$hooks': './src/hooks',
+      '$machines': './src/state-machines'
     }
   }]
 ];

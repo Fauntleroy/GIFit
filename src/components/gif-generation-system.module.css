@@ -65,6 +65,13 @@
 	margin-bottom: 15px;
 }
 
+.comms {
+	position: absolute;
+	top: 4px;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
 .widthBar {
 	grid-area: width-bar;
 	justify-self: center;

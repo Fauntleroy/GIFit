@@ -11,6 +11,7 @@ import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
 import IncrementableInput from './incrementable-input.jsx';
 import AestheticLines from '$components/aesthetic-lines.jsx';
+import SystemComms from '$components/system-comms.jsx';
 import SystemElements from '$components/system-elements.jsx';
 import SystemInput from '$components/system-input.jsx';
 import SystemFrames from '$components/system-frames.jsx';
@@ -194,6 +195,10 @@ function GifGenerationSystem (props) {
         transition={{ type: 'spring', damping: 45, delay: 1.15, stiffness: 500 }}
         onSubmit={handleFormSubmit}
         ref={formRef}>
+
+        <div className={css.comms}>
+          <SystemComms ggsState={state} />
+        </div>
 
         <motion.div
           className={css.widthBar}
