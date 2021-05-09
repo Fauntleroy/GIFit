@@ -19,7 +19,8 @@ const gifGenerationSystemMachine = new Machine({
     fps: 10,
     start: 0,
     end: 1.5,
-    originalTime: 0
+    originalTime: 0,
+    framesComplete: 0
   },
 
   states: {
@@ -84,7 +85,9 @@ const gifGenerationSystemMachine = new Machine({
             failed: {}
           },
           on: {
-            FRAMES_PROGRESS: '',
+            FRAMES_PROGRESS: {
+              actions: ['setFramesProgress']
+            },
             FRAMES_ERROR: 'collatingFrames.failed',
             FRAMES_SUCCESS: 'collatingFrames.succeeded'
           },
@@ -120,11 +123,11 @@ const gifGenerationSystemMachine = new Machine({
       on: {
         ABORT: {
           target: 'configuring',
-          actions: ['abortGeneration', 'resetData']
+          actions: ['abortGeneration', 'resetData', 'resetFramesProgress']
         },
         RESET: {
           target: 'configuring',
-          actions: ['resetData']
+          actions: ['resetData', 'resetFramesProgress']
         }
       }
     }
@@ -176,6 +179,16 @@ const gifGenerationSystemMachine = new Machine({
     abortGeneration: assign((context, event) => {
       context.gifService.abort();
       return {};
+    }),
+    setFramesProgress: assign((context, event) => {
+      return {
+        framesComplete: event.framesComplete
+      };
+    }),
+    resetFramesProgress: assign(() => {
+      return {
+        framesComplete: 0
+      };
     })
   },
 
@@ -220,8 +233,8 @@ const gifGenerationSystemMachine = new Machine({
       // This will send the 'INC' event to the parent every second
       const { gifService, videoElement, width, height, quality, fps, start, end } = context;
 
-      function handleProgress () {
-        callback('FRAMES_PROGRESS');
+      function handleProgress (framesProgress, framesComplete) {
+        callback({ type: 'FRAMES_PROGRESS', framesProgress, framesComplete });
       }
       function handleComplete () {
         callback('FRAMES_SUCCESS');

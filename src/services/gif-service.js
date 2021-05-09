@@ -27,6 +27,7 @@ class GifService extends EventEmitter {
 
     this.gif = null;
     this.aborted = false;
+    this.framesComplete = 0;
 
     const canvasElement = this.canvasElement = document.createElement('canvas');
     canvasElement.style.imageRendering = 'crisp-edges';
@@ -77,6 +78,7 @@ class GifService extends EventEmitter {
     });
 
     // Run frames through GIF maker
+    this.framesComplete = 0;
     asyncSeek(videoElement, (config.start / 1000), () => {
       this.addFrame(config, videoElement);
     });
@@ -113,7 +115,8 @@ class GifService extends EventEmitter {
       copy: true
     });
     const frameGatheringProgress = (currentTime - config.start) / trueGifDuration;
-    this.emit('frames progress', frameGatheringProgress);
+    this.framesComplete++;
+    this.emit('frames progress', frameGatheringProgress, this.framesComplete);
 
     const nextFrameTime = currentTime + frameInterval;
 

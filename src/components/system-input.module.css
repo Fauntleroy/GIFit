@@ -1,7 +1,7 @@
 .systemInput {
 	display: block;
 	margin: 15px;
-	color: white;
+	color: var(--color-primary-system);
 	transition: color 250ms;
 
 	&:focus-within {

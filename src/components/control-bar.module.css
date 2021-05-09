@@ -4,7 +4,7 @@
   width: 100%;
   cursor: pointer;
   user-select: none;
-  color: white;
+  color: var(--color-primary-system);
 
   &:focus-within {
     color: var(--color-highlight);

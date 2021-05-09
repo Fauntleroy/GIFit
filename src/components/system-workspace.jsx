@@ -48,31 +48,44 @@ function SystemWorkspace (props) {
   return (
     <motion.div
       className={css.workspace}
+      initial={{
+        translateY: '0px'
+      }}
       animate={{
         translateY: isGenerating ? '35px' : '0px'
       }}
       transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
-      <AnimatePresence>
-        {isComplete &&
-        <motion.img
-          className={css.result}
-          src={props.gifUrl}
-          initial={{ translateZ: '0px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)' }}
-          animate={{ translateZ: '50px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)' }}
-          exit={{ translateZ: '0px', filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)' }}
-          transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.2, delay: 0.25 }}
-          key="generated-gif" />}
-        {!isComplete &&
-        <motion.canvas
-          className={css.canvas}
-          ref={canvasRef}
-          style={{ willChange: 'width, height' }}
-          initial={{ width: width, height: height }}
-          animate={{ width: width, height: height }}
-          transition={{ type: 'spring', bounce: 0, delay: 0.75 }}
-          height={height}
-          width={width} />}
-      </AnimatePresence>
+      <motion.div
+        className={css.images}
+        initial={{
+          translateZ: '0px',
+          filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
+        }}
+        animate={{
+          translateZ: isComplete ? '50px' : '0px',
+          filter: isComplete
+            ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
+            : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
+        }}
+        transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
+        <AnimatePresence>
+          {isComplete &&
+          <motion.img
+            className={css.result}
+            src={props.gifUrl}
+            key="generated-gif" />}
+          {!isComplete &&
+          <motion.canvas
+            className={css.canvas}
+            ref={canvasRef}
+            style={{ willChange: 'width, height' }}
+            initial={{ width: width, height: height }}
+            animate={{ width: width, height: height }}
+            transition={{ type: 'spring', bounce: 0, delay: 0.75 }}
+            height={height}
+            width={width} />}
+        </AnimatePresence>
+      </motion.div>
     </motion.div>
   );
 }
@@ -85,7 +98,7 @@ SystemWorkspace.defaultProps = {
 };
 
 SystemWorkspace.propTypes = {
-  gifUrl: PropTypes.object,
+  gifUrl: PropTypes.string,
   videoElement: PropTypes.shape({
     videoHeight: PropTypes.number,
     videoWidth: PropTypes.number,

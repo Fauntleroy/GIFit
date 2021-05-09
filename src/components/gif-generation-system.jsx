@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useMachine } from '@xstate/react';
 
 import * as css from './gif-generation-system.module.css';
@@ -22,7 +22,16 @@ import Cancel from '$icons/cancel.svg';
 import MediaPlay from '$icons/media-play.svg';
 import Refresh from '$icons/refresh.svg';
 
-const FADED_INPUT_OPACITY = 0.05;
+const animVariants = {
+  shown: {
+    opacity: 1,
+    transition: { type: 'spring', tension: 75, damping: 4, mass: 0.25, delay: 0.5 }
+  },
+  hidden: {
+    opacity: 0.1,
+    transition: { type: 'spring', tension: 75, damping: 10, mass: 0.25, delay: 0.1 }
+  }
+};
 
 function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
@@ -37,7 +46,7 @@ function GifGenerationSystem (props) {
   const endRef = useRef(null);
   const formRef = useRef(null);
   const contextRef = useRef(state.context);
-  const frameCount = Math.floor((state.context.end - state.context.start) * state.context.fps);
+  const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
 
   // set a reference to the state machine's context for use in other callbacks
   useEffect(() => {
@@ -189,11 +198,8 @@ function GifGenerationSystem (props) {
         <motion.div
           className={css.widthBar}
           style={{ width: `${state.context.width}px` }}
-          initial={{ opacity: 1 }}
-          animate={{
-            opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
-          }}
-          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}
+          animate={formAnim}
+          variants={animVariants}
           ref={widthBarRef}>
           <ResizeBar 
             value={state.context.width}
@@ -203,19 +209,15 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.videoInfo}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1 }}
-          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
+          animate={formAnim}
+          variants={animVariants}>
           <SystemVideoInfo video={state.context.videoElement} gifUrl={gifUrl} />
         </motion.div>
 
         <motion.div
           className={css.dimensions}
-          initial={{ opacity: 1 }}
-          animate={{
-            opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
-          }}
-          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
+          animate={formAnim}
+          variants={animVariants}>
           <div className={css.width} ref={widthRef}>
             <SystemInput
               name="Width"
@@ -262,11 +264,8 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.qualityAndFrameRate}
-          initial={{ opacity: 1 }}
-          animate={{
-            opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
-          }}
-          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
+          animate={formAnim}
+          variants={animVariants}>
           <SystemInput
             name="Quality">
             <input
@@ -286,22 +285,23 @@ function GifGenerationSystem (props) {
           </SystemInput>
         </motion.div>
 
-        <motion.div
-          className={css.startAndEnd}
-          initial={{ opacity: 1 }}
-          animate={{
-            opacity: !state.matches('configuring') ? FADED_INPUT_OPACITY : 1
-          }}
-          transition={{ type: 'spring', tension: 400, damping: 25, mass: 0.5 }}>
-          <div className={css.timeBar} ref={timeBarRef}>
+        <div className={css.startAndEnd}>
+          <motion.div
+            className={css.timeBar}
+            animate={formAnim}
+            variants={animVariants}
+            ref={timeBarRef}>
             <ControlBar
               startValue={state.context.start / videoRef.current.duration}
               endValue={state.context.end / videoRef.current.duration}
               onChange={handleStartEndControlBarChange}
               disabled={!state.matches('configuring')} />
-          </div>
+          </motion.div>
 
-          <div className={css.start}>
+          <motion.div
+            className={css.start}
+            animate={formAnim}
+            variants={animVariants}>
             <SystemInput
               name="start"
               ref={startRef}>
@@ -314,13 +314,19 @@ function GifGenerationSystem (props) {
                 onChange={handleStartInputChange}
                 disabled={!state.matches('configuring')} />
             </SystemInput>
-          </div>
+          </motion.div>
 
-          <div className={css.frames}>
-            <SystemFrames frameCount={frameCount} />
-          </div>
+          <motion.div
+            className={css.frames}
+            variants={animVariants}
+            animate={state.matches({ generating: { generatingGif: 'succeeded' }}) ? 'hidden' : 'shown'}>
+            <SystemFrames state={state} />
+          </motion.div>
           
-          <div className={css.end}>
+          <motion.div
+            className={css.end}
+            animate={formAnim}
+            variants={animVariants}>
             <SystemInput
               name="end"
               ref={endRef}>
@@ -333,14 +339,14 @@ function GifGenerationSystem (props) {
                 onChange={handleEndInputChange}
                 disabled={!state.matches('configuring')} />
             </SystemInput>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
         <footer className={css.footer}>
           <motion.div
             className={css.actions}
             initial={{ translateY: '0px' }}
-            animate={{ translateY: state.matches('generating') ? '-70px' : '0px' }}
+            animate={{ translateY: state.matches({ generating: { generatingGif: 'succeeded' }}) ? '-35px' : '0px' }}
             transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
             <span className={css.action}>
               <Button
@@ -363,14 +369,19 @@ function GifGenerationSystem (props) {
           </motion.div>
         </footer>
 
-        <AestheticLines
-          widthRef={widthRef}
-          widthBarRef={widthBarRef}
-          heightRef={heightRef}
-          heightBarRef={heightBarRef}
-          startRef={startRef}
-          endRef={endRef}
-          timeBarRef={timeBarRef} />
+        <motion.div
+          className={css.lines}
+          animate={formAnim}
+          variants={animVariants}>
+          <AestheticLines
+            widthRef={widthRef}
+            widthBarRef={widthBarRef}
+            heightRef={heightRef}
+            heightBarRef={heightBarRef}
+            startRef={startRef}
+            endRef={endRef}
+            timeBarRef={timeBarRef} />
+        </motion.div>
       </motion.form>
     </motion.div>
   );
