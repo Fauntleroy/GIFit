@@ -6,6 +6,8 @@ import { useMachine } from '@xstate/react';
 import * as css from './gif-generation-system.module.css';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
+import findClosestElement from '$utils/find-closest-element';
+
 import Button from './button.jsx';
 import ControlBar from './control-bar.jsx';
 import ResizeBar from './resize-bar.jsx';
@@ -56,8 +58,10 @@ function GifGenerationSystem (props) {
 
   // select the video and tell the machine we're ready to go
   useEffect(() => {
-    const videoElements = document.querySelectorAll('video');
-    videoRef.current = videoElements[0];
+    const videoElements = document.querySelectorAll('video') || [];
+    const closestVideo = findClosestElement(videoElements);
+
+    videoRef.current = closestVideo;
 
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current

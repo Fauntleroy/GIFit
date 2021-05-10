@@ -1,23 +1,117 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"> 
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
       body {
         background: #111;
         color: #ddd;
+        font-size: 18px;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.5;
       }
 
       video {
-        width: 800px;
+        width: 640px;
         max-width: 100vw;
+        margin: 0 -25px;
+      }
+
+      figure {
+        margin: 3rem 0;
+      }
+
+      figcaption {
+        margin-top: 1rem;
+      }
+
+      hr {
+        margin: 3rem 0;
+      }
+
+      section {
+        margin: 3rem 0;
+      }
+
+      a {
+        color: white;
+        font-weight: bold;
+        text-decoration-color: cyan;
+        text-underline-offset: 5px;
+      }
+
+      button {
+        background: cyan;
+        color: black;
+        border-radius: 5px;
+        padding: 10px 15px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: white;
+      }
+
+      .site {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 25px;
+      }
+
+      .test-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: black;
+        padding: 30px 40px;
+        position: fixed;
+        right: 0;
+        top: calc(50% - 27px);
       }
     </style>
     <link rel="stylesheet" href="/dev.css" />
   </head>
   <body>
-    <video src="/videos/HAPPY-FOUR-20.webm" controls></video>
-    <video src="/videos/mars-with-water.webm" controls></video>
-    <button id="start">Start GIFit</button>
+    <div class="site">
+      <header>
+        <h1>GIFit! Dev Test Page</h1>
+        <p>In order to test GIFit more quickly (and browser extension system independently), I made this test page. The "Start GIFit" button replaces the normal method for starting GIFit. Otherwise, this should basically be identical to the actual extension itself.</p>
+        <hr />
+      </header>
+      <div class="content">
+        <figure>
+          <video src="/videos/HAPPY-FOUR-20.webm" controls></video>
+          <figcaption>This is 3D fanart I made of Meadow's new (at the time) logo for 4/20. HTML, CSS, and JavaScript are my passion, but Blender is also my passion</figcaption>
+        </figure>
+        <hr />
+        <section>I need to space out the videos for testing purposes, so I'm gonna shout out to <a href="https://www.framer.com/motion/" target="_blank">Framer Motion</a> for making UI animations a breeze in React. Heck, if I pay attention I can even keep a smooth 60 FPS most of the time. Real life saver.</section>
+        <hr />
+        <figure>
+          <video src="/videos/mars-with-water.webm" controls></video>
+          <figcaption>This is a rendering of Mars with water by M. Kornmesser at the ESO. Space is also also my passion.</figcaption>
+        </figure>
+        <hr />
+        <section>
+          <p>This is another spacing section for testing purposes. This test page kinda has to look like a real website to be useful.</p>
+          <p>Anyway, do check out <a href="https://www.blender.org/" target="_blank">Blender</a> sometime. It takes about ~20 hours to "get into it", but once you've got the basics down, it's a super useful program. Price is right, too.</p>
+        </section>
+        <hr />
+      </div>
+      <footer class="test-controls">
+        <button id="start">Start GIFit</button>
+      </footer>
+    </div>
     <script src="/vendor/gif.js"></script>
     <script src="/vendor/patch-worker.js"></script>
     <script src="/dev.js"></script>

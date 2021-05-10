@@ -69415,6 +69415,8 @@ var css = _interopRequireWildcard(require("./gif-generation-system.module.css"))
 
 var _gifGenerationSystem = _interopRequireDefault(require("../state-machines/gif-generation-system"));
 
+var _findClosestElement = _interopRequireDefault(require("../utils/find-closest-element"));
+
 var _button = _interopRequireDefault(require("./button.jsx"));
 
 var _controlBar = _interopRequireDefault(require("./control-bar.jsx"));
@@ -69550,8 +69552,9 @@ function GifGenerationSystem(props) {
   }, [state.context]); // select the video and tell the machine we're ready to go
 
   (0, _react.useEffect)(function () {
-    var videoElements = document.querySelectorAll('video');
-    videoRef.current = videoElements[0];
+    var videoElements = document.querySelectorAll('video') || [];
+    var closestVideo = (0, _findClosestElement["default"])(videoElements);
+    videoRef.current = closestVideo;
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
@@ -69961,7 +69964,7 @@ function GifGenerationSystem(props) {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":241,"./aesthetic-lines.jsx":209,"./button.jsx":211,"./control-bar.jsx":213,"./gif-generation-system.module.css":216,"./incrementable-input.jsx":219,"./resize-bar.jsx":222,"./system-comms.jsx":224,"./system-elements.jsx":226,"./system-frames.jsx":228,"./system-input.jsx":230,"./system-video-info.jsx":232,"./system-workspace.jsx":234,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.date.now.js":129,"core-js/modules/es.date.to-string.js":130,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.parse-float.js":142,"core-js/modules/es.parse-int.js":143,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.url.js":154,"framer-motion":156,"lodash":160,"react":178}],216:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":241,"../utils/find-closest-element":243,"./aesthetic-lines.jsx":209,"./button.jsx":211,"./control-bar.jsx":213,"./gif-generation-system.module.css":216,"./incrementable-input.jsx":219,"./resize-bar.jsx":222,"./system-comms.jsx":224,"./system-elements.jsx":226,"./system-frames.jsx":228,"./system-input.jsx":230,"./system-video-info.jsx":232,"./system-workspace.jsx":234,"@xstate/react":3,"core-js/modules/es.array.from.js":121,"core-js/modules/es.array.is-array.js":123,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.array.slice.js":128,"core-js/modules/es.date.now.js":129,"core-js/modules/es.date.to-string.js":130,"core-js/modules/es.function.name.js":131,"core-js/modules/es.object.define-property.js":135,"core-js/modules/es.object.get-own-property-descriptor.js":136,"core-js/modules/es.object.to-string.js":141,"core-js/modules/es.parse-float.js":142,"core-js/modules/es.parse-int.js":143,"core-js/modules/es.string.iterator.js":145,"core-js/modules/es.symbol.description.js":146,"core-js/modules/es.symbol.iterator.js":147,"core-js/modules/es.symbol.js":148,"core-js/modules/es.weak-map.js":149,"core-js/modules/web.dom-collections.iterator.js":151,"core-js/modules/web.url.js":154,"framer-motion":156,"lodash":160,"react":178}],216:[function(require,module,exports){
 module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
 },{}],217:[function(require,module,exports){
 "use strict";
@@ -72329,4 +72332,38 @@ var systemCommsMachine = new _xstate.Machine({
 var _default = systemCommsMachine;
 exports["default"] = _default;
 
-},{"core-js/modules/es.object.define-property.js":135,"xstate":197}]},{},[236]);
+},{"core-js/modules/es.object.define-property.js":135,"xstate":197}],243:[function(require,module,exports){
+"use strict";
+
+require("core-js/modules/es.object.define-property.js");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+
+require("core-js/modules/es.array.for-each.js");
+
+require("core-js/modules/web.dom-collections.for-each.js");
+
+function findClosestElement(elements) {
+  var windowCenterOrigin = [window.innerWidth / 2, window.innerHeight / 2];
+  var closestDistance = null;
+  var closestElement = null;
+  elements.forEach(function (element) {
+    var rect = element.getBoundingClientRect();
+    var relativeCenterOrigin = [rect.x + rect.width / 2, rect.y + rect.height / 2];
+    var totalDistanceFromCenter = Math.abs(windowCenterOrigin[0] - relativeCenterOrigin[0]) + Math.abs(windowCenterOrigin[1] - relativeCenterOrigin[1]);
+
+    if (!closestElement || totalDistanceFromCenter < closestDistance) {
+      closestElement = element;
+      closestDistance = totalDistanceFromCenter;
+    }
+  });
+  return closestElement;
+}
+
+var _default = findClosestElement;
+exports["default"] = _default;
+
+},{"core-js/modules/es.array.for-each.js":120,"core-js/modules/es.object.define-property.js":135,"core-js/modules/web.dom-collections.for-each.js":150}]},{},[236]);

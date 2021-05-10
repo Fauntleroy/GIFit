@@ -6,7 +6,8 @@ const plugins = [
       '$components': './src/components',
       '$icons': './src/icons',
       '$hooks': './src/hooks',
-      '$machines': './src/state-machines'
+      '$machines': './src/state-machines',
+      '$utils': './src/utils'
     }
   }]
 ];
