@@ -69917,7 +69917,7 @@ function GifGenerationSystem(props) {
         generating: {
           generatingGif: 'succeeded'
         }
-      }) ? '-35px' : '0px'
+      }) ? '-45px' : '0px'
     },
     transition: {
       type: 'spring',
@@ -71265,7 +71265,7 @@ function SystemWorkspace(props) {
       translateY: '0px'
     },
     animate: {
-      translateY: isGenerating ? '35px' : '0px'
+      translateY: isGenerating ? '15px' : '0px'
     },
     transition: {
       type: 'spring',

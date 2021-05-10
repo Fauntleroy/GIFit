@@ -351,7 +351,9 @@ function GifGenerationSystem (props) {
           <motion.div
             className={css.actions}
             initial={{ translateY: '0px' }}
-            animate={{ translateY: state.matches({ generating: { generatingGif: 'succeeded' }}) ? '-35px' : '0px' }}
+            animate={{
+              translateY: state.matches({ generating: { generatingGif: 'succeeded' }}) ? '-45px' : '0px'
+            }}
             transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
             <span className={css.action}>
               <Button

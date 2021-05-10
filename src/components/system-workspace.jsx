@@ -52,7 +52,7 @@ function SystemWorkspace (props) {
         translateY: '0px'
       }}
       animate={{
-        translateY: isGenerating ? '35px' : '0px'
+        translateY: isGenerating ? '15px' : '0px'
       }}
       transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
       <motion.div

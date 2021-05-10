@@ -4,6 +4,22 @@
   width: 300px;
   height: 25px;
   overflow: hidden;
+
+  &:before,
+  &:after {
+    content: '·';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:before {
+    left: 0;
+  }
+
+  &:after {
+    right: 0;
+  }
 }
 
 .message {
@@ -12,5 +28,8 @@
   right: 0;
   bottom: 0;
   left: 0;
-  text-align: center;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
 }

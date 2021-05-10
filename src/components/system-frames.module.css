@@ -33,6 +33,7 @@
 	display: grid;
 	grid-template-columns: repeat(20, 1fr);
 	grid-auto-rows: 1fr;
+	align-items: center;
 }
 
 .complete {
