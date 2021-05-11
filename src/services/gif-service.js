@@ -120,7 +120,6 @@ class GifService extends EventEmitter {
     }
 
     asyncSeek(videoElement, (nextFrameTime / 1000), () => {
-      console.log('async seek 2')
       this.addFrame(config, videoElement);
     });
   }

@@ -69604,7 +69604,7 @@ var animVariants = {
         tension: 175,
         damping: 25,
         mass: 5,
-        delay: 0.05 * (8 - custom)
+        delay: 0.075 * (8 - custom)
       }
     };
   },
@@ -69617,7 +69617,7 @@ var animVariants = {
         tension: 175,
         damping: 25,
         mass: 5,
-        delay: 0.05 * (custom + 1)
+        delay: 0.075 * (custom + 1)
       }
     };
   }
@@ -71902,8 +71902,6 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
       }
 
       asyncSeek(videoElement, nextFrameTime / 1000, function () {
-        console.log('async seek 2');
-
         _this3.addFrame(config, videoElement);
       });
     }
@@ -71965,7 +71963,7 @@ function createControlBarMachine(_ref) {
       idle: {
         on: {
           START: {
-            actions: ['updatePosition'],
+            actions: ['setActiveHandle', 'updatePosition'],
             target: 'active'
           },
           VALUE: {
@@ -72002,18 +72000,27 @@ function createControlBarMachine(_ref) {
 
         var startPosition = event.precise !== context.precise ? event.position : context.slideStart || event.position;
         var delta = context.precise ? (startPosition - event.position) * -1 / 4 : (startPosition - event.position) * -1;
-        var position = startPosition + delta;
+        var position = startPosition + delta; // don't fly past the other handle, or out of bounds
 
-        var newPosition = _lodash["default"].clamp(position, 0, 1);
+        var minPosition = context.activeHandle === 'start' ? 0 : context.start;
+        var maxPosition = context.activeHandle === 'start' ? context.end : 1;
 
-        var startDistance = Math.abs(newPosition - context.start);
-        var endDistance = Math.abs(newPosition - context.end);
-        var handleKey = startDistance < endDistance ? 'start' : 'end';
-        return _ref2 = {}, _defineProperty(_ref2, handleKey, newPosition), _defineProperty(_ref2, "slideStart", startPosition), _defineProperty(_ref2, "precise", event.precise), _ref2;
+        var newPosition = _lodash["default"].clamp(position, minPosition, maxPosition);
+
+        return _ref2 = {}, _defineProperty(_ref2, context.activeHandle, newPosition), _defineProperty(_ref2, "slideStart", startPosition), _defineProperty(_ref2, "precise", event.precise), _ref2;
       }),
       resetSlideStart: (0, _xstate.assign)(function (context, event) {
         return {
-          slideStart: null
+          slideStart: null,
+          activeHandle: null
+        };
+      }),
+      setActiveHandle: (0, _xstate.assign)(function (context, event) {
+        var distanceFromStart = Math.abs(event.position - context.start);
+        var distanceFromEnd = Math.abs(event.position - context.end);
+        var activeHandle = distanceFromStart < distanceFromEnd ? 'start' : 'end';
+        return {
+          activeHandle: activeHandle
         };
       }),
       setValue: (0, _xstate.assign)(function (context, event) {

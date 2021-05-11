@@ -57,7 +57,7 @@ const animVariants = {
       tension: 175,
       damping: 25,
       mass: 5,
-      delay: 0.05 * (8 - custom)
+      delay: 0.075 * (8 - custom)
     }
   }),
   hidden: (custom = 0) => ({
@@ -67,7 +67,7 @@ const animVariants = {
       tension: 175,
       damping: 25,
       mass: 5,
-      delay: 0.05 * (custom + 1)
+      delay: 0.075 * (custom + 1)
     }
   })
 };

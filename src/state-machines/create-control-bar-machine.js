@@ -15,7 +15,7 @@ function createControlBarMachine ({ id, start, end }) {
       idle: {
         on: {
           START: {
-            actions: ['updatePosition'],
+            actions: ['setActiveHandle', 'updatePosition'],
             target: 'active'
           },
           VALUE: {
@@ -55,23 +55,36 @@ function createControlBarMachine ({ id, start, end }) {
           ? ((startPosition - event.position) * -1) / 4
           : (startPosition - event.position) * -1;
         const position = startPosition + delta;
-        const newPosition = _.clamp(position, 0, 1);
-
-        const startDistance = Math.abs(newPosition - context.start);
-        const endDistance = Math.abs(newPosition - context.end);
-        const handleKey = startDistance < endDistance
-          ? 'start'
-          : 'end';
+        // don't fly past the other handle, or out of bounds
+        const minPosition = (context.activeHandle === 'start')
+          ? 0
+          : context.start;
+        const maxPosition = (context.activeHandle === 'start')
+          ? context.end
+          : 1;
+        const newPosition = _.clamp(position, minPosition, maxPosition);
 
         return {
-          [handleKey]: newPosition,
+          [context.activeHandle]: newPosition,
           slideStart: startPosition,
           precise: event.precise
         };
       }),
       resetSlideStart: assign((context, event) => {
         return {
-          slideStart: null
+          slideStart: null,
+          activeHandle: null
+        };
+      }),
+      setActiveHandle: assign((context, event) => {
+        const distanceFromStart = Math.abs(event.position - context.start);
+        const distanceFromEnd = Math.abs(event.position - context.end);
+        const activeHandle = (distanceFromStart < distanceFromEnd)
+          ? 'start'
+          : 'end';
+
+        return {
+          activeHandle
         };
       }),
       setValue: assign((context, event) => {
