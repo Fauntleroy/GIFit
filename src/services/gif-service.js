@@ -90,14 +90,6 @@ class GifService extends EventEmitter {
     }
 
     const currentTime = videoElement.currentTime * 1000;
-
-    if (currentTime >= config.end) {
-      this.emit('frames complete');
-      // render the GIF
-      this.gif.render();
-      return;
-    }
-
     const frameInterval = 1000 / config.fps;
     // To properly indicate progress we need a point of comparison locked to the frame rate
     const gifDuration = config.end - config.start;
@@ -120,7 +112,15 @@ class GifService extends EventEmitter {
 
     const nextFrameTime = currentTime + frameInterval;
 
+    if (nextFrameTime >= config.end) {
+      this.emit('frames complete');
+      // render the GIF
+      this.gif.render();
+      return;
+    }
+
     asyncSeek(videoElement, (nextFrameTime / 1000), () => {
+      console.log('async seek 2')
       this.addFrame(config, videoElement);
     });
   }

@@ -71881,14 +71881,6 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
       }
 
       var currentTime = videoElement.currentTime * 1000;
-
-      if (currentTime >= config.end) {
-        this.emit('frames complete'); // render the GIF
-
-        this.gif.render();
-        return;
-      }
-
       var frameInterval = 1000 / config.fps; // To properly indicate progress we need a point of comparison locked to the frame rate
 
       var gifDuration = config.end - config.start;
@@ -71904,7 +71896,17 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
       this.framesComplete++;
       this.emit('frames progress', frameGatheringProgress, this.framesComplete);
       var nextFrameTime = currentTime + frameInterval;
+
+      if (nextFrameTime >= config.end) {
+        this.emit('frames complete'); // render the GIF
+
+        this.gif.render();
+        return;
+      }
+
       asyncSeek(videoElement, nextFrameTime / 1000, function () {
+        console.log('async seek 2');
+
         _this3.addFrame(config, videoElement);
       });
     }
