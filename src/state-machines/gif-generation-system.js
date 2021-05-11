@@ -27,9 +27,17 @@ const gifGenerationSystemMachine = new Machine({
     // initialization animation
     initializing: {
       on: {
-        INITIALIZE_COMPLETE: {
+        INITIALIZE_COMPLETE: [{
           target: 'configuring',
           actions: ['setInitialContext']
+        }]
+      }
+    },
+    criticalError: {
+      on: {
+        RESET: {
+          target: 'configuring',
+          actions: ['resetData', 'resetFramesProgress', 'resetErrors']
         }
       }
     },
@@ -123,13 +131,19 @@ const gifGenerationSystemMachine = new Machine({
       on: {
         ABORT: {
           target: 'configuring',
-          actions: ['abortGeneration', 'resetData', 'resetFramesProgress']
+          actions: ['abortGeneration', 'resetData', 'resetFramesProgress', 'resetErrors']
         },
         RESET: {
           target: 'configuring',
-          actions: ['resetData', 'resetFramesProgress']
+          actions: ['resetData', 'resetFramesProgress', 'resetErros']
         }
       }
+    }
+  },
+  on: {
+    CRITICAL_ERROR: {
+      target: 'criticalError',
+      actions: ['setCriticalError']
     }
   }
 }, {
@@ -138,17 +152,26 @@ const gifGenerationSystemMachine = new Machine({
       const { videoElement } = event;
       const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
       const aspectCorrectHeight = _.round(DEFAULT_WIDTH / videoAspectRatio);
+      const currentTime = videoElement.currentTime || 0;
 
       return {
         width: DEFAULT_WIDTH,
         height: aspectCorrectHeight,
-        start: (videoElement.currentTime >= (videoElement.duration - 1))
+        start: (currentTime >= (videoElement.duration - 1))
           ? videoElement.duration - 1
-          : videoElement.currentTime,
-        end: Math.min(videoElement.currentTime + 1.5, videoElement.duration),
+          : currentTime,
+        end: Math.min(currentTime + 1.5, videoElement.duration),
         videoAspectRatio,
         videoElement,
-        originalTime: videoElement.currentTime
+        originalTime: currentTime
+      };
+    }),
+    setCriticalError: assign((context, event) => {
+      return {
+        criticalError: {
+          title: event.title,
+          message: event.message
+        }
       };
     }),
     updateInput: assign((context, event) => {
@@ -171,12 +194,12 @@ const gifGenerationSystemMachine = new Machine({
         gifData: event.data
       };
     }),
-    resetData: assign((context, event) => {
+    resetData: assign(() => {
       return {
         gifData: null
       };
     }),
-    abortGeneration: assign((context, event) => {
+    abortGeneration: assign((context) => {
       context.gifService.abort();
       return {};
     }),
@@ -188,6 +211,11 @@ const gifGenerationSystemMachine = new Machine({
     resetFramesProgress: assign(() => {
       return {
         framesComplete: 0
+      };
+    }),
+    resetErrors: assign(() => {
+      return {
+        criticalError: null
       };
     })
   },

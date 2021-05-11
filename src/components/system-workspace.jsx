@@ -37,6 +37,10 @@ function SystemWorkspace (props) {
   }, [width, height, isComplete]);
 
   useEffect(() => {
+    if (!videoElement) {
+      return;
+    }
+
     videoElement.pause();
     videoElement.addEventListener('seeked', drawFrame);
 

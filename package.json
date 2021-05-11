@@ -33,7 +33,7 @@
     "watch:js": "watchify src/content.jsx -o dist/content.js -t [ babelify ] -t [ brfs ] -p [ css-modulesify --before postcss-nested -o dist/content.css ]",
     "test": "zuul -- test/**/*{.js,.jsx}",
     "test:browser": "zuul --local 55555 -- test/**/*{.js,.jsx}",
-    "serve": "serve dist"
+    "serve": "serve dist -p 61615"
   },
   "devDependencies": {
     "@babel/core": "^7.13.14",

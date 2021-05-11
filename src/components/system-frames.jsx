@@ -25,11 +25,6 @@ function SystemFrames (props) {
 
   return (
     <motion.div
-      initial={{ marginLeft: '0px', marginRight: '0px' }}
-      animate={{
-        marginLeft: isGenerating ? '-125px' : '0px',
-        marginRight: isGenerating ? '-125px' : '0px'
-      }}
       className={css.frames}>
       <AnimateSharedLayout>
         <motion.div

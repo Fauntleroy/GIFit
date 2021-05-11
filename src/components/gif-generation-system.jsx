@@ -19,21 +19,57 @@ import SystemInput from '$components/system-input.jsx';
 import SystemFrames from '$components/system-frames.jsx';
 import SystemVideoInfo from '$components/system-video-info.jsx';
 import SystemWorkspace from '$components/system-workspace.jsx';
+import SystemMessage from '$components/system-message.jsx';
 
 import ArrowDown from '$icons/arrow-down.svg';
 import Cancel from '$icons/cancel.svg';
 import MediaPlay from '$icons/media-play.svg';
 import Refresh from '$icons/refresh.svg';
 
-const animVariants = {
+function isVideoValid (videoElement) {
+  const duration = Math.max(0, videoElement.duration) || 0
+
+  return (duration > 0);
+}
+
+const formAnimVariants = {
   shown: {
     opacity: 1,
-    transition: { type: 'spring', tension: 75, damping: 4, mass: 0.25, delay: 0.5 }
+    scale: 1,
+    transition: {
+      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
+    }
   },
   hidden: {
-    opacity: 0.1,
-    transition: { type: 'spring', tension: 75, damping: 10, mass: 0.25, delay: 0.1 }
+    opacity: 0,
+    scale: 0.95,
+    transition: {
+      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
+    }
   }
+}
+
+const animVariants = {
+  shown: (custom = 0) => ({
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      tension: 175,
+      damping: 25,
+      mass: 5,
+      delay: 0.05 * (8 - custom)
+    }
+  }),
+  hidden: (custom = 0) => ({
+    opacity: 0.1,
+    transition: {
+      type: 'spring',
+      tension: 175,
+      damping: 25,
+      mass: 5,
+      delay: 0.05 * (custom + 1)
+    }
+  })
 };
 
 function GifGenerationSystem (props) {
@@ -62,13 +98,21 @@ function GifGenerationSystem (props) {
     const closestVideo = findClosestElement(videoElements);
 
     videoRef.current = closestVideo;
+  
+    if (!isVideoValid(videoRef.current)) {
+      send('CRITICAL_ERROR', {
+        title: 'Video is not valid',
+        message: 'The current video is invalid. This usually means src is missing. Try pressing the play button & starting GIFit again. -TK'
+      });
+      return;
+    }
 
     send('INITIALIZE_COMPLETE', {
       videoElement: videoRef.current
     });
 
     return () => {
-      videoRef.current.currentTime = contextRef.current.originalTime;
+      videoRef.current.currentTime = contextRef.current.originalTime || 0;
     };
   }, []);
 
@@ -169,7 +213,17 @@ function GifGenerationSystem (props) {
   }
 
   if (state.matches('initializing')) {
-    return <div>Initializing</div>;
+    return <SystemMessage title="Initializing">Initializing</SystemMessage>;
+  }
+
+  if (state.matches('criticalError')) {
+    return (
+      <SystemMessage
+        title={state.context.criticalError.title}
+        type="error">
+        {state.context.criticalError.message}
+      </SystemMessage>
+    );
   }
 
   let submitButtonContents = [];
@@ -194,9 +248,9 @@ function GifGenerationSystem (props) {
 
       <motion.form
         className={css.form}
-        initial={{ opacity: 0, translateZ: '-50px' }}
-        animate={{ opacity: 1, translateZ: '0px' }}
-        transition={{ type: 'spring', damping: 45, delay: 1.15, stiffness: 500 }}
+        initial="hidden"
+        animate="shown"
+        variants={formAnimVariants}
         onSubmit={handleFormSubmit}
         ref={formRef}>
 
@@ -207,6 +261,7 @@ function GifGenerationSystem (props) {
         <motion.div
           className={css.widthBar}
           style={{ width: `${state.context.width}px` }}
+          custom={0}
           animate={formAnim}
           variants={animVariants}
           ref={widthBarRef}>
@@ -218,6 +273,7 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.videoInfo}
+          custom={1}
           animate={formAnim}
           variants={animVariants}>
           <SystemVideoInfo video={state.context.videoElement} gifUrl={gifUrl} />
@@ -225,6 +281,7 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.dimensions}
+          custom={2}
           animate={formAnim}
           variants={animVariants}>
           <div className={css.width} ref={widthRef}>
@@ -273,6 +330,7 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.qualityAndFrameRate}
+          custom={3}
           animate={formAnim}
           variants={animVariants}>
           <SystemInput
@@ -297,6 +355,7 @@ function GifGenerationSystem (props) {
         <div className={css.startAndEnd}>
           <motion.div
             className={css.timeBar}
+            custom={4}
             animate={formAnim}
             variants={animVariants}
             ref={timeBarRef}>
@@ -309,6 +368,7 @@ function GifGenerationSystem (props) {
 
           <motion.div
             className={css.start}
+            custom={5}
             animate={formAnim}
             variants={animVariants}>
             <SystemInput
@@ -334,6 +394,7 @@ function GifGenerationSystem (props) {
           
           <motion.div
             className={css.end}
+            custom={6}
             animate={formAnim}
             variants={animVariants}>
             <SystemInput
@@ -382,6 +443,7 @@ function GifGenerationSystem (props) {
 
         <motion.div
           className={css.lines}
+          custom={7}
           animate={formAnim}
           variants={animVariants}>
           <AestheticLines
