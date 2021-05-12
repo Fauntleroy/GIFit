@@ -8,12 +8,15 @@ const DELAY = 0.75;
 const ACTIVE_COLOR = 'rgba(65, 255, 193, 1)';
 
 function SystemElements (props) {
-  const currentColor = props.state.matches('generating') && !props.state.matches({ generating: { generatingGif: 'succeeded' }})
+  const isGenerating = props.state.matches('generating');
+  const isComplete = props.state.matches({ generating: { generatingGif: 'succeeded' }});
+
+  const currentColor = isGenerating && !isComplete
     ? ACTIVE_COLOR : undefined;
-  const currentHorizontal = props.state.matches('generating') && !props.state.matches({ generating: { generatingGif: 'succeeded' }})
-    ? '25px' : '0px';
-  const currentVertical = props.state.matches('generating') && !props.state.matches({ generating: { generatingGif: 'succeeded' }})
-    ? '25px' : '0px';
+  const currentHorizontal = isGenerating && !isComplete
+    ? '25px' : '10px';
+  const currentVertical = isGenerating && !isComplete
+    ? '25px' : '10px';
 
   return (
     <>
@@ -22,7 +25,7 @@ function SystemElements (props) {
         style={{
           position: 'absolute',
           left: '50%',
-          transform: 'translateY(-50%) translateX(-50%)'
+          transform: 'translateY(-150%) translateX(-50%)'
         }}
         initial={{ top: '50%' }}
         animate={{

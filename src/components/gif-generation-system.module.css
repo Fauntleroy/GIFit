@@ -1,6 +1,10 @@
 .ggs {
 	position: relative;
-	padding-top: 40px;
+	padding: 35px 20px 20px 20px;
+	border-radius: 4px;
+
+	backdrop-filter: blur(5px) contrast(1.015);
+	background-color: hsla(234.5, 35.5%, 10%, 0.65);
 	
 	input[type="text"],
 	input[type="number"] {
@@ -14,8 +18,7 @@
 		border-radius: 4px;
 		border: none;
 		color: currentColor;
-		background: var(--color-shade);
-		box-shadow: inset 0 1px 1px rgba(0,0,0,0.35);
+		background: none;
 
 		font-family: 'Space Grotesk', sans-serif;
 		font-size: 28px;
@@ -47,7 +50,7 @@
 
 .form {
 	display: grid;
-	grid-gap: 20px;
+	grid-gap: 25px 27px;
 	grid-template-columns: 150px minmax(150px, 1fr) 150px;
 	grid-template-rows: minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
@@ -151,10 +154,18 @@
 
 .start {
 	grid-area: start;
+
+	.startInput {
+		margin-bottom: 0;
+	}
 }
 
 .end {
 	grid-area: end;
+
+	.endInput {
+		margin-bottom: 0;
+	}
 }
 
 .frames {

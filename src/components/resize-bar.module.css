@@ -3,6 +3,8 @@
   cursor: pointer;
   user-select: none;
   color: var(--color-primary-system);
+  width: 100%;
+  height: 12px;
 
   &:focus-within {
     color: var(--color-highlight);
@@ -11,7 +13,7 @@
 
 .total {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 1px;
@@ -26,6 +28,8 @@
   border-radius: 2px;
   color: currentColor;
   background: currentColor;
+  width: 3px;
+  height: 12px;
 
   &:before {
     content: '';
@@ -37,10 +41,46 @@
   }
 }
 
+.start {
+  top: 0;
+  left: 0;
+}
+
+.end {
+  top: 0;
+  right: 0;
+}
+
 .range {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   background: currentColor;
+  height: 1px;
+}
+
+.resizeBarVertical {
+  width: 12px;
+  height: 100%;
+
+  .start,
+  .end {
+    width: 12px;
+    height: 3px;
+  }
+
+  .end {
+    top: auto;
+    bottom: 0;
+    left: 0;
+  }
+
+  .range {
+    height: auto;
+    width: 1px;
+    top: 0;
+    left: auto;
+    bottom: 0;
+  }
 }

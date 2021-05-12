@@ -27,8 +27,8 @@
 }
 
 .pending {
-	width: 25%;
-	height: 32px;
+	width: 35%;
+	height: 30px;
 	display: grid;
 	grid-template-columns: repeat(20, 1fr);
 	grid-auto-rows: 1fr;
@@ -37,7 +37,7 @@
 
 .complete {
 	width: 50%;
-	height: 16px;
+	height: 15px;
 	direction: rtl;
 	display: flex;
 	padding: 1px;

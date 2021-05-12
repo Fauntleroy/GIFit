@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 import { useMachine } from '@xstate/react';
 
 import * as css from './resize-bar.module.css';
@@ -73,41 +74,21 @@ function ResizeBar (props) {
     }
   }, [props.disabled]);
 
-  let barWidth, barHeight, handleWidth, handleHeight, startPosition, endPosition, rangeStyle;
-  if (props.orientation === 'horizontal') {
-    barWidth = '100%';
-    barHeight = '12px';
-    handleWidth = '3px';
-    handleHeight = '12px';
-    startPosition = { top: 0, left: 0 };
-    endPosition = { top: 0, right: 0 };
-    rangeStyle = { left: 0, right: 0, height: '2px' };
-  } else {
-    barWidth = '12px';
-    barHeight = '100%';
-    handleWidth = '12px';
-    handleHeight = '3px';
-    startPosition = { top: 0, left: 0 };
-    endPosition = { bottom: 0, left: 0 };
-    rangeStyle = { top: 0, bottom: 0, width: '2px' };
-  }
-
   return (
     <div
-      className={css.resizeBar}
-      style={{ width: barWidth, height: barHeight }}
+      className={cx(css.resizeBar, {
+        [css.resizeBarVertical]: props.orientation === 'vertical'
+      })}
       ref={controlBarRef}>
       <div className={css.total} />
       <button
         className={css.start}
-        style={{ width: handleWidth, height: handleHeight, ...startPosition }}
         type="button"
         onMouseDown={handleMouseDown}
         data-handle="start" />
-      <span className={css.range} style={{ ...rangeStyle }} />
+      <span className={css.range} />
       <button
         className={css.end}
-        style={{ width: handleWidth, height: handleHeight, ...endPosition }}
         type="button"
         onMouseDown={handleMouseDown}
         data-handle="end" />

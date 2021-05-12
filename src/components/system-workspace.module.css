@@ -9,21 +9,6 @@
 
   background: var(--color-shade);
 
-	&:before,
-	&:after {
-		content: '';
-		box-sizing: border-box;
-		display: block;
-		width: 2px;
-		height: 7px;
-		border-radius: 1px;
-		border: var(--color-subsystem) 1px solid;
-		position: absolute;
-		transform: rotate(-45deg);
-		z-index: 1;
-		opacity: 0.5;
-	}
-
 	&:before {
 		top: 6px;
 		left: 8px;

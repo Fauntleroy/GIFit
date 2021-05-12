@@ -58,7 +58,7 @@ function SystemWorkspace (props) {
       animate={{
         translateY: isGenerating ? '15px' : '0px'
       }}
-      transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
+      transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.75 }}>
       <motion.div
         className={css.images}
         initial={{
@@ -67,6 +67,7 @@ function SystemWorkspace (props) {
         }}
         animate={{
           translateZ: isComplete ? '50px' : '0px',
+          rotateX: isComplete ? '-1deg' : '0deg',
           filter: isComplete
             ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
             : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'

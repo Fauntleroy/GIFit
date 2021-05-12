@@ -9,22 +9,24 @@ import * as css from './system-comms.module.css';
 import systemCommsMachine from '$machines/system-comms';
 
 const IDLE_PHRASES = [
-  'System ready.',
-  'Good to go.',
-  'Ready to GIF.',
-  'Ready to go.',
-  'Down to GIF.',
-  'Awaiting instructions.',
-  `Let's do this.`
+  'System ready',
+  'Good to go',
+  'Ready to GIF',
+  'Ready to go',
+  'Down to GIF',
+  'Awaiting instructions',
+  `Let's do this`
 ];
 
 const COMPLETE_PHRASES = [
-  'GIF created successfully.',
-  'GIF complete.',
-  'GIF ready.',
-  'You did great.',
-  `You're doing great.`,
-  `Let's GIF again.`
+  'GIF created successfully',
+  'GIF complete',
+  'GIF ready',
+  'You did great',
+  `You're doing great`,
+  `Let's GIF again`,
+  `GIF is done`,
+  'It is finished'
 ];
 
 function SystemComms (props) {
@@ -39,7 +41,7 @@ function SystemComms (props) {
         send('MESSAGE', { text: _.sample(IDLE_PHRASES) });
         break;
       case 'FRAMES_PROGRESS':
-        send('MESSAGE', { text: `Collating frames.` });
+        send('MESSAGE', { text: `Collating frames` });
         break;
       case 'GENERATION_SUCCESS':
         send('MESSAGE', { text: _.sample(COMPLETE_PHRASES) });

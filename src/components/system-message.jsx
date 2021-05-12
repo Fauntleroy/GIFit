@@ -10,18 +10,21 @@ function SystemMessage (props) {
       [css.systemMessageError]: props.type === 'error'
     })}>
       {props.title && <div className={css.title}>{props.title}</div>}
-      {props.children}
+      <div className={css.body}>{props.children}</div>
+      <div className={css.signature}>{props.signature}</div>
     </div>
   );
 }
 
 SystemMessage.defaultProps = {
+  signature: 'TK',
   title: null,
   type: 'status'
 };
 
 SystemMessage.propTypes = {
   children: PropTypes.node.isRequired,
+  signature: PropTypes.node,
   title: PropTypes.string,
   type: PropTypes.oneOf(['error', 'status'])
 };

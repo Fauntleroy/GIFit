@@ -8,6 +8,7 @@ import GifGenerationSystem from '$components/gif-generation-system.jsx';
 import Times from '$icons/times.svg';
 
 import * as css from './gifit-app.module.css';
+import * as fontCss from './gifit-app-fonts.module.css';
 
 function GifitApp (props) {
   function handleCloseClick (event) {

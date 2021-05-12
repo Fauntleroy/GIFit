@@ -37,14 +37,14 @@ const formAnimVariants = {
     opacity: 1,
     scale: 1,
     transition: {
-      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
+      type: 'spring', damping: 45, delay: 1.25, stiffness: 500
     }
   },
   hidden: {
     opacity: 0,
     scale: 0.95,
     transition: {
-      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
+      type: 'spring', damping: 45, delay: 1.25, stiffness: 500
     }
   }
 }
@@ -61,7 +61,7 @@ const animVariants = {
     }
   }),
   hidden: (custom = 0) => ({
-    opacity: 0.1,
+    opacity: 0.075,
     transition: {
       type: 'spring',
       tension: 175,
@@ -99,10 +99,18 @@ function GifGenerationSystem (props) {
 
     videoRef.current = closestVideo;
   
+    if (!closestVideo) {
+      send('CRITICAL_ERROR', {
+        title: 'No Video Found',
+        message: <>GIFit <strong>couldn't find a video</strong> to work with. Try watching some of the <strong>video</strong>, and starting GIFit again.</>
+      });
+      return;
+    }
+
     if (!isVideoValid(videoRef.current)) {
       send('CRITICAL_ERROR', {
-        title: 'Video is not valid',
-        message: 'The current video is invalid. This usually means src is missing. Try pressing the play button & starting GIFit again. -TK'
+        title: 'Video not valid',
+        message: <>The current video is <strong>invalid</strong>. This usually means it doesn't have a <strong>src or duration</strong>. Try pressing the play button & starting GIFit again.</>
       });
       return;
     }
@@ -241,8 +249,9 @@ function GifGenerationSystem (props) {
   return (
     <motion.div
       className={css.ggs}
-      style={{ rotateX: '3deg' }}
-      transition={{ type: 'spring', damping: 45, delay: 1, stiffness: 500 }}>
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', delay: 0.25, stiffness: 600, damping: 50, tension: 500 }}>
 
       <SystemElements state={state} />
 
@@ -372,6 +381,7 @@ function GifGenerationSystem (props) {
             animate={formAnim}
             variants={animVariants}>
             <SystemInput
+              className={css.startInput}
               name="start"
               ref={startRef}>
               <IncrementableInput
@@ -398,6 +408,7 @@ function GifGenerationSystem (props) {
             animate={formAnim}
             variants={animVariants}>
             <SystemInput
+              className={css.endInput}
               name="end"
               ref={endRef}>
               <IncrementableInput

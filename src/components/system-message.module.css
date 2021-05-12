@@ -1,17 +1,40 @@
 .systemMessage {
-  border: currentColor 1px solid;
   color: var(--color-system);
-  padding: 10px;
-  border-radius: 4px;
-  max-width: 300px;
-  text-align: center;;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .systemMessageError {
-  color: var(--color-error);
+  .title, strong {
+    color: var(--color-error);
+  }
 }
 
 .title {
+  display: inline-block;
   font-weight: bold;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 10px;
+  border-radius: 3px;
+  border: currentColor 1px solid;
+  padding: 4px 20px;
+}
+
+.body {
+  font-size: 18px;
+  line-height: 175%;
+  text-transform: none;
+  letter-spacing: normal;
+  margin-bottom: 1rem;
+}
+
+.signature {
+  &:before {
+    content: '— ';
+  }
+
+  font-weight: bold;
+  align-self: flex-end;
 }
