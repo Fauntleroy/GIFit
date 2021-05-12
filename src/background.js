@@ -6,6 +6,15 @@ browser.contextMenus.create({
   contexts: ['all']
 });
 
+browser.browserAction.onClicked.addListener((tab) => {
+  browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    browser.tabs.sendMessage(tabs[0].id, {
+      extension: 'gifit',
+      action: 'initialize'
+    });
+  });
+});
+
 browser.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'gifit') {
     browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {

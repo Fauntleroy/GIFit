@@ -8,6 +8,17 @@ browser.contextMenus.create({
   title: 'Create GIF',
   contexts: ['all']
 });
+browser.browserAction.onClicked.addListener(function (tab) {
+  browser.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function (tabs) {
+    browser.tabs.sendMessage(tabs[0].id, {
+      extension: 'gifit',
+      action: 'initialize'
+    });
+  });
+});
 browser.contextMenus.onClicked.addListener(function (info, tab) {
   if (info.menuItemId === 'gifit') {
     browser.tabs.query({

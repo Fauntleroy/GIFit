@@ -9,6 +9,9 @@
             "background.js"
         ]
     },
+    "browser_action": {
+        "default_title": "Start GIFit!"
+    },
     "content_scripts": [{
         "matches": ["<all_urls>"],
         "css": ["content.css"],
