@@ -3,7 +3,7 @@
 	padding: 35px 20px 20px 20px;
 	border-radius: 4px;
 
-	backdrop-filter: blur(5px) contrast(1.015);
+	backdrop-filter: blur(2px) contrast(1.15);
 	background-color: hsla(234.5, 35.5%, 10%, 0.65);
 	
 	input[type="text"],
@@ -12,8 +12,8 @@
 		display: inline-block;
 		width: 0;
 		min-width: 100px;
-		margin-left: -8px;
-		margin-right: -8px;
+		margin-left: -12px;
+		margin-right: -6px;
 		padding: 5px 12px;
 		border-radius: 4px;
 		border: none;
@@ -21,7 +21,7 @@
 		background: none;
 
 		font-family: 'Space Grotesk', sans-serif;
-		font-size: 28px;
+		font-size: 24px;
 		font-weight: bold;
 		font-variant-numeric: tabular-nums;
 		line-height: 1;
@@ -58,6 +58,7 @@
 		"dimensions workspace quality-and-frame-rate"
 		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
+	margin-bottom: -10px;
 }
 
 .head {

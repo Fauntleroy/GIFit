@@ -66,8 +66,7 @@ function SystemWorkspace (props) {
           filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
         }}
         animate={{
-          translateZ: isComplete ? '50px' : '0px',
-          rotateX: isComplete ? '-1deg' : '0deg',
+          translateZ: isComplete ? '35px' : '0px',
           filter: isComplete
             ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
             : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'

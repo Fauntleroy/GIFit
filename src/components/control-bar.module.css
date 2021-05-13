@@ -57,7 +57,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: currentColor;
+  background: var(--color-system);
 }
 
 .start,

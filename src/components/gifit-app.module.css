@@ -7,7 +7,7 @@
   --color-nighttime: hsla(235, 25.6%, 10%, 1);
 	--color-intensity-red: hsl(350, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
-  --color-primary-system: hsla(225, 87%, 90%, 1);
+  --color-primary-system: hsla(225, 89%, 95%, 1);
 	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.25);
 	--color-highlight: var(--color-intensity-red);
   --color-error: hsl(22deg 100% 50%);

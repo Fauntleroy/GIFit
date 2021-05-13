@@ -6,6 +6,8 @@ import useFrameRate from '$hooks/use-frame-rate';
 
 import PathLine from '$components/pathline.jsx';
 
+const LABEL_Y_OFFSET = 24;
+
 function AestheticLines (props) {
   const {
     widthRef, widthBarRef,
@@ -19,33 +21,50 @@ function AestheticLines (props) {
 
   useFrameRate(60);
   const rangeElement = timeBarRef.current.querySelector('.range');
-
+  const widthElement = widthRef.current;
+  const widthBarElement = widthBarRef.current;
+console.log('startRef', startRef.current.offsetLeft)
   return (
     <svg
       className={css.aestheticLines}>
+      <circle
+        cx={widthElement.offsetLeft}
+        cy={widthElement.offsetTop + LABEL_Y_OFFSET}
+        r="1.5"
+        fill="none"
+        stroke="var(--color-subsystem)"
+        strokeWidth="1" />
       <PathLine
         points={[
-          { x: widthRef.current.offsetLeft + (widthRef.current.offsetWidth / 2),
-            y: widthRef.current.offsetTop },
-          { x: widthRef.current.offsetLeft + (widthRef.current.offsetWidth / 2),
-            y: widthBarRef.current.offsetTop - 15 },
-          { x: widthBarRef.current.offsetLeft + (widthBarRef.current.offsetWidth / 2),
-            y: widthBarRef.current.offsetTop - 15 },
-          { x: widthBarRef.current.offsetLeft + (widthBarRef.current.offsetWidth / 2),
-            y: widthBarRef.current.offsetTop }
+          { x: widthElement.offsetLeft,
+            y: widthElement.offsetTop + LABEL_Y_OFFSET },
+          { x: widthElement.offsetLeft,
+            y: widthBarElement.offsetTop - 15 },
+          { x: widthBarElement.offsetLeft + (widthBarElement.offsetWidth / 2),
+            y: widthBarElement.offsetTop - 15 },
+          { x: widthBarElement.offsetLeft + (widthBarElement.offsetWidth / 2),
+            y: widthBarElement.offsetTop + widthBarElement.offsetHeight }
         ]}
         stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
         fill="none"
         r={5} />
+
+      <circle
+        cx={heightRef.current.offsetLeft}
+        cy={heightRef.current.offsetTop + LABEL_Y_OFFSET}
+        r="1.5"
+        fill="none"
+        stroke="var(--color-subsystem)"
+        strokeWidth="1" />
       <PathLine
         points={[
-          { x: heightRef.current.offsetLeft + (heightRef.current.offsetWidth / 2),
-            y: heightRef.current.offsetTop },
-          { x: heightRef.current.offsetLeft + (heightRef.current.offsetWidth / 2),
+          { x: heightRef.current.offsetLeft,
+            y: heightRef.current.offsetTop + LABEL_Y_OFFSET },
+          { x: heightRef.current.offsetLeft,
             y: heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2) },
-          { x: heightBarRef.current.offsetLeft + (heightBarRef.current.offsetWidth / 2),
+          { x: heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth,
             y: heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2) }
         ]}
         stroke="var(--color-subsystem)"
@@ -53,14 +72,22 @@ function AestheticLines (props) {
         strokeWidth="1"
         fill="none"
         r={5} />
+
+      <circle
+        cx={startRef.current.offsetLeft}
+        cy={startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+        r="1.5"
+        fill="none"
+        stroke="var(--color-subsystem)"
+        strokeWidth="1" />
       <PathLine
         points={[
-          { x: startRef.current.offsetLeft + (startRef.current.offsetWidth / 2),
-            y: startRef.current.offsetTop },
-          { x: startRef.current.offsetLeft + (startRef.current.offsetWidth / 2),
-            y: startRef.current.offsetTop - 8 },
+          { x: startRef.current.offsetLeft,
+            y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
+          { x: startRef.current.offsetLeft,
+            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-            y: startRef.current.offsetTop - 8 },
+            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}
@@ -69,14 +96,22 @@ function AestheticLines (props) {
         strokeWidth="1"
         fill="none"
         r={5} />
+
+      <circle
+        cx={endRef.current.offsetLeft}
+        cy={endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+        r="1.5"
+        fill="none"
+        stroke="var(--color-subsystem)"
+        strokeWidth="1" />
       <PathLine
         points={[
-          { x: endRef.current.offsetLeft + (endRef.current.offsetWidth / 2),
-            y: endRef.current.offsetTop },
-          { x: endRef.current.offsetLeft + (endRef.current.offsetWidth / 2),
-            y: endRef.current.offsetTop - 12 },
+          { x: endRef.current.offsetLeft,
+            y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
+          { x: endRef.current.offsetLeft,
+            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-            y: endRef.current.offsetTop - 12 },
+            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}

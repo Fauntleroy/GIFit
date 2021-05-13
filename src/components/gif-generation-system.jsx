@@ -379,11 +379,11 @@ function GifGenerationSystem (props) {
             className={css.start}
             custom={5}
             animate={formAnim}
-            variants={animVariants}>
+            variants={animVariants}
+            ref={startRef}>
             <SystemInput
               className={css.startInput}
-              name="start"
-              ref={startRef}>
+              name="start">
               <IncrementableInput
                 value={state.context.start}
                 increment={1 / state.context.fps}
@@ -406,11 +406,11 @@ function GifGenerationSystem (props) {
             className={css.end}
             custom={6}
             animate={formAnim}
-            variants={animVariants}>
+            variants={animVariants}
+            ref={endRef}>
             <SystemInput
               className={css.endInput}
-              name="end"
-              ref={endRef}>
+              name="end">
               <IncrementableInput
                 value={state.context.end}
                 increment={1 / state.context.fps}

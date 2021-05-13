@@ -68983,6 +68983,8 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
+var LABEL_Y_OFFSET = 24;
+
 function AestheticLines(props) {
   var widthRef = props.widthRef,
       widthBarRef = props.widthBarRef,
@@ -68998,36 +69000,53 @@ function AestheticLines(props) {
 
   (0, _useFrameRate["default"])(60);
   var rangeElement = timeBarRef.current.querySelector('.range');
+  var widthElement = widthRef.current;
+  var widthBarElement = widthBarRef.current;
+  console.log('startRef', startRef.current.offsetLeft);
   return /*#__PURE__*/_react["default"].createElement("svg", {
     className: css.aestheticLines
-  }, /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
+  }, /*#__PURE__*/_react["default"].createElement("circle", {
+    cx: widthElement.offsetLeft,
+    cy: widthElement.offsetTop + LABEL_Y_OFFSET,
+    r: "1.5",
+    fill: "none",
+    stroke: "var(--color-subsystem)",
+    strokeWidth: "1"
+  }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
     points: [{
-      x: widthRef.current.offsetLeft + widthRef.current.offsetWidth / 2,
-      y: widthRef.current.offsetTop
+      x: widthElement.offsetLeft,
+      y: widthElement.offsetTop + LABEL_Y_OFFSET
     }, {
-      x: widthRef.current.offsetLeft + widthRef.current.offsetWidth / 2,
-      y: widthBarRef.current.offsetTop - 15
+      x: widthElement.offsetLeft,
+      y: widthBarElement.offsetTop - 15
     }, {
-      x: widthBarRef.current.offsetLeft + widthBarRef.current.offsetWidth / 2,
-      y: widthBarRef.current.offsetTop - 15
+      x: widthBarElement.offsetLeft + widthBarElement.offsetWidth / 2,
+      y: widthBarElement.offsetTop - 15
     }, {
-      x: widthBarRef.current.offsetLeft + widthBarRef.current.offsetWidth / 2,
-      y: widthBarRef.current.offsetTop
+      x: widthBarElement.offsetLeft + widthBarElement.offsetWidth / 2,
+      y: widthBarElement.offsetTop + widthBarElement.offsetHeight
     }],
     stroke: "var(--color-subsystem)",
     strokeDasharray: "1,2",
     strokeWidth: "1",
     fill: "none",
     r: 5
+  }), /*#__PURE__*/_react["default"].createElement("circle", {
+    cx: heightRef.current.offsetLeft,
+    cy: heightRef.current.offsetTop + LABEL_Y_OFFSET,
+    r: "1.5",
+    fill: "none",
+    stroke: "var(--color-subsystem)",
+    strokeWidth: "1"
   }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
     points: [{
-      x: heightRef.current.offsetLeft + heightRef.current.offsetWidth / 2,
-      y: heightRef.current.offsetTop
+      x: heightRef.current.offsetLeft,
+      y: heightRef.current.offsetTop + LABEL_Y_OFFSET
     }, {
-      x: heightRef.current.offsetLeft + heightRef.current.offsetWidth / 2,
+      x: heightRef.current.offsetLeft,
       y: heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2
     }, {
-      x: heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth / 2,
+      x: heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth,
       y: heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2
     }],
     stroke: "var(--color-subsystem)",
@@ -69035,16 +69054,23 @@ function AestheticLines(props) {
     strokeWidth: "1",
     fill: "none",
     r: 5
+  }), /*#__PURE__*/_react["default"].createElement("circle", {
+    cx: startRef.current.offsetLeft,
+    cy: startRef.current.offsetTop + LABEL_Y_OFFSET + 3,
+    r: "1.5",
+    fill: "none",
+    stroke: "var(--color-subsystem)",
+    strokeWidth: "1"
   }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
     points: [{
-      x: startRef.current.offsetLeft + startRef.current.offsetWidth / 2,
-      y: startRef.current.offsetTop
+      x: startRef.current.offsetLeft,
+      y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3
     }, {
-      x: startRef.current.offsetLeft + startRef.current.offsetWidth / 2,
-      y: startRef.current.offsetTop - 8
+      x: startRef.current.offsetLeft,
+      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-      y: startRef.current.offsetTop - 8
+      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -69054,16 +69080,23 @@ function AestheticLines(props) {
     strokeWidth: "1",
     fill: "none",
     r: 5
+  }), /*#__PURE__*/_react["default"].createElement("circle", {
+    cx: endRef.current.offsetLeft,
+    cy: endRef.current.offsetTop + LABEL_Y_OFFSET + 3,
+    r: "1.5",
+    fill: "none",
+    stroke: "var(--color-subsystem)",
+    strokeWidth: "1"
   }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
     points: [{
-      x: endRef.current.offsetLeft + endRef.current.offsetWidth / 2,
-      y: endRef.current.offsetTop
+      x: endRef.current.offsetLeft,
+      y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3
     }, {
-      x: endRef.current.offsetLeft + endRef.current.offsetWidth / 2,
-      y: endRef.current.offsetTop - 12
+      x: endRef.current.offsetLeft,
+      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-      y: endRef.current.offsetTop - 12
+      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -69940,11 +69973,11 @@ function GifGenerationSystem(props) {
     className: css.start,
     custom: 5,
     animate: formAnim,
-    variants: animVariants
+    variants: animVariants,
+    ref: startRef
   }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
     className: css.startInput,
-    name: "start",
-    ref: startRef
+    name: "start"
   }, /*#__PURE__*/_react["default"].createElement(_incrementableInput["default"], {
     value: state.context.start,
     increment: 1 / state.context.fps,
@@ -69967,11 +70000,11 @@ function GifGenerationSystem(props) {
     className: css.end,
     custom: 6,
     animate: formAnim,
-    variants: animVariants
+    variants: animVariants,
+    ref: endRef
   }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
     className: css.endInput,
-    name: "end",
-    ref: endRef
+    name: "end"
   }, /*#__PURE__*/_react["default"].createElement(_incrementableInput["default"], {
     value: state.context.end,
     increment: 1 / state.context.fps,
@@ -71368,8 +71401,7 @@ function SystemWorkspace(props) {
       filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
     },
     animate: {
-      translateZ: isComplete ? '50px' : '0px',
-      rotateX: isComplete ? '-1deg' : '0deg',
+      translateZ: isComplete ? '35px' : '0px',
       filter: isComplete ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)' : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
     },
     transition: {
