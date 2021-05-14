@@ -72279,8 +72279,8 @@ function SystemElements(props) {
     }
   });
   var currentColor = isGenerating && !isComplete ? ACTIVE_COLOR : undefined;
-  var currentHorizontal = isGenerating && !isComplete ? '25px' : '10px';
-  var currentVertical = isGenerating && !isComplete ? '25px' : '10px';
+  var currentHorizontal = isGenerating && !isComplete ? '25px' : '-20px';
+  var currentVertical = isGenerating && !isComplete ? '25px' : '-20px';
   return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.label,
     style: {
@@ -73653,6 +73653,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var DEFAULT_WIDTH = 420;
+var DEFAULT_HEIGHT = 280;
 var gifGenerationSystemMachine = new _xstate.Machine({
   id: 'ggs',
   initial: 'initializing',
@@ -73798,14 +73799,22 @@ var gifGenerationSystemMachine = new _xstate.Machine({
   actions: {
     setInitialContext: (0, _xstate.assign)(function (context, event) {
       var videoElement = event.videoElement;
+      var currentTime = videoElement.currentTime || 0;
       var videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
 
       var aspectCorrectHeight = _lodash["default"].round(DEFAULT_WIDTH / videoAspectRatio);
 
-      var currentTime = videoElement.currentTime || 0;
+      var width = DEFAULT_WIDTH;
+      var height = aspectCorrectHeight;
+
+      if (aspectCorrectHeight > DEFAULT_HEIGHT) {
+        width = _lodash["default"].round(DEFAULT_HEIGHT * videoAspectRatio);
+        height = DEFAULT_HEIGHT;
+      }
+
       return {
-        width: DEFAULT_WIDTH,
-        height: aspectCorrectHeight,
+        width: width,
+        height: height,
         start: currentTime >= videoElement.duration - 1 ? videoElement.duration - 1 : currentTime,
         end: Math.min(currentTime + 1.5, videoElement.duration),
         videoAspectRatio: videoAspectRatio,

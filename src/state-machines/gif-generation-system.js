@@ -4,6 +4,7 @@ import { Machine, assign } from 'xstate';
 import GifService from '../services/gif-service';
 
 const DEFAULT_WIDTH = 420;
+const DEFAULT_HEIGHT = 280;
 
 const gifGenerationSystemMachine = new Machine({
   id: 'ggs',
@@ -150,13 +151,21 @@ const gifGenerationSystemMachine = new Machine({
   actions: {
     setInitialContext: assign((context, event) => {
       const { videoElement } = event;
-      const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
-      const aspectCorrectHeight = _.round(DEFAULT_WIDTH / videoAspectRatio);
       const currentTime = videoElement.currentTime || 0;
 
+      const videoAspectRatio = videoElement.videoWidth / videoElement.videoHeight;
+      const aspectCorrectHeight = _.round(DEFAULT_WIDTH / videoAspectRatio);
+
+      let width = DEFAULT_WIDTH;
+      let height = aspectCorrectHeight;
+      if (aspectCorrectHeight > DEFAULT_HEIGHT) {
+        width = _.round(DEFAULT_HEIGHT * videoAspectRatio);
+        height = DEFAULT_HEIGHT;
+      }
+
       return {
-        width: DEFAULT_WIDTH,
-        height: aspectCorrectHeight,
+        width,
+        height,
         start: (currentTime >= (videoElement.duration - 1))
           ? videoElement.duration - 1
           : currentTime,

@@ -14,9 +14,9 @@ function SystemElements (props) {
   const currentColor = isGenerating && !isComplete
     ? ACTIVE_COLOR : undefined;
   const currentHorizontal = isGenerating && !isComplete
-    ? '25px' : '10px';
+    ? '25px' : '-20px';
   const currentVertical = isGenerating && !isComplete
-    ? '25px' : '10px';
+    ? '25px' : '-20px';
 
   return (
     <>
