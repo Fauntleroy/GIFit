@@ -69836,17 +69836,15 @@ function GifGenerationSystem(props) {
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.ggs,
     initial: {
-      opacity: 0,
-      scale: 0.5
+      opacity: 0
     },
     animate: {
-      opacity: 1,
-      scale: 1
+      opacity: 1
     },
     transition: {
       type: 'spring',
       delay: 0.25,
-      stiffness: 600,
+      stiffness: 300,
       damping: 50,
       tension: 500
     }

@@ -2,9 +2,9 @@
 	position: relative;
 	padding: 35px 20px 20px 20px;
 	border-radius: 4px;
-
-	background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
+	
 	backdrop-filter: blur(4px) contrast(1.025);
+	background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
 	background-color: hsla(234.5, 35.5%, 10%, 0.45);
 	
 	input[type="text"],
