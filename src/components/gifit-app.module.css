@@ -1,7 +1,6 @@
 :root {
 	--hsl-aluminum-blue: 225, 100%, 75%;
-	--color-shade: hsla(0, 0%, 0%, 0.175);
-	--color-shadeactive: hsla(0, 0%, 0%, 0.35);
+	--color-shade: hsla(0, 0%, 0%, 0.35);
   --color-active: hsla(160, 100%, 62.7%, 1);
 	--color-nightshade: hsla(240, 21.6%, 15.5%, 0.95);
   --color-nighttime: hsla(235, 25.6%, 10%, 1);

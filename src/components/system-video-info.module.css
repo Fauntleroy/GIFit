@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: minmax(min-content, max-content) minmax(min-content, max-content);
   letter-spacing: 1px;
+  margin: 0;
 }
 
 .infoListTerm {

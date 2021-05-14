@@ -1,6 +1,6 @@
 .ggs {
 	position: relative;
-	padding: 35px 20px 20px 20px;
+	padding: 20px;
 	border-radius: 4px;
 	
 	backdrop-filter: blur(4px) contrast(1.025);
@@ -44,22 +44,23 @@
 		&:hover,
 		&:focus {
 			outline: none;
-			background: var(--color-shadeactive);
+			background: var(--color-shade);
 		}
 	}
 }
 
 .form {
 	display: grid;
-	grid-gap: 25px 27px;
+	grid-gap: 20px;
 	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-rows: 25px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
+		"comms comms comms"
 		". width-bar video-info"
 		"dimensions workspace quality-and-frame-rate"
 		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
-	margin-bottom: -10px;
+	margin: -10px 0;
 }
 
 .head {
@@ -70,17 +71,16 @@
 }
 
 .comms {
-	position: absolute;
-	top: 15px;
-	left: 50%;
-	transform: translateX(-50%);
+	grid-area: comms;
+	justify-self: center;
+	align-self: center;
 }
 
 .widthBar {
 	grid-area: width-bar;
 	justify-self: center;
+	align-self: end;
 	width: 100%;
-	margin-top: 25px;
 }
 
 .videoInfo {
@@ -98,7 +98,7 @@
 	display: grid;
 	align-items: center;
 	grid-template-rows: 1fr 1fr;
-	grid-template-columns: 1fr 10px;
+	grid-template-columns: 1fr 12px;
 	grid-template-areas: "width height-bar" "height height-bar";
 }
 
@@ -126,7 +126,6 @@
 	grid-area: quality-and-frame-rate;
 	display: flex;
 	flex-direction: column;
-	padding-left: 10px;
 	align-self: stretch;
 	justify-content: space-around;
 }
