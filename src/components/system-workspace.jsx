@@ -1,16 +1,26 @@
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import extractColors from 'extract-colors';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
 import * as css from './system-workspace.module.css';
 
+function sortColorsByBrightness (colors) {
+  return _.sortBy(colors, (color) => {
+    const { red, green, blue } = color;
+    return -1 * (red + green + blue);
+  });
+}
+
 function SystemWorkspace (props) {
   const { videoElement, width, height, isGenerating, isComplete } = props;
 
   const canvasRef = useRef(null);
+  const imageRef = useRef(null);
   const dimensionsRef = useRef([0, 0]);
+  const [vibrantColor, setVibrantColor] = useState(null);
 
   // draw the video to the preview canvas
   function drawFrame () {
@@ -49,6 +59,15 @@ function SystemWorkspace (props) {
     };
   }, [videoElement]);
 
+  useEffect(async function () {
+    if (imageRef.current) {
+      const colors = await extractColors(imageRef.current, { saturationImportance: 0.5 });
+      const colorsByBrightness = sortColorsByBrightness(colors);
+      const { red, green, blue } = colorsByBrightness[0];
+      setVibrantColor(`rgba(${red}, ${green}, ${blue}, 0.25)`);
+    }
+  }, [props.gifUrl]);
+
   return (
     <motion.div
       className={css.workspace}
@@ -69,15 +88,19 @@ function SystemWorkspace (props) {
           translateZ: isComplete ? '35px' : '0px',
           filter: isComplete
             ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
-            : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
+            : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
+          boxShadow: isComplete
+            ? `0px 10px 100px ${vibrantColor}`
+            : '0px 0px 0px rgba(0, 0, 0, 0)'
         }}
         transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
         <AnimatePresence>
-          {isComplete &&
-          <motion.img
+          {(isComplete && props.gifUrl) &&
+          <img
             className={css.result}
             src={props.gifUrl}
-            key="generated-gif" />}
+            key="generated-gif"
+            ref={imageRef} />}
           {!isComplete &&
           <motion.canvas
             className={css.canvas}
