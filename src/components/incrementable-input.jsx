@@ -1,4 +1,5 @@
-import React from 'react';
+import _ from 'lodash';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import ChevronLeft from '$icons/chevron-left.svg';
@@ -10,14 +11,43 @@ function IncrementableInput ({
   increment, onChange, value, min, max, width, disabled,
   ...passthroughProps
 }) {
-  function handleIncrement () {
-    const newValue = Math.min(max, (value + increment));
+  const valueRef = useRef(value);
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  let incrementIntervalId;
+  let incrementTimeoutId;
+
+  function decrementValue () {
+    const currentValue = valueRef.current;
+    const newValue = Math.max(min, (currentValue - increment));
     onChange(newValue);
   }
 
-  function handleDecrement () {
-    const newValue = Math.max(min, (value - increment));
+  function incrementValue () {
+    const currentValue = valueRef.current;
+    const newValue = Math.min(max, (currentValue + increment));
     onChange(newValue);
+  }
+
+  function handleIncrementUp () {
+    clearTimeout(incrementTimeoutId);
+    clearInterval(incrementIntervalId);
+  }
+
+  function handleMouseDown (methodName) {
+    const method = (methodName === 'decrement')
+      ? decrementValue
+      : incrementValue;
+
+    method();
+
+    window.addEventListener('mouseup', handleIncrementUp);
+
+    incrementIntervalId = setTimeout(() => {
+      incrementIntervalId = setInterval(method, 175);
+    }, 500);
   }
 
   return (
@@ -25,7 +55,7 @@ function IncrementableInput ({
       <button
         className={css.decrementor}
         type="button"
-        onClick={handleDecrement}
+        onMouseDown={_.partial(handleMouseDown, 'decrement')}
         disabled={disabled}>
         <ChevronLeft style={{ width: '14px' }} />
       </button>
@@ -43,7 +73,7 @@ function IncrementableInput ({
       <button
         className={css.incrementor}
         type="button"
-        onClick={handleIncrement}
+        onMouseDown={_.partial(handleMouseDown, 'increment')}
         disabled={disabled}>
         <ChevronRight style={{ width: '14px' }} />
       </button>

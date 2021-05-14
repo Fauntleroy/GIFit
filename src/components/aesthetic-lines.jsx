@@ -23,7 +23,7 @@ function AestheticLines (props) {
   const rangeElement = timeBarRef.current.querySelector('.range');
   const widthElement = widthRef.current;
   const widthBarElement = widthBarRef.current;
-console.log('startRef', startRef.current.offsetLeft)
+
   return (
     <svg
       className={css.aestheticLines}>

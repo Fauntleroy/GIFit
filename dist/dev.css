@@ -174,7 +174,7 @@
 	padding: 35px 20px 20px 20px;
 	border-radius: 4px;
 
-	backdrop-filter: blur(2px) contrast(1.15);
+	backdrop-filter: blur(4px) contrast(1.15);
 	background-color: hsla(234.5, 35.5%, 10%, 0.65);
 }
 	

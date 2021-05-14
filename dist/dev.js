@@ -69002,7 +69002,6 @@ function AestheticLines(props) {
   var rangeElement = timeBarRef.current.querySelector('.range');
   var widthElement = widthRef.current;
   var widthBarElement = widthBarRef.current;
-  console.log('startRef', startRef.current.offsetLeft);
   return /*#__PURE__*/_react["default"].createElement("svg", {
     className: css.aestheticLines
   }, /*#__PURE__*/_react["default"].createElement("circle", {
@@ -70232,11 +70231,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
+require("core-js/modules/web.timers.js");
+
 require("core-js/modules/es.object.keys.js");
 
 require("core-js/modules/es.array.index-of.js");
 
-var _react = _interopRequireDefault(require("react"));
+var _lodash = _interopRequireDefault(require("lodash"));
+
+var _react = _interopRequireWildcard(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
@@ -70288,14 +70291,37 @@ function IncrementableInput(_ref) {
       disabled = _ref.disabled,
       passthroughProps = _objectWithoutProperties(_ref, ["increment", "onChange", "value", "min", "max", "width", "disabled"]);
 
-  function handleIncrement() {
-    var newValue = Math.min(max, value + increment);
+  var valueRef = (0, _react.useRef)(value);
+  (0, _react.useEffect)(function () {
+    valueRef.current = value;
+  }, [value]);
+  var incrementIntervalId;
+  var incrementTimeoutId;
+
+  function decrementValue() {
+    var currentValue = valueRef.current;
+    var newValue = Math.max(min, currentValue - increment);
     onChange(newValue);
   }
 
-  function handleDecrement() {
-    var newValue = Math.max(min, value - increment);
+  function incrementValue() {
+    var currentValue = valueRef.current;
+    var newValue = Math.min(max, currentValue + increment);
     onChange(newValue);
+  }
+
+  function handleIncrementUp() {
+    clearTimeout(incrementTimeoutId);
+    clearInterval(incrementIntervalId);
+  }
+
+  function handleMouseDown(methodName) {
+    var method = methodName === 'decrement' ? decrementValue : incrementValue;
+    method();
+    window.addEventListener('mouseup', handleIncrementUp);
+    incrementIntervalId = setTimeout(function () {
+      incrementIntervalId = setInterval(method, 175);
+    }, 500);
   }
 
   return /*#__PURE__*/_react["default"].createElement("span", {
@@ -70303,7 +70329,7 @@ function IncrementableInput(_ref) {
   }, /*#__PURE__*/_react["default"].createElement("button", {
     className: css.decrementor,
     type: "button",
-    onClick: handleDecrement,
+    onMouseDown: _lodash["default"].partial(handleMouseDown, 'decrement'),
     disabled: disabled
   }, /*#__PURE__*/_react["default"].createElement(ChevronLeft, {
     style: {
@@ -70322,7 +70348,7 @@ function IncrementableInput(_ref) {
   }, passthroughProps)), /*#__PURE__*/_react["default"].createElement("button", {
     className: css.incrementor,
     type: "button",
-    onClick: handleIncrement,
+    onMouseDown: _lodash["default"].partial(handleMouseDown, 'increment'),
     disabled: disabled
   }, /*#__PURE__*/_react["default"].createElement(ChevronRight, {
     style: {
@@ -70350,7 +70376,7 @@ IncrementableInput.defaultProps = {
 var _default = IncrementableInput;
 exports["default"] = _default;
 
-},{"./incrementable-input.module.css":219,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":134,"core-js/modules/es.object.get-own-property-descriptor.js":135,"core-js/modules/es.object.keys.js":137,"core-js/modules/es.object.to-string.js":139,"core-js/modules/es.string.iterator.js":143,"core-js/modules/es.symbol.description.js":144,"core-js/modules/es.symbol.iterator.js":145,"core-js/modules/es.symbol.js":146,"core-js/modules/es.weak-map.js":147,"core-js/modules/web.dom-collections.iterator.js":149,"prop-types":166,"react":176}],219:[function(require,module,exports){
+},{"./incrementable-input.module.css":219,"core-js/modules/es.array.index-of.js":122,"core-js/modules/es.array.iterator.js":124,"core-js/modules/es.object.assign.js":132,"core-js/modules/es.object.define-property.js":134,"core-js/modules/es.object.get-own-property-descriptor.js":135,"core-js/modules/es.object.keys.js":137,"core-js/modules/es.object.to-string.js":139,"core-js/modules/es.string.iterator.js":143,"core-js/modules/es.symbol.description.js":144,"core-js/modules/es.symbol.iterator.js":145,"core-js/modules/es.symbol.js":146,"core-js/modules/es.weak-map.js":147,"core-js/modules/web.dom-collections.iterator.js":149,"core-js/modules/web.timers.js":150,"lodash":158,"prop-types":166,"react":176}],219:[function(require,module,exports){
 module.exports = {"incrementableInput":"_src_components_incrementable_input_module__incrementableInput","input":"_src_components_incrementable_input_module__input","decrementor":"_src_components_incrementable_input_module__decrementor","incrementor":"_src_components_incrementable_input_module__incrementor"}
 },{}],220:[function(require,module,exports){
 "use strict";
