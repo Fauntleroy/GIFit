@@ -28,7 +28,7 @@ const gifGenerationSystemMachine = new Machine({
     // initialization animation
     initializing: {
       on: {
-        INITIALIZE_COMPLETE: [{
+        INITIALIZE: [{
           target: 'configuring',
           actions: ['setInitialContext']
         }]
@@ -140,12 +140,6 @@ const gifGenerationSystemMachine = new Machine({
         }
       }
     }
-  },
-  on: {
-    CRITICAL_ERROR: {
-      target: 'criticalError',
-      actions: ['setCriticalError']
-    }
   }
 }, {
   actions: {
@@ -173,14 +167,6 @@ const gifGenerationSystemMachine = new Machine({
         videoAspectRatio,
         videoElement,
         originalTime: currentTime
-      };
-    }),
-    setCriticalError: assign((context, event) => {
-      return {
-        criticalError: {
-          title: event.title,
-          message: event.message
-        }
       };
     }),
     updateInput: assign((context, event) => {

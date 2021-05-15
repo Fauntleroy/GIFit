@@ -9,7 +9,7 @@
   --color-primary-system: hsla(225, 89%, 95%, 1);
 	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.25);
 	--color-highlight: var(--color-intensity-red);
-  --color-error: hsl(22deg 100% 50%);
+  --color-error: hsl(20deg, 100%, 55%);
 
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 

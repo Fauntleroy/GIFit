@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 import { useMachine } from '@xstate/react';
 
 import * as css from './gif-generation-system.module.css';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
-import findClosestElement from '$utils/find-closest-element';
 
 import Button from './button.jsx';
 import ControlBar from './control-bar.jsx';
@@ -25,12 +25,6 @@ import ArrowDown from '$icons/arrow-down.svg';
 import Cancel from '$icons/cancel.svg';
 import MediaPlay from '$icons/media-play.svg';
 import Refresh from '$icons/refresh.svg';
-
-function isVideoValid (videoElement) {
-  const duration = Math.max(0, videoElement.duration) || 0
-
-  return (duration > 0);
-}
 
 const formAnimVariants = {
   shown: {
@@ -84,58 +78,30 @@ function GifGenerationSystem (props) {
   const startRef = useRef(null);
   const endRef = useRef(null);
   const formRef = useRef(null);
-  const contextRef = useRef(state.context);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
 
-  // set a reference to the state machine's context for use in other callbacks
   useEffect(() => {
-    contextRef.current = state.context;
-  }, [state.context]);
-
-  // select the video and tell the machine we're ready to go
-  useEffect(() => {
-    const videoElements = document.querySelectorAll('video') || [];
-    const closestVideo = findClosestElement(videoElements);
-
-    videoRef.current = closestVideo;
-  
-    if (!closestVideo) {
-      send('CRITICAL_ERROR', {
-        title: 'No Video Found',
-        message: <>GIFit <strong>couldn't find a video</strong> to work with. Try watching some of the <strong>video</strong>, and starting GIFit again.</>
-      });
-      return;
-    }
-
-    if (!isVideoValid(videoRef.current)) {
-      send('CRITICAL_ERROR', {
-        title: 'Video not valid',
-        message: <>The current video is <strong>invalid</strong>. This usually means it doesn't have a <strong>src or duration</strong>. Try pressing the play button & starting GIFit again.</>
-      });
-      return;
-    }
-
-    send('INITIALIZE_COMPLETE', {
-      videoElement: videoRef.current
-    });
-
-    return () => {
-      videoRef.current.currentTime = contextRef.current.originalTime || 0;
-    };
+    send('INITIALIZE', { videoElement: props.currentVideo });
   }, []);
 
   // TODO don't seek on initial open
   // scrub the video to the start timecode when it changes
   useEffect(() => {
-    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
-      state.context.videoElement.currentTime = state.context.start;
+    if (
+      props.currentVideo
+      && (state.matches('configuring') || state.matches('generating'))
+    ) {
+      props.currentVideo.currentTime = state.context.start;
     }
   }, [state.context.start]);
 
   // scrub the video to the end timecode when it changes
   useEffect(() => {
-    if (state.context.videoElement && (state.matches('configuring') || state.matches('generating'))) {
-      state.context.videoElement.currentTime = state.context.end;
+    if (
+      props.currentVideo
+      && (state.matches('configuring') || state.matches('generating'))
+    ) {
+      props.currentVideo.currentTime = state.context.end;
     }
   }, [state.context.end]);
 
@@ -175,15 +141,15 @@ function GifGenerationSystem (props) {
   }
 
   function handleStartEndControlBarChange ({ start, end, changed }) {
-    send('INPUT', { key: 'start', value: start * videoRef.current.duration });
-    send('INPUT', { key: 'end', value: end * videoRef.current.duration });
+    send('INPUT', { key: 'start', value: start * props.currentVideo.duration });
+    send('INPUT', { key: 'end', value: end * props.currentVideo.duration });
 
     const newTime = (changed === 'start')
-      ? start * videoRef.current.duration
-      : end * videoRef.current.duration;
+      ? start * props.currentVideo.duration
+      : end * props.currentVideo.duration;
 
     if (_.isNumber(newTime) && !_.isNaN(newTime)) {
-      state.context.videoElement.currentTime = newTime;
+      props.currentVideo.currentTime = newTime;
     }
   }
 
@@ -222,16 +188,6 @@ function GifGenerationSystem (props) {
 
   if (state.matches('initializing')) {
     return <SystemMessage title="Initializing">Initializing</SystemMessage>;
-  }
-
-  if (state.matches('criticalError')) {
-    return (
-      <SystemMessage
-        title={state.context.criticalError.title}
-        type="error">
-        {state.context.criticalError.message}
-      </SystemMessage>
-    );
   }
 
   let submitButtonContents = [];
@@ -285,7 +241,7 @@ function GifGenerationSystem (props) {
           custom={1}
           animate={formAnim}
           variants={animVariants}>
-          <SystemVideoInfo video={state.context.videoElement} gifUrl={gifUrl} />
+          <SystemVideoInfo video={props.currentVideo} gifUrl={gifUrl} />
         </motion.div>
 
         <motion.div
@@ -329,7 +285,7 @@ function GifGenerationSystem (props) {
         
         <div className={css.workspace}>
           <SystemWorkspace
-            videoElement={state.context.videoElement}
+            videoElement={props.currentVideo}
             width={state.context.width}
             height={state.context.height}
             gifUrl={gifUrl}
@@ -369,8 +325,8 @@ function GifGenerationSystem (props) {
             variants={animVariants}
             ref={timeBarRef}>
             <ControlBar
-              startValue={state.context.start / videoRef.current.duration}
-              endValue={state.context.end / videoRef.current.duration}
+              startValue={state.context.start / props.currentVideo.duration}
+              endValue={state.context.end / props.currentVideo.duration}
               onChange={handleStartEndControlBarChange}
               disabled={!state.matches('configuring')} />
           </motion.div>
@@ -415,7 +371,7 @@ function GifGenerationSystem (props) {
                 value={state.context.end}
                 increment={1 / state.context.fps}
                 min={state.context.start}
-                max={videoRef.current.duration}
+                max={props.currentVideo.duration}
                 width="200px"
                 onChange={handleEndInputChange}
                 disabled={!state.matches('configuring')} />
@@ -470,5 +426,9 @@ function GifGenerationSystem (props) {
     </motion.div>
   );
 }
+
+GifGenerationSystem.propTypes = {
+  currentVideo: PropTypes.object.isRequired
+};
 
 export default GifGenerationSystem;

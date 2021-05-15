@@ -6,13 +6,11 @@ import ReactDOM from 'react-dom';
 import GifitApp from '$components/gifit-app.jsx';
 
 // Set up a false GIFti app to lie to ourselves
-function TestGifitApp () {
+function GifitDev () {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    startButtonElement.addEventListener('click', function (event) {
-      event.preventDefault();
-
+    startButtonElement.addEventListener('click', () => {
       setActive(true);
     });
   }, []);
@@ -32,4 +30,4 @@ const gifitElement = document.createElement('div');
 gifitElement.id = 'gifit';
 document.body.appendChild(gifitElement);
 
-ReactDOM.render(<TestGifitApp />, gifitElement);
+ReactDOM.render(<GifitDev />, gifitElement);

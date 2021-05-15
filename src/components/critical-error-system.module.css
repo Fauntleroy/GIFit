@@ -1,0 +1,68 @@
+.criticalErrorSystem {
+  position: relative;
+  max-width: 480px;
+  padding: 20px;
+  display: grid;
+  grid-gap: 15px;
+  border-radius: 4px;
+
+  backdrop-filter: blur(4px) contrast(1.025);
+	background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
+	background-color: hsla(234.5, 35.5%, 10%, 0.45);
+}
+
+.label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -150%);
+
+	padding: 4px 20px;
+	border: currentColor 1px solid;
+	border-radius: 3px;
+	color: var(--color-system);
+	line-height: 1.25;
+  white-space: nowrap;
+}
+
+.errorTitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--color-error);
+}
+
+.errorBody {
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 175%;
+  color: var(--color-primary-system);
+
+  strong {
+    color: var(--color-error);
+  }
+
+  a {
+    font-weight: bold;
+    text-underline-offset: 4px;
+    color: white;
+    text-decoration-color: var(--color-system);
+    transition: text-decoration-color 250ms;
+
+    &:hover {
+      text-decoration-color: var(--color-highlight);
+    }
+  }
+}
+
+.signature {
+  text-align: right;
+  color: var(--color-system);
+
+  &:before {
+    content: '— ';
+  }
+}
