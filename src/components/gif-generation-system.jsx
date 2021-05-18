@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useMachine } from '@xstate/react';
 
 import * as css from './gif-generation-system.module.css';
@@ -200,6 +200,7 @@ function GifGenerationSystem (props) {
     submitButtonContents = ['Reset', <Refresh />];
   }
 
+  const isComplete = state.matches({ generating: { generatingGif: 'succeeded' }});
   const gifUrl = state?.context?.gifData?.blob ? URL.createObjectURL(state.context.gifData.blob) : null;
 
   return (
@@ -379,34 +380,46 @@ function GifGenerationSystem (props) {
           </motion.div>
         </div>
 
-        <footer className={css.footer}>
+        <motion.footer className={css.footer}>
           <motion.div
             className={css.actions}
-            initial={{ translateY: '0px' }}
-            animate={{
-              translateY: state.matches({ generating: { generatingGif: 'succeeded' }}) ? '-45px' : '0px'
-            }}
-            transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
-            <span className={css.action}>
-              <Button
-                type="submit"
-                icon={submitButtonContents[1]}>
-                {submitButtonContents[0]}
-              </Button>
-            </span>
-            <a
-              className={css.action}
-              href={gifUrl}
-              download={`gifit_${Date.now()}.gif`}>
-              <Button
-                type="button"
-                icon={<ArrowDown />}
-                disabled={!state.matches({ generating: { generatingGif: 'succeeded' }})}>
-                Save GIF
-              </Button>
-            </a>
+            animate={{ y: isComplete ? '-125%' : '0%' }}
+            transition={{ type: 'spring', stiffness: 500, damping: 50, tension: 10000, delay: 0.35 }}>
+            <AnimatePresence>
+              <motion.span
+                className={css.action}
+                key="primary-action"
+                initial={{ width: '0px' }}
+                animate={{ width: 'auto' }}
+                exit={{ width: '0px' }}
+                style={{ overflow: 'hidden' }}>
+                <Button
+                  type="submit"
+                  icon={submitButtonContents[1]}>
+                  {submitButtonContents[0]}
+                </Button>
+              </motion.span>
+              {/* I don't want to animate the margin, but framer isn't measuring right. TODO update when framer does */}
+              {isComplete && <motion.a
+                className={css.action}
+                href={gifUrl}
+                download={`gifit_${Date.now()}.gif`}
+                key="save-action"
+                initial={{ width: '0px', scaleY: '0.5', opacity: 0, margin: '0px 0px' }}
+                animate={{ width: 'auto', scaleY: '1', opacity: 1, margin: '0px 5px' }}
+                exit={{ width: '0px', scaleY: '0.5', opacity: 0, margin: '0px 0px' }}
+                style={{ overflow: 'hidden' }}
+                transition={{ type: 'spring', stiffness: 500, damping: 50, tension: 10000, mass: 0.25 }}>
+                <Button
+                  type="button"
+                  icon={<ArrowDown />}
+                  disabled={!isComplete}>
+                  Save GIF
+                </Button>
+              </motion.a>}
+            </AnimatePresence>
           </motion.div>
-        </footer>
+        </motion.footer>
 
         <motion.div
           className={css.lines}

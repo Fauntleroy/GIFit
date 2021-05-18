@@ -37,7 +37,6 @@
     filter: contrast(0.5);
     background: var(--color-system);
     opacity: 0.75;
-    transform: scale(0.95);
   }
 }
 

@@ -71606,6 +71606,11 @@ function GifGenerationSystem(props) {
     submitButtonContents = ['Reset', /*#__PURE__*/_react["default"].createElement(Refresh, null)];
   }
 
+  var isComplete = state.matches({
+    generating: {
+      generatingGif: 'succeeded'
+    }
+  });
   var gifUrl = state !== null && state !== void 0 && (_state$context = state.context) !== null && _state$context !== void 0 && (_state$context$gifDat = _state$context.gifData) !== null && _state$context$gifDat !== void 0 && _state$context$gifDat.blob ? URL.createObjectURL(state.context.gifData.blob) : null;
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.ggs,
@@ -71784,45 +71789,76 @@ function GifGenerationSystem(props) {
     width: "200px",
     onChange: handleEndInputChange,
     disabled: !state.matches('configuring')
-  })))), /*#__PURE__*/_react["default"].createElement("footer", {
+  })))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.footer, {
     className: css.footer
   }, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.actions,
-    initial: {
-      translateY: '0px'
-    },
     animate: {
-      translateY: state.matches({
-        generating: {
-          generatingGif: 'succeeded'
-        }
-      }) ? '-45px' : '0px'
+      y: isComplete ? '-125%' : '0%'
     },
     transition: {
       type: 'spring',
-      tension: 2550,
-      damping: 10,
-      mass: 0.25,
-      delay: 0.25
+      stiffness: 500,
+      damping: 50,
+      tension: 10000,
+      delay: 0.35
     }
-  }, /*#__PURE__*/_react["default"].createElement("span", {
-    className: css.action
+  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
+    className: css.action,
+    key: "primary-action",
+    initial: {
+      width: '0px'
+    },
+    animate: {
+      width: 'auto'
+    },
+    exit: {
+      width: '0px'
+    },
+    style: {
+      overflow: 'hidden'
+    }
   }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
     type: "submit",
     icon: submitButtonContents[1]
-  }, submitButtonContents[0])), /*#__PURE__*/_react["default"].createElement("a", {
+  }, submitButtonContents[0])), isComplete && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.a, {
     className: css.action,
     href: gifUrl,
-    download: "gifit_".concat(Date.now(), ".gif")
+    download: "gifit_".concat(Date.now(), ".gif"),
+    key: "save-action",
+    initial: {
+      width: '0px',
+      scaleY: '0.5',
+      opacity: 0,
+      margin: '0px 0px'
+    },
+    animate: {
+      width: 'auto',
+      scaleY: '1',
+      opacity: 1,
+      margin: '0px 5px'
+    },
+    exit: {
+      width: '0px',
+      scaleY: '0.5',
+      opacity: 0,
+      margin: '0px 0px'
+    },
+    style: {
+      overflow: 'hidden'
+    },
+    transition: {
+      type: 'spring',
+      stiffness: 500,
+      damping: 50,
+      tension: 10000,
+      mass: 0.25
+    }
   }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
     type: "button",
     icon: /*#__PURE__*/_react["default"].createElement(ArrowDown, null),
-    disabled: !state.matches({
-      generating: {
-        generatingGif: 'succeeded'
-      }
-    })
-  }, "Save GIF")))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    disabled: !isComplete
+  }, "Save GIF"))))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.lines,
     custom: 7,
     animate: formAnim,
