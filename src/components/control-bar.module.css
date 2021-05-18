@@ -5,9 +5,28 @@
   cursor: pointer;
   user-select: none;
   color: var(--color-primary-system);
+  transition: color 500ms;
 
+  &:hover,
   &:focus-within {
     color: var(--color-highlight);
+  }
+
+  &IsActive,
+  &IsActive:hover,
+  &IsActive:focus-within {
+    color: var(--color-active);
+    transition: color 0ms;
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
   }
 }
 
@@ -25,9 +44,9 @@
 .end {
   position: absolute;
   padding: 0;
-  width: 3px;
+  z-index: 10;
+  width: 5px;
   height: 12px;
-  border-radius: 2px;
   color: currentColor;
   background: currentColor;
 
@@ -39,16 +58,22 @@
     bottom: -4px;
     left: -4px;
   }
+
+  &:hover {
+    background: currentColor;
+  }
 }
 
 .start {
   bottom: 0;
   left: 0;
+  border-radius: 1px 1px 0px 5px;
 }
 
 .end {
   bottom: 0;
   left: 0;
+  border-radius: 1px 1px 5px 0px;
 }
 
 .range {
@@ -56,8 +81,10 @@
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 5;
   height: 1px;
-  background: var(--color-system);
+  background: currentColor;
+  opacity: 0.5;
 }
 
 .start,

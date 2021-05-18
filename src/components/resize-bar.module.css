@@ -5,9 +5,28 @@
   color: var(--color-primary-system);
   width: 100%;
   height: 12px;
+  transition: color 500ms;
 
+  &:hover,
   &:focus-within {
     color: var(--color-highlight);
+  }
+
+  &IsActive,
+  &IsActive:hover,
+  &IsActive:focus-within {
+    color: var(--color-active);
+    transition: color 0ms;
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
   }
 }
 
@@ -28,7 +47,8 @@
   border-radius: 2px;
   color: currentColor;
   background: currentColor;
-  width: 3px;
+  z-index: 10;
+  width: 5px;
   height: 12px;
 
   &:before {
@@ -39,16 +59,22 @@
     bottom: -4px;
     left: -4px;
   }
+
+  &:hover {
+    background: currentColor;
+  }
 }
 
 .start {
   top: 0;
-  left: 0;
+  left: -5px;
+  border-radius: 1px 1px 0px 5px;
 }
 
 .end {
   top: 0;
-  right: 0;
+  right: -5px;
+  border-radius: 1px 1px 5px 0px;
 }
 
 .range {
@@ -56,8 +82,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--color-system);
+  background: currentColor;
   height: 1px;
+  opacity: 0.5;
 }
 
 .resizeBarVertical {
@@ -67,12 +94,18 @@
   .start,
   .end {
     width: 12px;
-    height: 3px;
+    height: 5px;
+  }
+
+  .start {
+    border-radius: 1px 5px 0px 1px;
+    top: -5px;
+    left: 0;
   }
 
   .end {
     top: auto;
-    bottom: 0;
+    bottom: -5px;
     left: 0;
   }
 

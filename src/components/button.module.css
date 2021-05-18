@@ -21,7 +21,7 @@
   background: var(--color-primary-system);
   color: rgb(25, 25, 25);
 
-  transition: all 250ms var(--ease-out-expo);
+  transition: all 750ms var(--ease-out-expo);
 
   &:hover {
     background: var(--color-highlight);
@@ -29,7 +29,8 @@
 
   &:active {
     transform: scale(0.975);
-    transition: transform 0ms;
+    transition: transform 0ms, background 0ms;
+    background: var(--color-active);
   }
 
   &:disabled {

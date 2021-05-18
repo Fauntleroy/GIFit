@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useMachine } from '@xstate/react';
@@ -19,6 +19,7 @@ function ResizeBar (props) {
   });
   const [state, send] = useMachine(resizeBarMachine);
   const controlBarRef = useRef(null);
+  const [isActive, setIsActive] = useState(false);
 
   const handleMouseMove = _.throttle(function (event) {
     const position = getPosition(event.clientX, event.clientY, props.orientation);
@@ -30,6 +31,7 @@ function ResizeBar (props) {
 
   function handleMouseUp (event) {
     const position = getPosition(event.clientX, event.clientY, props.orientation);
+    setIsActive(false);
     send('END', {
       position,
       precise: event.shiftKey
@@ -41,6 +43,7 @@ function ResizeBar (props) {
 
   function handleMouseDown (event) {
     const position = getPosition(event.clientX, event.clientY, props.orientation);
+    setIsActive(true);
     send('START', {
       initialSize: props.value,
       position,
@@ -77,7 +80,8 @@ function ResizeBar (props) {
   return (
     <div
       className={cx(css.resizeBar, {
-        [css.resizeBarVertical]: props.orientation === 'vertical'
+        [css.resizeBarVertical]: props.orientation === 'vertical',
+        [css.resizeBarIsActive]: isActive
       })}
       ref={controlBarRef}>
       <div className={css.total} />

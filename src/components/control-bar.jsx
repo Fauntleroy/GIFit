@@ -1,6 +1,7 @@
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import cx from 'classnames';
 import { useMachine } from '@xstate/react';
 
 import * as css from './control-bar.module.css';
@@ -21,6 +22,7 @@ function ControlBar (props) {
   });
   const [state, send] = useMachine(controlBarMachine);
   const controlBarRef = useRef(null);
+  const [isActive, setIsActive] = useState(false);
 
   const handleMouseMove = _.throttle(function (event) {
     const position = getPosition(controlBarRef.current, event);
@@ -28,6 +30,7 @@ function ControlBar (props) {
   }, 1000 / 120);
 
   function handleMouseUp (event) {
+    setIsActive(false);
     const position = getPosition(controlBarRef.current, event);
     send('END', { position, precise: event.shiftKey });
 
@@ -36,6 +39,7 @@ function ControlBar (props) {
   }
 
   function handleMouseDown (event) {
+    setIsActive(true);
     const position = getPosition(controlBarRef.current, event);
     send('START', {
       position,
@@ -68,13 +72,15 @@ function ControlBar (props) {
 
   return (
     <div
-      className={css.controlBar}
+      className={cx(css.controlBar, {
+        [css.controlBarIsActive]: isActive
+      })}
       onMouseDown={handleMouseDown}
       ref={controlBarRef}>
       <div className={css.total} />
       <button
         className={css.start}
-        type="button" style={{ left: `${state.context.start * 100}%` }} />
+        type="button" style={{ left: `calc(${state.context.start * 100}% - 5px)` }} />
       <span
         className={`${css.range} range`}
         style={{

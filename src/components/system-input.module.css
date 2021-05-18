@@ -2,14 +2,15 @@
 	display: block;
 	margin: 15px;
 	color: var(--color-primary-system);
-	transition: color 250ms;
+	transition: color 500ms;
+
+  &:hover {
+    color: var(--color-highlight);
+  }
 
 	&:focus-within {
-		color: var(--color-highlight);
-
-    .addendum {
-      color: var(--color-highlight);
-    }
+		color: var(--color-active);
+    transition: color 125ms;
 	}
 }
 
@@ -30,5 +31,5 @@
   font-weight: bold;
   text-transform: none;
   letter-spacing: normal;
-  color: var(--color-system);
+  color: currentColor;
 }
