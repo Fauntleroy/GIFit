@@ -79,6 +79,7 @@ function GifGenerationSystem (props) {
   const endRef = useRef(null);
   const formRef = useRef(null);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
+  const frameTime = _.round(1 / state.context.fps, 2);
 
   useEffect(() => {
     send('INITIALIZE', { videoElement: props.currentVideo });
@@ -328,6 +329,7 @@ function GifGenerationSystem (props) {
             <ControlBar
               startValue={state.context.start / props.currentVideo.duration}
               endValue={state.context.end / props.currentVideo.duration}
+              minimumDistance={frameTime / props.currentVideo.duration}
               onChange={handleStartEndControlBarChange}
               disabled={!state.matches('configuring')} />
           </motion.div>
@@ -343,9 +345,9 @@ function GifGenerationSystem (props) {
               name="start">
               <IncrementableInput
                 value={state.context.start}
-                increment={1 / state.context.fps}
+                increment={frameTime}
                 min={0}
-                max={state.context.end}
+                max={props.currentVideo.duration - frameTime}
                 width="200px"
                 onChange={handleStartInputChange}
                 disabled={!state.matches('configuring')} />
@@ -370,8 +372,8 @@ function GifGenerationSystem (props) {
               name="end">
               <IncrementableInput
                 value={state.context.end}
-                increment={1 / state.context.fps}
-                min={state.context.start}
+                increment={frameTime}
+                min={0 + frameTime}
                 max={props.currentVideo.duration}
                 width="200px"
                 onChange={handleEndInputChange}

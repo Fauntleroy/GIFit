@@ -1,6 +1,6 @@
 {
   "name": "gifit-extension",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Make GIFs from YouTube videos in Chrome & Firefox",
   "repository": {
     "type": "git",
@@ -23,7 +23,8 @@
     "build:copy": "cpx 'src/**/*.{png,json,html,webm,woff,woff2}' dist --clean",
     "build:background-js": "browserify src/background.js -o dist/background.js -t [ babelify ]",
     "build:dev-js": "browserify src/dev.jsx -o dist/dev.js -t [ babelify ] -t [ brfs ] -p [ css-modulesify --before postcss-nested -o dist/dev.css ]",
-    "build:js": "NODE_ENV=production browserify src/content.jsx -o dist/content.js -t [ babelify ] -t [ brfs ] -p [ css-modulesify --before postcss-nested -o dist/content.css ] -p [ tinyify ]",
+    "build:js": "browserify src/content.jsx -o dist/content.js -t [ babelify ] -t [ brfs ] -p [ css-modulesify --before postcss-nested -o dist/content.css ] -p [ tinyify ]",
+    "package": "NODE_ENV=production npm run build:js",
     "dev": "npm run build:copy && npm run build:dev-js && npm-run-all -p watch:* serve",
     "lint": "eslint src/*/**.{js,jsx} --ignore-pattern \"src/vendor/**/*\"",
     "watch": "npm-run-all -p watch:*",

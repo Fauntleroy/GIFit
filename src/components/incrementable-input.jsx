@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import ChevronLeft from '$icons/chevron-left.svg';
@@ -9,25 +9,37 @@ import * as css from './incrementable-input.module.css';
 
 function IncrementableInput ({
   increment, onChange, value, min, max, width, disabled,
-  ...passthroughProps
+  ...props
 }) {
+  const [isActive, setIsActive] = useState(false);
+  const [internalValue, setInternalValue] = useState(value);
   const valueRef = useRef(value);
+  const internalValueRef = useRef(internalValue);
+
   useEffect(() => {
     valueRef.current = value;
+
+    if (!isActive) {
+      setInternalValue(value);
+    }
   }, [value]);
+
+  useEffect(() => {
+    internalValueRef.current = internalValue;
+  }, [internalValue]);
 
   let incrementIntervalId;
   let incrementTimeoutId;
 
   function decrementValue () {
-    const currentValue = valueRef.current;
-    const newValue = Math.max(min, (currentValue - increment));
+    const newValue = _.round(Math.max(min, (internalValueRef.current - increment)), 2);
+    setInternalValue(newValue);
     onChange(newValue);
   }
 
   function incrementValue () {
-    const currentValue = valueRef.current;
-    const newValue = Math.min(max, (currentValue + increment));
+    const newValue = _.round(Math.min(max, (internalValueRef.current + increment)), 2);
+    setInternalValue(newValue);
     onChange(newValue);
   }
 
@@ -47,7 +59,23 @@ function IncrementableInput ({
 
     incrementIntervalId = setTimeout(() => {
       incrementIntervalId = setInterval(method, 175);
-    }, 500);
+    }, 375);
+  }
+
+  const externalOnChangeDebounced = _.debounce(onChange, 500);
+
+  function handleChange (event) {
+    setInternalValue(event.target.value);
+    externalOnChangeDebounced(...arguments);
+  }
+
+  function handleFocus () {
+    setIsActive(true);
+  }
+
+  function handleBlur () {
+    setIsActive(false);
+    setInternalValue(valueRef.current);
   }
 
   return (
@@ -63,13 +91,15 @@ function IncrementableInput ({
         className={css.input}
         type="text"
         inputMode="numeric"
-        value={value}
+        value={internalValue}
         style={{
           width: width
         }}
-        onChange={onChange}
+        onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         disabled={disabled}
-        {...passthroughProps} />
+        {...props} />
       <button
         className={css.incrementor}
         type="button"

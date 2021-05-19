@@ -70995,7 +70995,8 @@ function ControlBar(props) {
     var position = getPosition(controlBarRef.current, event);
     send('SLIDE', {
       position: position,
-      precise: event.shiftKey
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
     });
   }, 1000 / 120);
 
@@ -71004,7 +71005,8 @@ function ControlBar(props) {
     var position = getPosition(controlBarRef.current, event);
     send('END', {
       position: position,
-      precise: event.shiftKey
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
     });
     window.removeEventListener('mouseup', handleMouseUp);
     window.removeEventListener('mousemove', handleMouseMove);
@@ -71015,7 +71017,8 @@ function ControlBar(props) {
     var position = getPosition(controlBarRef.current, event);
     send('START', {
       position: position,
-      precise: event.shiftKey
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
     });
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('mousemove', handleMouseMove);
@@ -71078,11 +71081,13 @@ function ControlBar(props) {
 ControlBar.propTypes = {
   startValue: _propTypes["default"].number.isRequired,
   endValue: _propTypes["default"].number.isRequired,
+  minimumDistance: _propTypes["default"].number,
   onChange: _propTypes["default"].func.isRequired,
   disabled: _propTypes["default"].bool
 };
 ControlBar.defaultProps = {
-  disabled: false
+  disabled: false,
+  minimumDistance: 0.01
 };
 var _default = ControlBar;
 exports["default"] = _default;
@@ -71429,6 +71434,9 @@ function GifGenerationSystem(props) {
   var endRef = (0, _react.useRef)(null);
   var formRef = (0, _react.useRef)(null);
   var formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
+
+  var frameTime = _lodash["default"].round(1 / state.context.fps, 2);
+
   (0, _react.useEffect)(function () {
     send('INITIALIZE', {
       videoElement: props.currentVideo
@@ -71743,6 +71751,7 @@ function GifGenerationSystem(props) {
   }, /*#__PURE__*/_react["default"].createElement(_controlBar["default"], {
     startValue: state.context.start / props.currentVideo.duration,
     endValue: state.context.end / props.currentVideo.duration,
+    minimumDistance: frameTime / props.currentVideo.duration,
     onChange: handleStartEndControlBarChange,
     disabled: !state.matches('configuring')
   })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
@@ -71756,9 +71765,9 @@ function GifGenerationSystem(props) {
     name: "start"
   }, /*#__PURE__*/_react["default"].createElement(_incrementableInput["default"], {
     value: state.context.start,
-    increment: 1 / state.context.fps,
+    increment: frameTime,
     min: 0,
-    max: state.context.end,
+    max: props.currentVideo.duration - frameTime,
     width: "200px",
     onChange: handleStartInputChange,
     disabled: !state.matches('configuring')
@@ -71783,8 +71792,8 @@ function GifGenerationSystem(props) {
     name: "end"
   }, /*#__PURE__*/_react["default"].createElement(_incrementableInput["default"], {
     value: state.context.end,
-    increment: 1 / state.context.fps,
-    min: state.context.start,
+    increment: frameTime,
+    min: 0 + frameTime,
     max: props.currentVideo.duration,
     width: "200px",
     onChange: handleEndInputChange,
@@ -72072,11 +72081,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 require("core-js/modules/es.symbol.js");
 
-require("core-js/modules/es.object.assign.js");
+require("core-js/modules/es.array.is-array.js");
 
-require("core-js/modules/es.weak-map.js");
+require("core-js/modules/es.symbol.description.js");
 
 require("core-js/modules/es.object.to-string.js");
+
+require("core-js/modules/es.symbol.iterator.js");
 
 require("core-js/modules/es.string.iterator.js");
 
@@ -72084,13 +72095,19 @@ require("core-js/modules/es.array.iterator.js");
 
 require("core-js/modules/web.dom-collections.iterator.js");
 
+require("core-js/modules/es.array.slice.js");
+
+require("core-js/modules/es.function.name.js");
+
+require("core-js/modules/es.array.from.js");
+
+require("core-js/modules/es.object.assign.js");
+
+require("core-js/modules/es.weak-map.js");
+
 require("core-js/modules/es.object.define-property.js");
 
 require("core-js/modules/es.object.get-own-property-descriptor.js");
-
-require("core-js/modules/es.symbol.description.js");
-
-require("core-js/modules/es.symbol.iterator.js");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -72118,6 +72135,18 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
 
@@ -72155,24 +72184,44 @@ function IncrementableInput(_ref) {
       max = _ref.max,
       width = _ref.width,
       disabled = _ref.disabled,
-      passthroughProps = _objectWithoutProperties(_ref, ["increment", "onChange", "value", "min", "max", "width", "disabled"]);
+      props = _objectWithoutProperties(_ref, ["increment", "onChange", "value", "min", "max", "width", "disabled"]);
+
+  var _useState = (0, _react.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      isActive = _useState2[0],
+      setIsActive = _useState2[1];
+
+  var _useState3 = (0, _react.useState)(value),
+      _useState4 = _slicedToArray(_useState3, 2),
+      internalValue = _useState4[0],
+      setInternalValue = _useState4[1];
 
   var valueRef = (0, _react.useRef)(value);
+  var internalValueRef = (0, _react.useRef)(internalValue);
   (0, _react.useEffect)(function () {
     valueRef.current = value;
+
+    if (!isActive) {
+      setInternalValue(value);
+    }
   }, [value]);
+  (0, _react.useEffect)(function () {
+    internalValueRef.current = internalValue;
+  }, [internalValue]);
   var incrementIntervalId;
   var incrementTimeoutId;
 
   function decrementValue() {
-    var currentValue = valueRef.current;
-    var newValue = Math.max(min, currentValue - increment);
+    var newValue = _lodash["default"].round(Math.max(min, internalValueRef.current - increment), 2);
+
+    setInternalValue(newValue);
     onChange(newValue);
   }
 
   function incrementValue() {
-    var currentValue = valueRef.current;
-    var newValue = Math.min(max, currentValue + increment);
+    var newValue = _lodash["default"].round(Math.min(max, internalValueRef.current + increment), 2);
+
+    setInternalValue(newValue);
     onChange(newValue);
   }
 
@@ -72187,7 +72236,23 @@ function IncrementableInput(_ref) {
     window.addEventListener('mouseup', handleIncrementUp);
     incrementIntervalId = setTimeout(function () {
       incrementIntervalId = setInterval(method, 175);
-    }, 500);
+    }, 375);
+  }
+
+  var externalOnChangeDebounced = _lodash["default"].debounce(onChange, 500);
+
+  function handleChange(event) {
+    setInternalValue(event.target.value);
+    externalOnChangeDebounced.apply(void 0, arguments);
+  }
+
+  function handleFocus() {
+    setIsActive(true);
+  }
+
+  function handleBlur() {
+    setIsActive(false);
+    setInternalValue(valueRef.current);
   }
 
   return /*#__PURE__*/_react["default"].createElement("span", {
@@ -72205,13 +72270,15 @@ function IncrementableInput(_ref) {
     className: css.input,
     type: "text",
     inputMode: "numeric",
-    value: value,
+    value: internalValue,
     style: {
       width: width
     },
-    onChange: onChange,
+    onChange: handleChange,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
     disabled: disabled
-  }, passthroughProps)), /*#__PURE__*/_react["default"].createElement("button", {
+  }, props)), /*#__PURE__*/_react["default"].createElement("button", {
     className: css.incrementor,
     type: "button",
     onMouseDown: _lodash["default"].partial(handleMouseDown, 'increment'),
@@ -72242,7 +72309,7 @@ IncrementableInput.defaultProps = {
 var _default = IncrementableInput;
 exports["default"] = _default;
 
-},{"./incrementable-input.module.css":240,"core-js/modules/es.array.index-of.js":135,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.object.assign.js":147,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.keys.js":152,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.timers.js":167,"lodash":176,"prop-types":184,"react":194}],240:[function(require,module,exports){
+},{"./incrementable-input.module.css":240,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.index-of.js":135,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.assign.js":147,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.keys.js":152,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.timers.js":167,"lodash":176,"prop-types":184,"react":194}],240:[function(require,module,exports){
 module.exports = {"incrementableInput":"_src_components_incrementable_input_module__incrementableInput","input":"_src_components_incrementable_input_module__input","decrementor":"_src_components_incrementable_input_module__decrementor","incrementor":"_src_components_incrementable_input_module__incrementor"}
 },{}],241:[function(require,module,exports){
 "use strict";
@@ -73937,18 +74004,28 @@ function createControlBarMachine(_ref) {
   }, {
     actions: {
       updatePosition: (0, _xstate.assign)(function (context, event) {
-        var _ref2;
+        var _contextUpdates;
 
         var startPosition = event.precise !== context.precise ? event.position : context.slideStart || event.position;
         var delta = context.precise ? (startPosition - event.position) * -1 / 4 : (startPosition - event.position) * -1;
         var position = startPosition + delta; // don't fly past the other handle, or out of bounds
 
-        var minPosition = context.activeHandle === 'start' ? 0 : context.start;
-        var maxPosition = context.activeHandle === 'start' ? context.end : 1;
+        var minimum = context.activeHandle === 'start' ? 0 : event.minimumDistance;
+        var maximum = context.activeHandle === 'end' ? 1 : 1 - event.minimumDistance;
 
-        var newPosition = _lodash["default"].clamp(position, minPosition, maxPosition);
+        var newPosition = _lodash["default"].clamp(position, minimum, maximum);
 
-        return _ref2 = {}, _defineProperty(_ref2, context.activeHandle, newPosition), _defineProperty(_ref2, "slideStart", startPosition), _defineProperty(_ref2, "precise", event.precise), _ref2;
+        var contextUpdates = (_contextUpdates = {}, _defineProperty(_contextUpdates, context.activeHandle, newPosition), _defineProperty(_contextUpdates, "slideStart", startPosition), _defineProperty(_contextUpdates, "precise", event.precise), _contextUpdates);
+
+        if (context.activeHandle === 'start' && newPosition > context.end - event.minimumDistance) {
+          contextUpdates.end = newPosition + event.minimumDistance;
+        }
+
+        if (context.activeHandle === 'end' && newPosition < context.start + event.minimumDistance) {
+          contextUpdates.start = newPosition - event.minimumDistance;
+        }
+
+        return contextUpdates;
       }),
       resetSlideStart: (0, _xstate.assign)(function (context, event) {
         return {
@@ -74287,13 +74364,40 @@ var gifGenerationSystemMachine = new _xstate.Machine({
     }),
     updateInput: (0, _xstate.assign)(function (context, event) {
       var value = event.value;
+      var frameTime = 1 / context.fps;
 
       if (event.key === 'width' || event.key === 'height') {
-        value = _lodash["default"].round(event.value);
+        return _defineProperty({}, event.key, _lodash["default"].round(event.value));
       }
 
-      if (event.key === 'start' || event.key === 'end') {
-        value = _lodash["default"].round(event.value, 2);
+      if (event.key === 'start') {
+        var start = _lodash["default"].round(_lodash["default"].clamp(event.value, 0, context.videoElement.duration - frameTime), 2);
+
+        if (start >= context.end - frameTime) {
+          return {
+            start: start,
+            end: _lodash["default"].round(start + frameTime, 2)
+          };
+        }
+
+        return {
+          start: start
+        };
+      }
+
+      if (event.key === 'end') {
+        var end = _lodash["default"].round(_lodash["default"].clamp(event.value, 0 + frameTime, context.videoElement.duration), 2);
+
+        if (end <= context.start + frameTime) {
+          return {
+            start: _lodash["default"].round(end - frameTime, 2),
+            end: end
+          };
+        }
+
+        return {
+          end: end
+        };
       }
 
       return _defineProperty({}, event.key, value);
@@ -74330,18 +74434,16 @@ var gifGenerationSystemMachine = new _xstate.Machine({
   },
   guards: {
     inputValidation: function inputValidation(context, event) {
-      var frameTime = 1 / context.fps;
-
       switch (event.key) {
         case 'start':
-          if (event.value >= context.end - frameTime || event.value < 0) {
+          if (event.value < 0) {
             return false;
           }
 
           break;
 
         case 'end':
-          if (event.value <= context.start + frameTime) {
+          if (event.value > context.videoElement.duration) {
             return false;
           }
 

@@ -56,19 +56,31 @@ function createControlBarMachine ({ id, start, end }) {
           : (startPosition - event.position) * -1;
         const position = startPosition + delta;
         // don't fly past the other handle, or out of bounds
-        const minPosition = (context.activeHandle === 'start')
-          ? 0
-          : context.start;
-        const maxPosition = (context.activeHandle === 'start')
-          ? context.end
-          : 1;
-        const newPosition = _.clamp(position, minPosition, maxPosition);
+        const minimum = context.activeHandle === 'start' ? 0 : event.minimumDistance;
+        const maximum = context.activeHandle === 'end' ? 1 : 1 - event.minimumDistance;
+        const newPosition = _.clamp(position, minimum, maximum);
 
-        return {
+        const contextUpdates = {
           [context.activeHandle]: newPosition,
           slideStart: startPosition,
           precise: event.precise
         };
+
+        if (
+          (context.activeHandle === 'start') &&
+          (newPosition > context.end - event.minimumDistance)
+        ) {
+          contextUpdates.end = newPosition + event.minimumDistance;
+        }
+
+        if (
+          (context.activeHandle === 'end') &&
+          (newPosition < context.start + event.minimumDistance)
+        ) {
+          contextUpdates.start = newPosition - event.minimumDistance;
+        }
+
+        return contextUpdates;
       }),
       resetSlideStart: assign((context, event) => {
         return {

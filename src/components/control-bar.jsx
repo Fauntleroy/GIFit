@@ -26,13 +26,21 @@ function ControlBar (props) {
 
   const handleMouseMove = _.throttle(function (event) {
     const position = getPosition(controlBarRef.current, event);
-    send('SLIDE', { position, precise: event.shiftKey });
+    send('SLIDE', {
+      position,
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
+    });
   }, 1000 / 120);
 
   function handleMouseUp (event) {
     setIsActive(false);
     const position = getPosition(controlBarRef.current, event);
-    send('END', { position, precise: event.shiftKey });
+    send('END', {
+      position,
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
+    });
 
     window.removeEventListener('mouseup', handleMouseUp);
     window.removeEventListener('mousemove', handleMouseMove);
@@ -43,7 +51,8 @@ function ControlBar (props) {
     const position = getPosition(controlBarRef.current, event);
     send('START', {
       position,
-      precise: event.shiftKey
+      precise: event.shiftKey,
+      minimumDistance: props.minimumDistance
     });
 
     window.addEventListener('mouseup', handleMouseUp);
@@ -98,12 +107,14 @@ function ControlBar (props) {
 ControlBar.propTypes = {
   startValue: PropTypes.number.isRequired,
   endValue: PropTypes.number.isRequired,
+  minimumDistance: PropTypes.number,
   onChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool
 };
 
 ControlBar.defaultProps = {
-  disabled: false
+  disabled: false,
+  minimumDistance: 0.01
 };
 
 export default ControlBar;

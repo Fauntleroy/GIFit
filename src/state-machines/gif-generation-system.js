@@ -170,14 +170,45 @@ const gifGenerationSystemMachine = new Machine({
       };
     }),
     updateInput: assign((context, event) => {
-      let value = event.value;
+      const { value } = event;
+      const frameTime = (1 / context.fps);
 
       if (event.key === 'width' || event.key === 'height') {
-        value = _.round(event.value);
+        return {
+          [event.key]: _.round(event.value)
+        };
       }
 
-      if (event.key === 'start' || event.key === 'end') {
-        value = _.round(event.value, 2);
+      if (event.key === 'start') {
+        const start =
+          _.round(_.clamp(
+            event.value, 0, context.videoElement.duration - frameTime
+          ), 2);
+        if (start >= (context.end - frameTime)) {
+          return {
+            start,
+            end: _.round(start + frameTime, 2)
+          };
+        }
+        return {
+          start
+        };
+      }
+
+      if (event.key === 'end') {
+        const end =
+          _.round(_.clamp(
+            event.value, 0 + frameTime, context.videoElement.duration
+          ), 2);
+        if (end <= (context.start + frameTime)) {
+          return {
+            start: _.round(end - frameTime, 2),
+            end
+          };
+        }
+        return {
+          end
+        };
       }
 
       return {
@@ -217,19 +248,16 @@ const gifGenerationSystemMachine = new Machine({
 
   guards: {
     inputValidation (context, event) {
-      const frameTime = (1 / context.fps);
-
       switch (event.key) {
         case 'start':
           if (
-            (event.value >= (context.end - frameTime)) ||
             (event.value < 0)
           ) {
             return false;
           }
           break;
         case 'end':
-          if (event.value <= (context.start + frameTime)) {
+          if (event.value > context.videoElement.duration) {
             return false;
           }
           break;
