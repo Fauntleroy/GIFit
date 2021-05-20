@@ -8,10 +8,11 @@ import * as css from './gif-generation-system.module.css';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
 
-import Button from './button.jsx';
-import ControlBar from './control-bar.jsx';
-import ResizeBar from './resize-bar.jsx';
-import IncrementableInput from './incrementable-input.jsx';
+import Button from '$components/button.jsx';
+import ControlBar from '$components/control-bar.jsx';
+import ResizeBar from '$components/resize-bar.jsx';
+import IncrementableInput from '$components/incrementable-input.jsx';
+import InternalStateInput from '$components/internal-state-input.jsx';
 import AestheticLines from '$components/aesthetic-lines.jsx';
 import SystemComms from '$components/system-comms.jsx';
 import SystemElements from '$components/system-elements.jsx';
@@ -255,7 +256,7 @@ function GifGenerationSystem (props) {
             <SystemInput
               name="Width"
               addendum="px">
-              <input
+              <InternalStateInput
                 type="number"
                 value={state.context.width}
                 onChange={handleWidthInputChange}
@@ -266,7 +267,7 @@ function GifGenerationSystem (props) {
             <SystemInput
               name="Height"
               addendum="px">
-              <input
+              <InternalStateInput
                 type="number"
                 value={state.context.height}
                 onChange={handleHeightInputChange}
@@ -320,7 +321,7 @@ function GifGenerationSystem (props) {
           <SystemInput
             name="Frame Rate"
             addendum="fps">
-            <input
+            <InternalStateInput
               type="number"
               value={state.context.fps}
               onChange={handleFrameRateInputChange}
