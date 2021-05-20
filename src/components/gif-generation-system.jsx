@@ -301,10 +301,19 @@ function GifGenerationSystem (props) {
           animate={formAnim}
           variants={animVariants}>
           <SystemInput
-            name="Quality">
+            name="Quality"
+            addendum={<input
+              className={css.qualityRangeInput}
+              type="range"
+              min="1" max="10" step="1"
+              onChange={handleQualityInputChange}
+              value={state.context.quality} />}>
             <input
+              className={css.qualityNumberInput}
               type="number"
               value={state.context.quality}
+              min="1" max="10" step="1"
+              style={{ flexShrink: '0' }}
               onChange={handleQualityInputChange}
               disabled={!state.matches('configuring')} />
           </SystemInput>

@@ -22,7 +22,7 @@ SystemInput.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   name: PropTypes.string,
-  addendum: PropTypes.string
+  addendum: PropTypes.node
 };
 
 SystemInput.defaultProps = {

@@ -22,10 +22,11 @@
 .inputContainer {
   display: flex;
   flex-direction: row;
-  align-items: baseline;
+  align-items: center;
 }
 
 .addendum {
+  display: flex;
   font-family: var(--ggs-font-numeric);
   font-size: 15px;
   font-weight: bold;

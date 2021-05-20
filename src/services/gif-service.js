@@ -39,7 +39,7 @@ class GifService extends EventEmitter {
     this.aborted = false;
 
     // Process config data
-    const quality = 31 - (config.quality * 3);
+    const quality = (31 - (config.quality * 3));
 
     // Prepare canvas
     this.canvasElement.setAttribute('width', config.width);

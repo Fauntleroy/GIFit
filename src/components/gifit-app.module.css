@@ -78,6 +78,66 @@
   input[type=number] {
     -moz-appearance: textfield; /* Firefox */
   }
+
+  input[type="range"] {
+		-webkit-appearance: none;
+		cursor: -webkit-grab;
+		vertical-align: middle;
+		background: transparent;
+    user-select: none;
+    cursor: default;
+    color: var(--color-primary-system);
+    transition: color 500ms;
+
+		width: 100%;
+		background: linear-gradient(to bottom,
+      transparent,
+      transparent calc(50% - 1px),
+      var(--color-subsystem) calc(50% - 1px),
+      var(--color-subsystem) 50%,
+      transparent 50%
+    );
+    background-position-y: center;
+
+    &::-moz-range-thumb {
+      -webkit-appearance: none;
+			position: relative;
+			z-index: 2;
+			height: 20px;
+			width: 6px;
+			border-radius: 3px;
+			background: currentColor;
+			border: none;
+      user-select: none;
+    }
+
+		&::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			position: relative;
+			z-index: 2;
+			height: 20px;
+			width: 6px;
+			border-radius: 3px;
+			background: currentColor;
+			border: none;
+      user-select: none;
+		}
+
+		&::-webkit-slider-runnable-track {
+			position: relative;
+		}
+
+    &:hover,
+    &:focus {
+      color: var(--color-highlight);
+      outline: none;
+    }
+
+		&:active {
+			cursor: -webkit-grabbing;
+      color: var(--color-active);
+		}
+	}
 }
 
 .actions {

@@ -11,8 +11,8 @@
 	input[type="number"] {
 		position: relative;
 		display: inline-block;
-		width: 0;
-		min-width: 100px;
+		width: 100px;
+		min-width: 15px;
 		margin-left: -12px;
 		margin-right: -6px;
 		padding: 5px 12px;
@@ -128,6 +128,15 @@
 	flex-direction: column;
 	align-self: stretch;
 	justify-content: space-around;
+}
+
+input[type="number"].qualityNumberInput {
+	width: 55px;
+}
+
+.qualityRangeInput {
+	width: 100%;
+	margin-left: 10px;
 }
 
 .startAndEnd {

@@ -36,8 +36,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--color-system);
-  opacity: 0.5;
+  background: var(--color-subsystem);
 }
 
 .start,

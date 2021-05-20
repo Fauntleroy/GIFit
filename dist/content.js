@@ -71726,10 +71726,26 @@ function GifGenerationSystem(props) {
     animate: formAnim,
     variants: animVariants
   }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
-    name: "Quality"
+    name: "Quality",
+    addendum: /*#__PURE__*/_react["default"].createElement("input", {
+      className: css.qualityRangeInput,
+      type: "range",
+      min: "1",
+      max: "10",
+      step: "1",
+      onChange: handleQualityInputChange,
+      value: state.context.quality
+    })
   }, /*#__PURE__*/_react["default"].createElement("input", {
+    className: css.qualityNumberInput,
     type: "number",
     value: state.context.quality,
+    min: "1",
+    max: "10",
+    step: "1",
+    style: {
+      flexShrink: '0'
+    },
     onChange: handleQualityInputChange,
     disabled: !state.matches('configuring')
   })), /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
@@ -71890,7 +71906,7 @@ var _default = GifGenerationSystem;
 exports["default"] = _default;
 
 },{"../state-machines/gif-generation-system":264,"./aesthetic-lines.jsx":226,"./button.jsx":228,"./control-bar.jsx":230,"./gif-generation-system.module.css":235,"./incrementable-input.jsx":239,"./resize-bar.jsx":242,"./system-comms.jsx":244,"./system-elements.jsx":246,"./system-frames.jsx":248,"./system-input.jsx":250,"./system-message.jsx":252,"./system-video-info.jsx":254,"./system-workspace.jsx":256,"@xstate/react":3,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.date.now.js":142,"core-js/modules/es.date.to-string.js":143,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.parse-float.js":155,"core-js/modules/es.parse-int.js":156,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.url.js":169,"framer-motion":172,"lodash":176,"prop-types":184,"react":194}],235:[function(require,module,exports){
-module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","startInput":"_src_components_gif_generation_system_module__startInput","endInput":"_src_components_gif_generation_system_module__endInput","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
+module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","qualityNumberInput":"_src_components_gif_generation_system_module__qualityNumberInput","qualityRangeInput":"_src_components_gif_generation_system_module__qualityRangeInput","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","startInput":"_src_components_gif_generation_system_module__startInput","endInput":"_src_components_gif_generation_system_module__endInput","frames":"_src_components_gif_generation_system_module__frames","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
 },{}],236:[function(require,module,exports){
 module.exports = {}
 },{}],237:[function(require,module,exports){
@@ -73104,7 +73120,7 @@ SystemInput.propTypes = {
   children: _propTypes["default"].node.isRequired,
   className: _propTypes["default"].string,
   name: _propTypes["default"].string,
-  addendum: _propTypes["default"].string
+  addendum: _propTypes["default"].node
 };
 SystemInput.defaultProps = {
   className: '',
