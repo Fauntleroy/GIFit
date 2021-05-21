@@ -6,6 +6,8 @@
 }
 
 .infoListTerm {
+  /* facebook overrode this colour */
+  color: currentColor;
 }
 
 .infoListTerm:after {
@@ -14,6 +16,8 @@
 
 .infoListDetails {
   margin-left: 0;
+  /* facebook overrode this colour */
+  color: currentColor;
 }
 
 .value {

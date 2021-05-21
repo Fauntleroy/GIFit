@@ -26,7 +26,7 @@
 }
 
 .errorTitle {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--ggs-font-numeric);
   font-size: 18px;
   font-weight: bold;
   text-transform: uppercase;

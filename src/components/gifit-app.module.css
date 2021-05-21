@@ -13,8 +13,10 @@
 
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
+  --ggs-font-default: 'Inter', sans-serif;
 	--ggs-font-numeric: 'Space Grotesk', sans-serif;
 	--ggs-font-size-micro: 8px;
+  --ggs-font-size-small: 11px;
 }
 
 .backdrop {
@@ -45,8 +47,8 @@
   align-items: center;
   justify-content: center;
 
-  font-family: Inter, sans-serif;
-  font-size: 11px;
+  font-family: var(--ggs-font-default);
+  font-size: var(--ggs-font-size-small);
   text-transform: uppercase;
   font-weight: 500;
   letter-spacing: 3px;
@@ -61,6 +63,20 @@
   .icon {
     width: 1rem;
     fill: currentColor;
+  }
+
+  input {
+    font-family: var(--ggs-font-numeric) !important;
+  }
+
+  button,
+  label,
+  input[type="submit"] {
+    font-family: var(--ggs-font-default) !important;
+  }
+
+  label {
+    font-size: var(--ggs-font-size-small);
   }
 
   button {

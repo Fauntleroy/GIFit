@@ -107,6 +107,20 @@ function GifGenerationSystem (props) {
     }
   }, [state.context.end]);
 
+  useEffect(() => {
+    function handlePlay () {
+      props.currentVideo.pause();
+    }
+
+    if (props.currentVideo) {
+      props.currentVideo.addEventListener('play', handlePlay);
+    }
+
+    return () => {
+      if (props.currentVideo) props.currentVideo.removeEventListener('play', handlePlay);
+    }
+  }, [props.currentVideo]);
+
   // input handling
   function handleWidthInputChange (event) {
     const newWidth = parseInt(event.target.value, 10) || 0;

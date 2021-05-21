@@ -71456,7 +71456,20 @@ function GifGenerationSystem(props) {
     if (props.currentVideo && (state.matches('configuring') || state.matches('generating'))) {
       props.currentVideo.currentTime = state.context.end;
     }
-  }, [state.context.end]); // input handling
+  }, [state.context.end]);
+  (0, _react.useEffect)(function () {
+    function handlePlay() {
+      props.currentVideo.pause();
+    }
+
+    if (props.currentVideo) {
+      props.currentVideo.addEventListener('play', handlePlay);
+    }
+
+    return function () {
+      if (props.currentVideo) props.currentVideo.removeEventListener('play', handlePlay);
+    };
+  }, [props.currentVideo]); // input handling
 
   function handleWidthInputChange(event) {
     var newWidth = parseInt(event.target.value, 10) || 0;

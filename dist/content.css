@@ -13,8 +13,10 @@
 
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
+  --ggs-font-default: 'Inter', sans-serif;
 	--ggs-font-numeric: 'Space Grotesk', sans-serif;
 	--ggs-font-size-micro: 8px;
+  --ggs-font-size-small: 11px;
 }
 
 ._src_components_gifit_app_module__backdrop {
@@ -45,8 +47,8 @@
   align-items: center;
   justify-content: center;
 
-  font-family: Inter, sans-serif;
-  font-size: 11px;
+  font-family: var(--ggs-font-default);
+  font-size: var(--ggs-font-size-small);
   text-transform: uppercase;
   font-weight: 500;
   letter-spacing: 3px;
@@ -60,6 +62,20 @@
 ._src_components_gifit_app_module__app .icon {
     width: 1rem;
     fill: currentColor;
+  }
+
+._src_components_gifit_app_module__app input {
+    font-family: var(--ggs-font-numeric) !important;
+  }
+
+._src_components_gifit_app_module__app button,
+  ._src_components_gifit_app_module__app label,
+  ._src_components_gifit_app_module__app input[type="submit"] {
+    font-family: var(--ggs-font-default) !important;
+  }
+
+._src_components_gifit_app_module__app label {
+    font-size: var(--ggs-font-size-small);
   }
 
 ._src_components_gifit_app_module__app button {
@@ -181,7 +197,6 @@
   align-items: stretch;
 
   cursor: pointer;
-  font-family: Inter, sans-serif;
   font-size: 11px;
   text-transform: uppercase;
   font-weight: 600;
@@ -251,7 +266,6 @@
 		color: currentColor;
 		background: none;
 
-		font-family: 'Space Grotesk', sans-serif;
 		font-size: 24px;
 		font-weight: bold;
 		font-variant-numeric: tabular-nums;
@@ -461,7 +475,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 }
 
 ._src_components_critical_error_system_module__errorTitle {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--ggs-font-numeric);
   font-size: 18px;
   font-weight: bold;
   text-transform: uppercase;
@@ -936,6 +950,8 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 }
 
 ._src_components_system_video_info_module__infoListTerm {
+  /* facebook overrode this colour */
+  color: currentColor;
 }
 
 ._src_components_system_video_info_module__infoListTerm:after {
@@ -944,6 +960,8 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 
 ._src_components_system_video_info_module__infoListDetails {
   margin-left: 0;
+  /* facebook overrode this colour */
+  color: currentColor;
 }
 
 ._src_components_system_video_info_module__value {
