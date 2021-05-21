@@ -51,6 +51,12 @@ function SystemComms (props) {
     }
   }, [ggsState]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      send('MESSAGE', { text: _.sample(IDLE_PHRASES) });
+    }, 2000);
+  }, []);
+
   return (
     <div className={css.comms}>
       <AnimatePresence>

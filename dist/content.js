@@ -72783,6 +72783,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
+require("core-js/modules/web.timers.js");
+
 require("core-js/modules/es.array.is-array.js");
 
 var _lodash = _interopRequireDefault(require("lodash"));
@@ -72853,6 +72855,13 @@ function SystemComms(props) {
         break;
     }
   }, [ggsState]);
+  (0, _react.useEffect)(function () {
+    setTimeout(function () {
+      send('MESSAGE', {
+        text: _lodash["default"].sample(IDLE_PHRASES)
+      });
+    }, 2000);
+  }, []);
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: css.comms
   }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
@@ -72886,7 +72895,7 @@ SystemComms.propTypes = {
 var _default = SystemComms;
 exports["default"] = _default;
 
-},{"../state-machines/system-comms":267,"./system-comms.module.css":246,"@xstate/react":3,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"framer-motion":172,"lodash":176,"prop-types":184,"react":194}],246:[function(require,module,exports){
+},{"../state-machines/system-comms":267,"./system-comms.module.css":246,"@xstate/react":3,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.timers.js":167,"framer-motion":172,"lodash":176,"prop-types":184,"react":194}],246:[function(require,module,exports){
 module.exports = {"comms":"_src_components_system_comms_module__comms","message":"_src_components_system_comms_module__message"}
 },{}],247:[function(require,module,exports){
 "use strict";
