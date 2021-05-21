@@ -28,10 +28,16 @@
 	height: 100%;
 }
 
+.result,
+.canvas {
+	border-radius: 3px;
+}
+
 .result {
   position: absolute;
   display: block;
   z-index: 7;
+	box-shadow: rgba(0,0,0,0.5) 0 5px 10px;
 }
 
 .canvas {

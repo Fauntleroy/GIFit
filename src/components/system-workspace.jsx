@@ -20,7 +20,7 @@ function SystemWorkspace (props) {
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const dimensionsRef = useRef([0, 0]);
-  const [vibrantColor, setVibrantColor] = useState(null);
+  const [vibrantColor, setVibrantColor] = useState({ red: 0, green: 0, blue: 0 });
 
   // draw the video to the preview canvas
   function drawFrame () {
@@ -63,8 +63,8 @@ function SystemWorkspace (props) {
     if (imageRef.current) {
       const colors = await extractColors(imageRef.current, { saturationImportance: 0.5 });
       const colorsByBrightness = sortColorsByBrightness(colors);
-      const { red, green, blue } = colorsByBrightness[0];
-      setVibrantColor(`rgba(${red}, ${green}, ${blue}, 0.25)`);
+      const newVibrantColor = colorsByBrightness[0];
+      setVibrantColor(newVibrantColor);
     }
   }, [props.gifUrl]);
 
@@ -77,12 +77,13 @@ function SystemWorkspace (props) {
       animate={{
         translateY: isGenerating ? '15px' : '0px'
       }}
-      transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.75 }}>
+      transition={{ type: 'spring', damping: 10, mass: 0.25, delay: 0.75 }}>
       <motion.div
         className={css.images}
         initial={{
           translateZ: '0px',
-          filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
+          filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
+          boxShadow: '0px 0px 0px rgba(0, 0, 0, 0)'
         }}
         animate={{
           translateZ: isComplete ? '35px' : '0px',
@@ -90,10 +91,12 @@ function SystemWorkspace (props) {
             ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
             : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
           boxShadow: isComplete
-            ? `0px 10px 100px ${vibrantColor}`
+            ? `0px 10px 100px rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.25)`
             : '0px 0px 0px rgba(0, 0, 0, 0)'
         }}
-        transition={{ type: 'spring', tension: 2550, damping: 10, mass: 0.25, delay: 0.25 }}>
+        transition={{
+          type: 'spring', damping: 10, mass: 0.25, delay: 0.25
+        }}>
         <AnimatePresence>
           {(isComplete && props.gifUrl) &&
           <img

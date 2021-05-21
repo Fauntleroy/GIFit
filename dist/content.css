@@ -984,10 +984,16 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 	height: 100%;
 }
 
+._src_components_system_workspace_module__result,
+._src_components_system_workspace_module__canvas {
+	border-radius: 3px;
+}
+
 ._src_components_system_workspace_module__result {
   position: absolute;
   display: block;
   z-index: 7;
+	box-shadow: rgba(0,0,0,0.5) 0 5px 10px;
 }
 
 ._src_components_system_workspace_module__canvas {

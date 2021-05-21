@@ -73463,11 +73463,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-require("regenerator-runtime/runtime.js");
-
 require("core-js/modules/es.array.concat.js");
 
 require("core-js/modules/es.array.is-array.js");
+
+require("regenerator-runtime/runtime.js");
 
 var _lodash = _interopRequireDefault(require("lodash"));
 
@@ -73522,7 +73522,11 @@ function SystemWorkspace(props) {
   var imageRef = (0, _react.useRef)(null);
   var dimensionsRef = (0, _react.useRef)([0, 0]);
 
-  var _useState = (0, _react.useState)(null),
+  var _useState = (0, _react.useState)({
+    red: 0,
+    green: 0,
+    blue: 0
+  }),
       _useState2 = _slicedToArray(_useState, 2),
       vibrantColor = _useState2[0],
       setVibrantColor = _useState2[1]; // draw the video to the preview canvas
@@ -73556,8 +73560,7 @@ function SystemWorkspace(props) {
     };
   }, [videoElement]);
   (0, _react.useEffect)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-    var colors, colorsByBrightness, _colorsByBrightness$, red, green, blue;
-
+    var colors, colorsByBrightness, newVibrantColor;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -73575,8 +73578,8 @@ function SystemWorkspace(props) {
           case 3:
             colors = _context.sent;
             colorsByBrightness = sortColorsByBrightness(colors);
-            _colorsByBrightness$ = colorsByBrightness[0], red = _colorsByBrightness$.red, green = _colorsByBrightness$.green, blue = _colorsByBrightness$.blue;
-            setVibrantColor("rgba(".concat(red, ", ").concat(green, ", ").concat(blue, ", 0.25)"));
+            newVibrantColor = colorsByBrightness[0];
+            setVibrantColor(newVibrantColor);
 
           case 7:
           case "end":
@@ -73595,7 +73598,6 @@ function SystemWorkspace(props) {
     },
     transition: {
       type: 'spring',
-      tension: 2550,
       damping: 10,
       mass: 0.25,
       delay: 0.75
@@ -73604,16 +73606,16 @@ function SystemWorkspace(props) {
     className: css.images,
     initial: {
       translateZ: '0px',
-      filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)'
+      filter: 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
+      boxShadow: '0px 0px 0px rgba(0, 0, 0, 0)'
     },
     animate: {
       translateZ: isComplete ? '35px' : '0px',
       filter: isComplete ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)' : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
-      boxShadow: isComplete ? "0px 10px 100px ".concat(vibrantColor) : '0px 0px 0px rgba(0, 0, 0, 0)'
+      boxShadow: isComplete ? "0px 10px 100px rgba(".concat(vibrantColor.red, ", ").concat(vibrantColor.green, ", ").concat(vibrantColor.blue, ", 0.25)") : '0px 0px 0px rgba(0, 0, 0, 0)'
     },
     transition: {
       type: 'spring',
-      tension: 2550,
       damping: 10,
       mass: 0.25,
       delay: 0.25
