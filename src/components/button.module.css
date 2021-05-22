@@ -11,8 +11,9 @@
   line-height: 1.25;
   letter-spacing: 3px;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
 
-  min-width: 175px;
   border: none;
   border-radius: 3px;
   padding: 0;
@@ -21,6 +22,10 @@
   color: rgb(25, 25, 25);
 
   transition: all 750ms var(--ease-out-expo);
+
+  &:focus {
+    background: hsl(var(--hsl-aluminum-blue));
+  }
 
   &:hover {
     background: var(--color-highlight);
@@ -41,7 +46,7 @@
 
 .children {
   flex-basis: 100%;
-  padding: 7px 10px;
+  padding: 7px 30px;
 }
 
 .icon {

@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 
 import * as css from './button.module.css';
 
-function Button ({ type, children, icon, ...passthroughProps }) {
+function Button ({ type, children, icon, ...props }) {
   return (
     <button
       className={css.button}
       type={type}
-      {...passthroughProps}>
+      {...props}>
       <span className={css.children}>
         {children}
       </span>

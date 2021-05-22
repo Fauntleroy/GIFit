@@ -55,13 +55,22 @@
   color: var(--color-primary-system);
 }
 
+@keyframes :global(gifitPulse) {
+  0% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.45) 0 0 1px 0px;
+  }
+  100% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 5px, hsla(var(--hsl-aluminum-blue), 0) 0 0 1px 20px;
+  }
+}
+
 .app :global {
   * {
     box-sizing: border-box;
   }
 
   .icon {
-    width: 1rem;
+    width: 16px;
     fill: currentColor;
   }
 
@@ -73,6 +82,17 @@
   label,
   input[type="submit"] {
     font-family: var(--ggs-font-default) !important;
+  }
+
+  input,
+  button {
+    &:focus {
+      outline: none;
+      animation-iteration-count: infinite;
+      animation-duration: 2750ms;
+      animation-name: gifitPulse;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
   }
 
   label {

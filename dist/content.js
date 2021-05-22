@@ -70865,12 +70865,12 @@ function Button(_ref) {
   var type = _ref.type,
       children = _ref.children,
       icon = _ref.icon,
-      passthroughProps = _objectWithoutProperties(_ref, ["type", "children", "icon"]);
+      props = _objectWithoutProperties(_ref, ["type", "children", "icon"]);
 
   return /*#__PURE__*/_react["default"].createElement("button", _extends({
     className: css.button,
     type: type
-  }, passthroughProps), /*#__PURE__*/_react["default"].createElement("span", {
+  }, props), /*#__PURE__*/_react["default"].createElement("span", {
     className: css.children
   }, children), icon && /*#__PURE__*/_react["default"].createElement("span", {
     className: css.icon
@@ -71231,9 +71231,9 @@ require("core-js/modules/es.function.name.js");
 
 require("core-js/modules/es.array.from.js");
 
-require("core-js/modules/es.weak-map.js");
-
 require("core-js/modules/es.object.define-property.js");
+
+require("core-js/modules/es.weak-map.js");
 
 require("core-js/modules/es.object.get-own-property-descriptor.js");
 
@@ -71307,6 +71307,8 @@ function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -71838,9 +71840,9 @@ function GifGenerationSystem(props) {
     },
     transition: {
       type: 'spring',
+      mass: 0.5,
       stiffness: 500,
       damping: 50,
-      tension: 10000,
       delay: 0.35
     }
   }, /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
@@ -71854,49 +71856,50 @@ function GifGenerationSystem(props) {
     },
     exit: {
       width: '0px'
-    },
-    style: {
-      overflow: 'hidden'
     }
   }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
     type: "submit",
-    icon: submitButtonContents[1]
+    icon: submitButtonContents[1],
+    style: {
+      width: '200px'
+    }
   }, submitButtonContents[0])), isComplete && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.a, {
     className: css.action,
     href: gifUrl,
     download: "gifit_".concat(Date.now(), ".gif"),
+    tabIndex: "-1",
     key: "save-action",
     initial: {
       width: '0px',
-      scaleY: '0.5',
+      scaleY: 0,
       opacity: 0,
       margin: '0px 0px'
     },
     animate: {
       width: 'auto',
-      scaleY: '1',
+      scaleY: 1,
       opacity: 1,
       margin: '0px 5px'
     },
     exit: {
       width: '0px',
-      scaleY: '0.5',
+      scaleY: 0,
       opacity: 0,
       margin: '0px 0px'
     },
-    style: {
-      overflow: 'hidden'
-    },
-    transition: {
+    transition: _defineProperty({
       type: 'spring',
+      mass: 0.5,
       stiffness: 500,
-      damping: 50,
-      tension: 10000,
-      mass: 0.25
-    }
+      damping: 50
+    }, "mass", 0.25)
   }, /*#__PURE__*/_react["default"].createElement(_button["default"], {
     type: "button",
     icon: /*#__PURE__*/_react["default"].createElement(ArrowDown, null),
+    style: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden'
+    },
     disabled: !isComplete
   }, "Save GIF"))))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.lines,

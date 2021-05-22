@@ -410,18 +410,18 @@ function GifGenerationSystem (props) {
           <motion.div
             className={css.actions}
             animate={{ y: isComplete ? '-125%' : '0%' }}
-            transition={{ type: 'spring', stiffness: 500, damping: 50, tension: 10000, delay: 0.35 }}>
+            transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, delay: 0.35 }}>
             <AnimatePresence>
               <motion.span
                 className={css.action}
                 key="primary-action"
                 initial={{ width: '0px' }}
                 animate={{ width: 'auto' }}
-                exit={{ width: '0px' }}
-                style={{ overflow: 'hidden' }}>
+                exit={{ width: '0px' }}>
                 <Button
                   type="submit"
-                  icon={submitButtonContents[1]}>
+                  icon={submitButtonContents[1]}
+                  style={{ width: '200px' }}>
                   {submitButtonContents[0]}
                 </Button>
               </motion.span>
@@ -430,15 +430,16 @@ function GifGenerationSystem (props) {
                 className={css.action}
                 href={gifUrl}
                 download={`gifit_${Date.now()}.gif`}
+                tabIndex="-1"
                 key="save-action"
-                initial={{ width: '0px', scaleY: '0.5', opacity: 0, margin: '0px 0px' }}
-                animate={{ width: 'auto', scaleY: '1', opacity: 1, margin: '0px 5px' }}
-                exit={{ width: '0px', scaleY: '0.5', opacity: 0, margin: '0px 0px' }}
-                style={{ overflow: 'hidden' }}
-                transition={{ type: 'spring', stiffness: 500, damping: 50, tension: 10000, mass: 0.25 }}>
+                initial={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
+                animate={{ width: 'auto', scaleY: 1, opacity: 1, margin: '0px 5px' }}
+                exit={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
+                transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, mass: 0.25 }}>
                 <Button
                   type="button"
                   icon={<ArrowDown />}
+                  style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
                   disabled={!isComplete}>
                   Save GIF
                 </Button>

@@ -19,7 +19,7 @@
 .title {
   display: inline-block;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
   padding: 10px;
   border-radius: 3px;
   border: currentColor 1px solid;
@@ -31,7 +31,7 @@
   line-height: 175%;
   text-transform: none;
   letter-spacing: normal;
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
 }
 
 .signature {

@@ -55,12 +55,21 @@
   color: var(--color-primary-system);
 }
 
+@keyframes gifitPulse {
+  0% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.45) 0 0 1px 0px;
+  }
+  100% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 5px, hsla(var(--hsl-aluminum-blue), 0) 0 0 1px 20px;
+  }
+}
+
 ._src_components_gifit_app_module__app * {
     box-sizing: border-box;
   }
 
 ._src_components_gifit_app_module__app .icon {
-    width: 1rem;
+    width: 16px;
     fill: currentColor;
   }
 
@@ -73,6 +82,14 @@
   ._src_components_gifit_app_module__app input[type="submit"] {
     font-family: var(--ggs-font-default) !important;
   }
+
+._src_components_gifit_app_module__app input:focus, ._src_components_gifit_app_module__app button:focus {
+      outline: none;
+      animation-iteration-count: infinite;
+      animation-duration: 2750ms;
+      animation-name: gifitPulse;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
 
 ._src_components_gifit_app_module__app label {
     font-size: var(--ggs-font-size-small);
@@ -203,8 +220,9 @@
   line-height: 1.25;
   letter-spacing: 3px;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
 
-  min-width: 175px;
   border: none;
   border-radius: 3px;
   padding: 0;
@@ -214,6 +232,10 @@
 
   transition: all 750ms var(--ease-out-expo);
 }
+
+  ._src_components_button_module__button:focus {
+    background: hsl(var(--hsl-aluminum-blue));
+  }
 
   ._src_components_button_module__button:hover {
     background: var(--color-highlight);
@@ -233,7 +255,7 @@
 
 ._src_components_button_module__children {
   flex-basis: 100%;
-  padding: 7px 10px;
+  padding: 7px 30px;
 }
 
 ._src_components_button_module__icon {
@@ -1036,7 +1058,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 ._src_components_system_message_module__title {
   display: inline-block;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
   padding: 10px;
   border-radius: 3px;
   border: currentColor 1px solid;
@@ -1048,7 +1070,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   line-height: 175%;
   text-transform: none;
   letter-spacing: normal;
-  margin-bottom: 1rem;
+  margin-bottom: 15px;
 }
 
 ._src_components_system_message_module__signature:before {
