@@ -71430,7 +71430,6 @@ function GifGenerationSystem(props) {
       state = _useMachine2[0],
       send = _useMachine2[1];
 
-  var videoRef = (0, _react.useRef)(null);
   var widthRef = (0, _react.useRef)(null);
   var widthBarRef = (0, _react.useRef)(null);
   var heightRef = (0, _react.useRef)(null);
@@ -71655,9 +71654,9 @@ function GifGenerationSystem(props) {
     transition: {
       type: 'spring',
       delay: 0.25,
-      stiffness: 300,
+      stiffness: 400,
       damping: 50,
-      tension: 500
+      mass: 10
     }
   }, /*#__PURE__*/_react["default"].createElement(_systemElements["default"], {
     state: state
@@ -72060,12 +72059,10 @@ function GifitApp(props) {
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, !state.matches('closed') && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.backdrop,
     initial: {
-      opacity: 0,
-      transform: 'scale(0.75)'
+      opacity: 0
     },
     animate: {
-      opacity: 1,
-      transform: 'scale(1)'
+      opacity: 1
     },
     exit: {
       opacity: 0,

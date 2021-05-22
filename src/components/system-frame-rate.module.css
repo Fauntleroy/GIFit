@@ -7,6 +7,6 @@
 .frame {
   display: block;
   width: 1px;
-  height: 5px;
+  height: 3px;
   background: var(--color-subsystem);
 }

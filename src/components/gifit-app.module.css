@@ -1,5 +1,5 @@
 :root {
-	--hsl-aluminum-blue: 225, 100%, 75%;
+	--hsl-aluminum-blue: 225, 100%, 80%;
 	--color-shade: hsla(0, 0%, 0%, 0.35);
   --color-active: hsla(160, 100%, 62.7%, 1);
 	--color-nightshade: hsla(240, 21.6%, 15.5%, 0.95);
@@ -7,7 +7,7 @@
 	--color-intensity-red: hsl(350, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
   --color-primary-system: hsla(225, 89%, 95%, 1);
-	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.25);
+	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.3);
 	--color-highlight: var(--color-intensity-red);
   --color-error: hsl(20deg, 100%, 55%);
 
@@ -42,6 +42,7 @@
   right: 0;
   bottom: 0;
   left: 0;
+  perspective: 500px;
 
   display: flex;
   align-items: center;
@@ -162,6 +163,18 @@
 		&::-webkit-slider-runnable-track {
 			position: relative;
 		}
+
+    &:focus {
+      animation: none;
+
+      &::-moz-range-thumb {
+        outline: none;
+        animation-iteration-count: infinite;
+        animation-duration: 2750ms;
+        animation-name: gifitPulse;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      }
+    }
 
     &:hover,
     &:focus {

@@ -71,7 +71,6 @@ const animVariants = {
 function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
 
-  const videoRef = useRef(null);
   const widthRef = useRef(null);
   const widthBarRef = useRef(null);
   const heightRef = useRef(null);
@@ -231,7 +230,7 @@ function GifGenerationSystem (props) {
       className={css.ggs}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ type: 'spring', delay: 0.25, stiffness: 300, damping: 50, tension: 500 }}>
+      transition={{ type: 'spring', delay: 0.25, stiffness: 400, damping: 50, mass: 10 }}>
 
       <SystemElements state={state} />
 
