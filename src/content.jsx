@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom';
 
 import GifitApp from './components/gifit-app.jsx';
 
-const browser = window.browser || window.chrome;
-
 // Engage party mode
 // Party mode = initialize React apps in DOM
 const gifitElement = document.createElement('div');
@@ -15,7 +13,7 @@ function ContentApp () {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    browser.runtime.onMessage.addListener(() => {
+    (browser || chrome).runtime.onMessage.addListener(() => {
       setActive(true);
     });
   }, []);

@@ -73852,9 +73852,8 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var browser = window.browser || window.chrome; // Engage party mode
+// Engage party mode
 // Party mode = initialize React apps in DOM
-
 var gifitElement = document.createElement('div');
 gifitElement.id = 'gifit';
 document.body.appendChild(gifitElement);
@@ -73866,7 +73865,7 @@ function ContentApp() {
       setActive = _useState2[1];
 
   (0, _react.useEffect)(function () {
-    browser.runtime.onMessage.addListener(function () {
+    (browser || chrome).runtime.onMessage.addListener(function () {
       setActive(true);
     });
   }, []);
