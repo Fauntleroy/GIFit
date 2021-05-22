@@ -71442,6 +71442,11 @@ function GifGenerationSystem(props) {
   var frameTime = _lodash["default"].round(1 / state.context.fps, 2);
 
   (0, _react.useEffect)(function () {
+    if (widthRef.current) {
+      widthRef.current.querySelector('input').focus();
+    }
+  }, [widthRef.current]);
+  (0, _react.useEffect)(function () {
     send('INITIALIZE', {
       videoElement: props.currentVideo
     });
