@@ -24,7 +24,7 @@
   transition: all 750ms var(--ease-out-expo);
 
   &:focus {
-    background: hsl(var(--hsl-aluminum-blue));
+    background: hsl(225, 100%, 90%);
   }
 
   &:hover {

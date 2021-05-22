@@ -57,10 +57,10 @@
 
 @keyframes gifitPulse {
   0% {
-    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.45) 0 0 1px 0px;
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.45) 0 0 0px 0px;
   }
   100% {
-    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 5px, hsla(var(--hsl-aluminum-blue), 0) 0 0 1px 20px;
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 0px 1px, hsla(var(--hsl-aluminum-blue), 0) 0 0 5px 15px;
   }
 }
 
@@ -234,7 +234,7 @@
 }
 
   ._src_components_button_module__button:focus {
-    background: hsl(var(--hsl-aluminum-blue));
+    background: hsl(225, 100%, 90%);
   }
 
   ._src_components_button_module__button:hover {
