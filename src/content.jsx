@@ -13,9 +13,16 @@ function ContentApp () {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    (browser || chrome).runtime.onMessage.addListener(() => {
-      setActive(true);
-    });
+    // I can't believe I have to do this
+    if (chrome) {
+      chrome.runtime.onMessage.addListener(() => {
+        setActive(true);
+      });
+    } else {
+      browser.runtime.onMessage.addListener(() => {
+        setActive(true);
+      });
+    }
   }, []);
 
   function handleClose () {

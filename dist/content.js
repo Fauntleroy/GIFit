@@ -73865,9 +73865,16 @@ function ContentApp() {
       setActive = _useState2[1];
 
   (0, _react.useEffect)(function () {
-    (browser || chrome).runtime.onMessage.addListener(function () {
-      setActive(true);
-    });
+    // I can't believe I have to do this
+    if (chrome) {
+      chrome.runtime.onMessage.addListener(function () {
+        setActive(true);
+      });
+    } else {
+      browser.runtime.onMessage.addListener(function () {
+        setActive(true);
+      });
+    }
   }, []);
 
   function handleClose() {
