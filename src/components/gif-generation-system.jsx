@@ -18,6 +18,7 @@ import SystemComms from '$components/system-comms.jsx';
 import SystemElements from '$components/system-elements.jsx';
 import SystemInput from '$components/system-input.jsx';
 import SystemFrames from '$components/system-frames.jsx';
+import SystemFrameRate from '$components/system-frame-rate.jsx';
 import SystemVideoInfo from '$components/system-video-info.jsx';
 import SystemWorkspace from '$components/system-workspace.jsx';
 import SystemMessage from '$components/system-message.jsx';
@@ -347,6 +348,9 @@ function GifGenerationSystem (props) {
               onChange={handleFrameRateInputChange}
               disabled={!state.matches('configuring')} />
           </SystemInput>
+          <div className={css.frameRate}>
+            <SystemFrameRate fps={state.context.fps} />
+          </div>
         </motion.div>
 
         <div className={css.startAndEnd}>

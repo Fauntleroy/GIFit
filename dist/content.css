@@ -395,6 +395,7 @@
 	flex-direction: column;
 	align-self: stretch;
 	justify-content: space-around;
+	position: relative;
 }
 
 input[type="number"]._src_components_gif_generation_system_module__qualityNumberInput {
@@ -450,6 +451,13 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 	justify-self: stretch;
 	align-self: center;
 	min-width: 150px;
+}
+
+._src_components_gif_generation_system_module__frameRate {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 
 ._src_components_gif_generation_system_module__lines {
@@ -1081,4 +1089,15 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 
   font-weight: bold;
   align-self: flex-end;
+}._src_components_system_frame_rate_module__frameRate {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+._src_components_system_frame_rate_module__frame {
+  display: block;
+  width: 1px;
+  height: 5px;
+  background: var(--color-subsystem);
 }

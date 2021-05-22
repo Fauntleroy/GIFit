@@ -1,0 +1,12 @@
+.frameRate {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.frame {
+  display: block;
+  width: 1px;
+  height: 5px;
+  background: var(--color-subsystem);
+}
