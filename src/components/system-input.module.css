@@ -27,6 +27,7 @@
 
 .addendum {
   display: flex;
+  z-index: 2;
   font-family: var(--ggs-font-numeric);
   font-size: 15px;
   font-weight: bold;

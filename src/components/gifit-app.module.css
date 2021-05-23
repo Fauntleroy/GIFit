@@ -8,7 +8,7 @@
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
   --color-primary-system: hsla(225, 89%, 95%, 1);
 	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.3);
-	--color-highlight: var(--color-intensity-red);
+	--color-highlight: hsla(160, 100%, 82.5%, 1);
   --color-error: hsl(20deg, 100%, 55%);
 
 	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -87,6 +87,10 @@
 
   input,
   button {
+    &:hover {
+      box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 2px;
+    }
+
     &:focus {
       outline: none;
       animation-iteration-count: infinite;
@@ -167,12 +171,20 @@
     &:focus {
       animation: none;
 
-      &::-moz-range-thumb {
+      &::-webkit-slider-thumb {
         outline: none;
         animation-iteration-count: infinite;
         animation-duration: 2750ms;
         animation-name: gifitPulse;
         animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+      }
+    }
+
+    &:hover {
+      box-shadow: none;
+
+      &::-moz-range-thumb {
+        box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 2px;
       }
     }
 

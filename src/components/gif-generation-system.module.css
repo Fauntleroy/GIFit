@@ -18,9 +18,9 @@
 		margin-right: -6px;
 		padding: 5px 12px;
 		border-radius: 4px;
-		border: none;
 		color: currentColor;
-		background: none;
+		border: none;
+		background: var(--color-shade);
 
 		font-size: 24px;
 		font-weight: bold;
@@ -44,7 +44,6 @@
 		&:hover,
 		&:focus {
 			outline: none;
-			background: var(--color-shade);
 		}
 	}
 }

@@ -85,9 +85,9 @@ function AestheticLines (props) {
           { x: startRef.current.offsetLeft,
             y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
           { x: startRef.current.offsetLeft,
-            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10 },
+            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10 },
+            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}
@@ -109,9 +109,9 @@ function AestheticLines (props) {
           { x: endRef.current.offsetLeft,
             y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
           { x: endRef.current.offsetLeft,
-            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15 },
+            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15 },
+            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21 },
           { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
             y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
         ]}

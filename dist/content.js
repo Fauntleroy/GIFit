@@ -70751,10 +70751,10 @@ function AestheticLines(props) {
       y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3
     }, {
       x: startRef.current.offsetLeft,
-      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10
+      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 10
+      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -70777,10 +70777,10 @@ function AestheticLines(props) {
       y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3
     }, {
       x: endRef.current.offsetLeft,
-      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15
+      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 15
+      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21
     }, {
       x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
       y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
@@ -73643,14 +73643,19 @@ function SystemWorkspace(props) {
   var imageRef = (0, _react.useRef)(null);
   var dimensionsRef = (0, _react.useRef)([0, 0]);
 
-  var _useState = (0, _react.useState)({
+  var _useState = (0, _react.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      isSeeking = _useState2[0],
+      setIsSeeking = _useState2[1];
+
+  var _useState3 = (0, _react.useState)({
     red: 0,
     green: 0,
     blue: 0
   }),
-      _useState2 = _slicedToArray(_useState, 2),
-      vibrantColor = _useState2[0],
-      setVibrantColor = _useState2[1]; // draw the video to the preview canvas
+      _useState4 = _slicedToArray(_useState3, 2),
+      vibrantColor = _useState4[0],
+      setVibrantColor = _useState4[1]; // draw the video to the preview canvas
 
 
   function drawFrame() {
@@ -73669,15 +73674,27 @@ function SystemWorkspace(props) {
   (0, _react.useEffect)(function () {
     throttledDrawFrame();
   }, [width, height, isComplete]);
+
+  function handleSeeking() {
+    setIsSeeking(true);
+  }
+
+  function handleSeeked() {
+    drawFrame();
+    setIsSeeking(false);
+  }
+
   (0, _react.useEffect)(function () {
     if (!videoElement) {
       return;
     }
 
     videoElement.pause();
-    videoElement.addEventListener('seeked', drawFrame);
+    videoElement.addEventListener('seeking', handleSeeking);
+    videoElement.addEventListener('seeked', handleSeeked);
     return function () {
-      videoElement.removeEventListener('seeked', drawFrame);
+      videoElement.removeEventListener('seeking', handleSeeking);
+      videoElement.removeEventListener('seeked', handleSeeked);
     };
   }, [videoElement]);
   (0, _react.useEffect)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -73758,15 +73775,41 @@ function SystemWorkspace(props) {
     },
     animate: {
       width: width,
-      height: height
+      height: height,
+      opacity: isSeeking && !isGenerating ? 0.5 : 1
     },
     transition: {
       type: 'spring',
       bounce: 0,
-      delay: 0.75
+      delay: 0.75,
+      opacity: {
+        delay: 0.5
+      }
     },
     height: height,
     width: width
+  }), isSeeking && !isGenerating && /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    className: css.seekIndicator,
+    initial: {
+      scale: 0
+    },
+    animate: {
+      scale: 1,
+      x: ['-20px', '20px']
+    },
+    exit: {
+      scale: 0
+    },
+    transition: {
+      delay: 0.5,
+      x: {
+        repeat: Infinity,
+        repeatType: 'reverse',
+        duration: 0.25,
+        repeatDelay: 0.25
+      }
+    },
+    key: "seek-indicator"
   }))));
 }
 
@@ -73794,7 +73837,7 @@ var _default = SystemWorkspace;
 exports["default"] = _default;
 
 },{"./system-workspace.module.css":260,"core-js/modules/es.array.concat.js":132,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.promise.js":157,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"extract-colors":171,"framer-motion":172,"lodash":176,"prop-types":184,"react":194,"regenerator-runtime/runtime.js":195}],260:[function(require,module,exports){
-module.exports = {"workspace":"_src_components_system_workspace_module__workspace","images":"_src_components_system_workspace_module__images","result":"_src_components_system_workspace_module__result","canvas":"_src_components_system_workspace_module__canvas"}
+module.exports = {"workspace":"_src_components_system_workspace_module__workspace","images":"_src_components_system_workspace_module__images","result":"_src_components_system_workspace_module__result","canvas":"_src_components_system_workspace_module__canvas","seekIndicator":"_src_components_system_workspace_module__seekIndicator"}
 },{}],261:[function(require,module,exports){
 "use strict";
 

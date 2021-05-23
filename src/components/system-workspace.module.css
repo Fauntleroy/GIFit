@@ -36,11 +36,22 @@
 .result {
   position: absolute;
   display: block;
-  z-index: 7;
+  z-index: 20;
 	box-shadow: rgba(0,0,0,0.5) 0 5px 10px;
 }
 
 .canvas {
   background: black;
-	z-index: 6;
+	z-index: 10;
+}
+
+.seekIndicator {
+	position: absolute;
+	z-index: 15;
+	top: 50%;
+	left: 50%;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--color-active);
 }

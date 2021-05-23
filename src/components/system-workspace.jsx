@@ -20,6 +20,7 @@ function SystemWorkspace (props) {
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const dimensionsRef = useRef([0, 0]);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [vibrantColor, setVibrantColor] = useState({ red: 0, green: 0, blue: 0 });
 
   // draw the video to the preview canvas
@@ -46,16 +47,27 @@ function SystemWorkspace (props) {
     throttledDrawFrame();
   }, [width, height, isComplete]);
 
+  function handleSeeking () {
+    setIsSeeking(true);
+  }
+
+  function handleSeeked () {
+    drawFrame();
+    setIsSeeking(false);
+  }
+
   useEffect(() => {
     if (!videoElement) {
       return;
     }
 
     videoElement.pause();
-    videoElement.addEventListener('seeked', drawFrame);
+    videoElement.addEventListener('seeking', handleSeeking);
+    videoElement.addEventListener('seeked', handleSeeked);
 
     return () => {
-      videoElement.removeEventListener('seeked', drawFrame);
+      videoElement.removeEventListener('seeking', handleSeeking);
+      videoElement.removeEventListener('seeked', handleSeeked);
     };
   }, [videoElement]);
 
@@ -110,10 +122,17 @@ function SystemWorkspace (props) {
             ref={canvasRef}
             style={{ willChange: 'width, height' }}
             initial={{ width: width, height: height }}
-            animate={{ width: width, height: height }}
-            transition={{ type: 'spring', bounce: 0, delay: 0.75 }}
+            animate={{ width: width, height: height, opacity: isSeeking && !isGenerating ? 0.5 : 1 }}
+            transition={{ type: 'spring', bounce: 0, delay: 0.75, opacity: { delay: 0.5 }}}
             height={height}
             width={width} />}
+          {isSeeking && !isGenerating &&
+            <motion.div className={css.seekIndicator}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1, x: ['-20px', '20px'] }}
+              exit={{ scale: 0 }}
+              transition={{ delay: 0.5, x: { repeat: Infinity, repeatType: 'reverse', duration: 0.25, repeatDelay: 0.25 }}}
+              key="seek-indicator" />}
         </AnimatePresence>
       </motion.div>
     </motion.div>
