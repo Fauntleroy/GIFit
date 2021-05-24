@@ -25,7 +25,8 @@
   "content_security_policy": "script-src 'self'; object-src 'self'; child-src blob:",
   "web_accessible_resources": [
     "gif.js.map",
-    "content.css"
+    "content.css",
+    "/fonts/*"
   ],
   "icons": {
     "128": "icon_128.png"
