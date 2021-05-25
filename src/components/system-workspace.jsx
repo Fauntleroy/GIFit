@@ -47,6 +47,12 @@ function SystemWorkspace (props) {
     throttledDrawFrame();
   }, [width, height, isComplete]);
 
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.imageSmoothingQuality = 'high';
+    }
+  }, [canvasRef.current]);
+
   function handleSeeking () {
     setIsSeeking(true);
   }

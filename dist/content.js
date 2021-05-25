@@ -73674,6 +73674,11 @@ function SystemWorkspace(props) {
   (0, _react.useEffect)(function () {
     throttledDrawFrame();
   }, [width, height, isComplete]);
+  (0, _react.useEffect)(function () {
+    if (canvasRef.current) {
+      canvasRef.current.imageSmoothingQuality = 'high';
+    }
+  }, [canvasRef.current]);
 
   function handleSeeking() {
     setIsSeeking(true);

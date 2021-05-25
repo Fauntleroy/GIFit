@@ -1,7 +1,11 @@
 :root {
   @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-bold.woff2'), url('../fonts/inter-bold.woff');
+    src: 
+      url('chrome-extension://__MSG_@@extension_id__/fonts/inter-bold.woff2'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/inter-bold.woff'),
+      url('/fonts/inter-bold.woff2'),
+      url('/fonts/inter-bold.woff');
     font-weight: bold;
     font-style: normal;
     font-display: swap;
@@ -9,7 +13,11 @@
 
   @font-face {
     font-family: 'Inter';
-    src: url('../fonts/inter-medium.woff2'), url('../fonts/inter-medium.woff');
+    src:
+      url('chrome-extension://__MSG_@@extension_id__/fonts/inter-medium.woff2'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/inter-medium.woff'),
+      url('/fonts/inter-medium.woff2'),
+      url('/fonts/inter-medium.woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -17,7 +25,11 @@
 
   @font-face {
     font-family: 'Space Grotesk';
-    src: url('../fonts/space-grotesk-regular.woff2'), url('../fonts/space-grotesk-regular.woff');
+    src:
+      url('chrome-extension://__MSG_@@extension_id__/fonts/space-grotesk-regular.woff2'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/space-grotesk-regular.woff'),
+      url('/fonts/space-grotesk-regular.woff2'),
+      url('/fonts/space-grotesk-regular.woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -25,7 +37,11 @@
 
   @font-face {
     font-family: 'Space Grotesk';
-    src: url('../fonts/space-grotesk-semibold.woff2'), url('../fonts/space-grotesk-semibold.woff');
+    src:
+      url('chrome-extension://__MSG_@@extension_id__/fonts/space-grotesk-semibold.woff2'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/space-grotesk-semibold.woff'),
+      url('/fonts/space-grotesk-semibold.woff2'),
+      url('/fonts/space-grotesk-semibold.woff');
     font-weight: bold;
     font-style: normal;
     font-display: swap;
