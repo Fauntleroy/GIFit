@@ -70843,17 +70843,17 @@ require("core-js/modules/es.object.keys.js");
 
 require("core-js/modules/es.array.index-of.js");
 
-var _react = _interopRequireDefault(require("react"));
+var _react = _interopRequireWildcard(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var css = _interopRequireWildcard(require("./button.module.css"));
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 
@@ -70861,7 +70861,7 @@ function _objectWithoutProperties(source, excluded) { if (source == null) return
 
 function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 
-function Button(_ref) {
+var Button = /*#__PURE__*/(0, _react.forwardRef)(function (_ref, ref) {
   var type = _ref.type,
       children = _ref.children,
       icon = _ref.icon,
@@ -70869,14 +70869,14 @@ function Button(_ref) {
 
   return /*#__PURE__*/_react["default"].createElement("button", _extends({
     className: css.button,
-    type: type
+    type: type,
+    ref: ref
   }, props), /*#__PURE__*/_react["default"].createElement("span", {
     className: css.children
   }, children), icon && /*#__PURE__*/_react["default"].createElement("span", {
     className: css.icon
   }, icon));
-}
-
+});
 Button.propTypes = {
   children: _propTypes["default"].node.isRequired,
   icon: _propTypes["default"].node,
@@ -71438,6 +71438,7 @@ function GifGenerationSystem(props) {
   var startRef = (0, _react.useRef)(null);
   var endRef = (0, _react.useRef)(null);
   var formRef = (0, _react.useRef)(null);
+  var saveRef = (0, _react.useRef)(null);
   var formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
 
   var frameTime = _lodash["default"].round(1 / state.context.fps, 2);
@@ -71477,7 +71478,12 @@ function GifGenerationSystem(props) {
     return function () {
       if (props.currentVideo) props.currentVideo.removeEventListener('play', handlePlay);
     };
-  }, [props.currentVideo]); // input handling
+  }, [props.currentVideo]);
+  (0, _react.useEffect)(function () {
+    if (saveRef.current) {
+      saveRef.current.focus();
+    }
+  }, [state.context.gifData]); // input handling
 
   function handleWidthInputChange(event) {
     var newWidth = parseInt(event.target.value, 10) || 0;
@@ -71910,7 +71916,8 @@ function GifGenerationSystem(props) {
       whiteSpace: 'nowrap',
       overflow: 'hidden'
     },
-    disabled: !isComplete
+    disabled: !isComplete,
+    ref: saveRef
   }, "Save GIF"))))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.lines,
     custom: 7,

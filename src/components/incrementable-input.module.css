@@ -1,6 +1,6 @@
 .incrementableInput {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   position: relative;
 
   .input[type="text"] {
@@ -13,7 +13,8 @@
 .incrementor {
   display: flex;
   position: absolute;
-  padding: 7px 1px;
+  height: 100%;
+  padding: 7px 7px;
   color: currentColor;
   z-index: 1;
   background: transparent;

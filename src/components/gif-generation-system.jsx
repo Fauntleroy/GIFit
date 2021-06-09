@@ -79,6 +79,7 @@ function GifGenerationSystem (props) {
   const startRef = useRef(null);
   const endRef = useRef(null);
   const formRef = useRef(null);
+  const saveRef = useRef(null);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
   const frameTime = _.round(1 / state.context.fps, 2);
 
@@ -126,6 +127,12 @@ function GifGenerationSystem (props) {
       if (props.currentVideo) props.currentVideo.removeEventListener('play', handlePlay);
     }
   }, [props.currentVideo]);
+
+  useEffect(() => {
+    if (saveRef.current) {
+      saveRef.current.focus();
+    }
+  }, [state.context.gifData]);
 
   // input handling
   function handleWidthInputChange (event) {
@@ -449,7 +456,8 @@ function GifGenerationSystem (props) {
                   type="button"
                   icon={<ArrowDown />}
                   style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
-                  disabled={!isComplete}>
+                  disabled={!isComplete}
+                  ref={saveRef}>
                   Save GIF
                 </Button>
               </motion.a>}

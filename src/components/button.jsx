@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 
 import * as css from './button.module.css';
 
-function Button ({ type, children, icon, ...props }) {
+const Button = forwardRef(({ type, children, icon, ...props }, ref) => {
   return (
     <button
       className={css.button}
       type={type}
+      ref={ref}
       {...props}>
       <span className={css.children}>
         {children}
@@ -19,7 +20,7 @@ function Button ({ type, children, icon, ...props }) {
       }
     </button>
   );
-}
+});
 
 Button.propTypes = {
   children: PropTypes.node.isRequired,

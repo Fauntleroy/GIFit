@@ -58,7 +58,7 @@
 
 @keyframes :global(gifitPulse) {
   0% {
-    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.45) 0 0 0px 0px;
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.5) 0 0 0px 0px;
   }
   100% {
     box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 0px 1px, hsla(var(--hsl-aluminum-blue), 0) 0 0 5px 15px;
