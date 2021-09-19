@@ -4,47 +4,7 @@
 	border-radius: 4px;
 	
 	backdrop-filter: blur(4px) contrast(1.025);
-	background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
-	background-color: hsla(234.5, 35.5%, 10%, 0.45);
-	box-shadow: hsla(225, 49.3%, 60.6%, 0.15) 0px 15px 45px 0px;
-	
-	input[type="text"],
-	input[type="number"] {
-		position: relative;
-		display: inline-block;
-		width: 100px;
-		min-width: 15px;
-		margin: 0;
-		padding: 5px 12px;
-		border-radius: 4px;
-		color: currentColor;
-		border: none;
-		background: var(--color-shade);
-
-		font-size: 24px;
-		font-weight: bold;
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-
-		transition: background 250ms;
-
-		&::after {
-			content: '';
-			display: block;
-			width: 5px;
-			height: 5px;
-			border-radius: 50%;
-			background: black;
-			position: absolute;
-			top: 3px;
-			right: 4px;
-		}
-
-		&:hover,
-		&:focus {
-			outline: none;
-		}
-	}
+	background-color: hsla(234.5, 35.5%, 15%, 0.75);
 }
 
 .form {

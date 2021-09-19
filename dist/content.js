@@ -71755,16 +71755,7 @@ function GifGenerationSystem(props) {
     animate: formAnim,
     variants: animVariants
   }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
-    name: "Quality",
-    addendum: /*#__PURE__*/_react["default"].createElement("input", {
-      className: css.qualityRangeInput,
-      type: "range",
-      min: "1",
-      max: "10",
-      step: "1",
-      onChange: handleQualityInputChange,
-      value: state.context.quality
-    })
+    name: "Quality"
   }, /*#__PURE__*/_react["default"].createElement("input", {
     className: css.qualityNumberInput,
     type: "number",
@@ -71777,7 +71768,15 @@ function GifGenerationSystem(props) {
     },
     onChange: handleQualityInputChange,
     disabled: !state.matches('configuring')
-  })), /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
+  })), /*#__PURE__*/_react["default"].createElement("input", {
+    className: css.qualityRangeInput,
+    type: "range",
+    min: "1",
+    max: "10",
+    step: "1",
+    onChange: handleQualityInputChange,
+    value: state.context.quality
+  }), /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
     name: "Frame Rate",
     addendum: "fps"
   }, /*#__PURE__*/_react["default"].createElement(_internalStateInput["default"], {
@@ -73403,7 +73402,7 @@ var _default = SystemInput;
 exports["default"] = _default;
 
 },{"./system-input.module.css":254,"classnames":13,"core-js/modules/es.array.index-of.js":135,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.assign.js":147,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.keys.js":152,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"prop-types":184,"react":194}],254:[function(require,module,exports){
-module.exports = {"systemInput":"_src_components_system_input_module__systemInput","name":"_src_components_system_input_module__name","inputContainer":"_src_components_system_input_module__inputContainer","addendum":"_src_components_system_input_module__addendum"}
+module.exports = {"systemInput":"_src_components_system_input_module__systemInput","gifitPulse":"_src_components_system_input_module__gifitPulse","name":"_src_components_system_input_module__name","inputContainer":"_src_components_system_input_module__inputContainer","addendum":"_src_components_system_input_module__addendum"}
 },{}],255:[function(require,module,exports){
 "use strict";
 

@@ -2,7 +2,7 @@
 	--hsl-aluminum-blue: 225, 100%, 80%;
 	--color-shade: hsla(0, 0%, 0%, 0.35);
   --color-active: hsla(160, 100%, 62.7%, 1);
-	--color-nightshade: hsla(240, 21.6%, 15.5%, 0.95);
+	--color-nightshade: hsla(240, 21.6%, 5%, 0.95);
   --color-nighttime: hsla(235, 25.6%, 10%, 1);
 	--color-intensity-red: hsl(350, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
@@ -16,7 +16,7 @@
   --ggs-font-default: 'Inter', sans-serif;
 	--ggs-font-numeric: 'Space Grotesk', sans-serif;
 	--ggs-font-size-micro: 8px;
-  --ggs-font-size-small: 11px;
+  --ggs-font-size-small: 10px;
 }
 
 .backdrop {
@@ -33,6 +33,7 @@
   justify-content: center;
 
   background-color: var(--color-nightshade);
+  /* background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent); */
 }
 
 .app {
@@ -52,7 +53,7 @@
   font-size: var(--ggs-font-size-small);
   text-transform: uppercase;
   font-weight: 500;
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   color: var(--color-primary-system);
 }
 
@@ -85,7 +86,6 @@
     font-family: var(--ggs-font-default) !important;
   }
 
-  input,
   button {
     &:hover {
       box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 2px;

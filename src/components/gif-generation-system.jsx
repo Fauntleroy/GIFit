@@ -329,13 +329,7 @@ function GifGenerationSystem (props) {
           animate={formAnim}
           variants={animVariants}>
           <SystemInput
-            name="Quality"
-            addendum={<input
-              className={css.qualityRangeInput}
-              type="range"
-              min="1" max="10" step="1"
-              onChange={handleQualityInputChange}
-              value={state.context.quality} />}>
+            name="Quality">
             <input
               className={css.qualityNumberInput}
               type="number"
@@ -345,6 +339,12 @@ function GifGenerationSystem (props) {
               onChange={handleQualityInputChange}
               disabled={!state.matches('configuring')} />
           </SystemInput>
+          <input
+              className={css.qualityRangeInput}
+              type="range"
+              min="1" max="10" step="1"
+              onChange={handleQualityInputChange}
+              value={state.context.quality} />
           <SystemInput
             name="Frame Rate"
             addendum="fps">

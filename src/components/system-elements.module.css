@@ -1,7 +1,5 @@
 .label {
-	padding: 4px 20px;
-	border: currentColor 1px solid;
-	border-radius: 3px;
+	padding: 0;
 	opacity: var(--system-interface-opacity);
 	color: var(--color-system);
 	line-height: 1.25;
@@ -10,7 +8,7 @@
 .corner {
 	position: absolute;
 	display: block;
-	width: 4px;
+	width: 3px;
 	height: 10px;
 	color: var(--color-system);
 	border: currentColor 1px solid;

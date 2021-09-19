@@ -1,16 +1,68 @@
+@keyframes gifitPulse {
+  0% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.35) 0 0 1px 2px, hsla(var(--hsl-aluminum-blue), 0.5) 0 0 0px 0px;
+  }
+  100% {
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 0px 1px, hsla(var(--hsl-aluminum-blue), 0) 0 0 5px 15px;
+  }
+}
+
 .systemInput {
 	display: block;
-	margin: 15px;
+	margin: 10px;
 	color: var(--color-primary-system);
-	transition: color 500ms;
+  background: var(--color-shade);
+  transition: color 500ms, background 250ms;
+  padding: 8px 12px 2px 12px;
+  border-radius: 3px;
+
+  input[type="text"],
+	input[type="number"] {
+		position: relative;
+		display: inline-block;
+		width: 4em;
+		min-width: 15px;
+		padding: 5px 12px;
+		color: currentColor;
+		border: none;
+		background: transparent;
+
+		font-size: 18px;
+		font-weight: bold;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+
+		&::after {
+			content: '';
+			display: block;
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: black;
+			position: absolute;
+			top: 3px;
+			right: 4px;
+		}
+
+		&:hover,
+		&:focus {
+			outline: none;
+		}
+	}
 
   &:hover {
     color: var(--color-highlight);
+    box-shadow: hsla(var(--hsl-aluminum-blue), 0.05) 0 0 1px 2px;
   }
 
 	&:focus-within {
 		color: var(--color-active);
     transition: color 125ms;
+    outline: none;
+    animation-iteration-count: infinite;
+    animation-duration: 2750ms;
+    animation-name: gifitPulse;
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 	}
 }
 
@@ -23,16 +75,17 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 5px -10px 0 -10px;
+  margin: 0 0 0 -10px;
 }
 
 .addendum {
   display: flex;
   z-index: 2;
   font-family: var(--ggs-font-numeric);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: bold;
   text-transform: none;
   letter-spacing: normal;
   color: currentColor;
+  margin-top: 0.4em;
 }
