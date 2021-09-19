@@ -10,7 +10,7 @@ import gifGenerationSystemMachine from '../state-machines/gif-generation-system'
 
 import Button from '$components/button.jsx';
 import ControlBar from '$components/control-bar.jsx';
-import ResizeBar from '$components/resize-bar.jsx';
+import ResizeWrapper from '$components/resize-wrapper.jsx';
 import IncrementableInput from '$components/incrementable-input.jsx';
 import InternalStateInput from '$components/internal-state-input.jsx';
 import AestheticLines from '$components/aesthetic-lines.jsx';
@@ -260,10 +260,6 @@ function GifGenerationSystem (props) {
           animate={formAnim}
           variants={animVariants}
           ref={widthBarRef}>
-          <ResizeBar 
-            value={state.context.width}
-            onChange={handleWidthControlBarChange}
-            disabled={!state.matches('configuring')} />
         </motion.div>
 
         <motion.div
@@ -305,22 +301,23 @@ function GifGenerationSystem (props) {
             className={css.heightBar}
             style={{ height: `${state.context.height}px` }}
             ref={heightBarRef}>
-            <ResizeBar
-              orientation="vertical"
-              value={state.context.height}
-              onChange={handleHeightControlBarChange}
-              disabled={!state.matches('configuring')} />
           </div>
         </motion.div>
         
         <div className={css.workspace}>
-          <SystemWorkspace
-            videoElement={props.currentVideo}
-            width={state.context.width}
-            height={state.context.height}
-            gifUrl={gifUrl}
-            isGenerating={state.matches('generating')}
-            isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
+          <ResizeWrapper
+            orientation="vertical"
+            value={state.context.height}
+            onChange={handleHeightControlBarChange}
+            disabled={!state.matches('configuring')}>
+            <SystemWorkspace
+              videoElement={props.currentVideo}
+              width={state.context.width}
+              height={state.context.height}
+              gifUrl={gifUrl}
+              isGenerating={state.matches('generating')}
+              isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
+          </ResizeWrapper>
         </div>
 
         <motion.div

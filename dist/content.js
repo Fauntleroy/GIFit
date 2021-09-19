@@ -70652,6 +70652,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
+require("core-js/modules/es.array.concat.js");
+
 var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
@@ -70684,37 +70686,24 @@ function AestheticLines(props) {
   }
 
   (0, _useFrameRate["default"])(60);
-  var rangeElement = timeBarRef.current.querySelector('.range');
-  var widthElement = widthRef.current;
-  var widthBarElement = widthBarRef.current;
+  var rangeEl = timeBarRef.current.querySelector('.range');
+  var widthEl = widthRef.current;
+  var widthBarEl = widthBarRef.current;
   return /*#__PURE__*/_react["default"].createElement("svg", {
     className: css.aestheticLines
   }, /*#__PURE__*/_react["default"].createElement("circle", {
-    cx: widthElement.offsetLeft,
-    cy: widthElement.offsetTop + LABEL_Y_OFFSET,
+    cx: widthEl.offsetLeft,
+    cy: widthEl.offsetTop + LABEL_Y_OFFSET,
     r: "1.5",
     fill: "none",
     stroke: "var(--color-subsystem)",
     strokeWidth: "1"
-  }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
-    points: [{
-      x: widthElement.offsetLeft,
-      y: widthElement.offsetTop + LABEL_Y_OFFSET
-    }, {
-      x: widthElement.offsetLeft,
-      y: widthBarElement.offsetTop - 15
-    }, {
-      x: widthBarElement.offsetLeft + widthBarElement.offsetWidth / 2,
-      y: widthBarElement.offsetTop - 15
-    }, {
-      x: widthBarElement.offsetLeft + widthBarElement.offsetWidth / 2,
-      y: widthBarElement.offsetTop + widthBarElement.offsetHeight
-    }],
+  }), /*#__PURE__*/_react["default"].createElement("path", {
+    d: "\n          M".concat(widthEl.offsetLeft, " ").concat(widthEl.offsetTop + LABEL_Y_OFFSET, "\n          C").concat(widthEl.offsetLeft, ",").concat(widthBarEl.offsetTop + widthBarEl.offsetHeight, "\n          ").concat(widthEl.offsetLeft, ",").concat(widthBarEl.offsetTop + widthBarEl.offsetHeight, "\n          ").concat(widthBarEl.offsetLeft + widthBarEl.offsetWidth / 2, ",").concat(widthBarEl.offsetTop + widthBarEl.offsetHeight, "\n        "),
     stroke: "var(--color-subsystem)",
     strokeDasharray: "1,2",
     strokeWidth: "1",
-    fill: "none",
-    r: 5
+    fill: "none"
   }), /*#__PURE__*/_react["default"].createElement("circle", {
     cx: heightRef.current.offsetLeft,
     cy: heightRef.current.offsetTop + LABEL_Y_OFFSET,
@@ -70722,22 +70711,12 @@ function AestheticLines(props) {
     fill: "none",
     stroke: "var(--color-subsystem)",
     strokeWidth: "1"
-  }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
-    points: [{
-      x: heightRef.current.offsetLeft,
-      y: heightRef.current.offsetTop + LABEL_Y_OFFSET
-    }, {
-      x: heightRef.current.offsetLeft,
-      y: heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2
-    }, {
-      x: heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth,
-      y: heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2
-    }],
+  }), /*#__PURE__*/_react["default"].createElement("path", {
+    d: "\n          M".concat(heightRef.current.offsetLeft, " ").concat(heightRef.current.offsetTop + LABEL_Y_OFFSET, "\n          C").concat(heightRef.current.offsetLeft, ",").concat(heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2, "\n          ").concat(heightRef.current.offsetLeft, ",").concat(heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2, "\n          ").concat(heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth, ",").concat(heightBarRef.current.offsetTop + heightBarRef.current.offsetHeight / 2, "\n        "),
     stroke: "var(--color-subsystem)",
     strokeDasharray: "1,2",
     strokeWidth: "1",
-    fill: "none",
-    r: 5
+    fill: "none"
   }), /*#__PURE__*/_react["default"].createElement("circle", {
     cx: startRef.current.offsetLeft,
     cy: startRef.current.offsetTop + LABEL_Y_OFFSET + 3,
@@ -70745,25 +70724,12 @@ function AestheticLines(props) {
     fill: "none",
     stroke: "var(--color-subsystem)",
     strokeWidth: "1"
-  }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
-    points: [{
-      x: startRef.current.offsetLeft,
-      y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3
-    }, {
-      x: startRef.current.offsetLeft,
-      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17
-    }, {
-      x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-      y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17
-    }, {
-      x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-      y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
-    }],
+  }), /*#__PURE__*/_react["default"].createElement("path", {
+    d: "\n          M".concat(startRef.current.offsetLeft, " ").concat(startRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          C").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft, ",").concat(startRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          ").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft, ",").concat(startRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          ").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft, ",").concat(timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight, "\n        "),
     stroke: "var(--color-subsystem)",
     strokeDasharray: "1,2",
     strokeWidth: "1",
-    fill: "none",
-    r: 5
+    fill: "none"
   }), /*#__PURE__*/_react["default"].createElement("circle", {
     cx: endRef.current.offsetLeft,
     cy: endRef.current.offsetTop + LABEL_Y_OFFSET + 3,
@@ -70771,25 +70737,12 @@ function AestheticLines(props) {
     fill: "none",
     stroke: "var(--color-subsystem)",
     strokeWidth: "1"
-  }), /*#__PURE__*/_react["default"].createElement(_pathline["default"], {
-    points: [{
-      x: endRef.current.offsetLeft,
-      y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3
-    }, {
-      x: endRef.current.offsetLeft,
-      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21
-    }, {
-      x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-      y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21
-    }, {
-      x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-      y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight
-    }],
+  }), /*#__PURE__*/_react["default"].createElement("path", {
+    d: "\n          M".concat(endRef.current.offsetLeft, " ").concat(endRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          C").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, ",").concat(endRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          ").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, ",").concat(endRef.current.offsetTop + LABEL_Y_OFFSET + 3, "\n          ").concat(timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, ",").concat(timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight, "\n        "),
     stroke: "var(--color-subsystem)",
     strokeDasharray: "1,2",
     strokeWidth: "1",
-    fill: "none",
-    r: 5
+    fill: "none"
   }));
 }
 
@@ -70805,7 +70758,7 @@ AestheticLines.propTypes = {
 var _default = AestheticLines;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":262,"./aesthetic-lines.module.css":227,"./pathline.jsx":242,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"prop-types":184,"react":194}],227:[function(require,module,exports){
+},{"../hooks/use-frame-rate":262,"./aesthetic-lines.module.css":227,"./pathline.jsx":242,"core-js/modules/es.array.concat.js":132,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"prop-types":184,"react":194}],227:[function(require,module,exports){
 module.exports = {"aestheticLines":"_src_components_aesthetic_lines_module__aestheticLines"}
 },{}],228:[function(require,module,exports){
 "use strict";
@@ -71280,7 +71233,7 @@ var _button = _interopRequireDefault(require("./button.jsx"));
 
 var _controlBar = _interopRequireDefault(require("./control-bar.jsx"));
 
-var _resizeBar = _interopRequireDefault(require("./resize-bar.jsx"));
+var _resizeWrapper = _interopRequireDefault(require("./resize-wrapper.jsx"));
 
 var _incrementableInput = _interopRequireDefault(require("./incrementable-input.jsx"));
 
@@ -71686,11 +71639,7 @@ function GifGenerationSystem(props) {
     animate: formAnim,
     variants: animVariants,
     ref: widthBarRef
-  }, /*#__PURE__*/_react["default"].createElement(_resizeBar["default"], {
-    value: state.context.width,
-    onChange: handleWidthControlBarChange,
-    disabled: !state.matches('configuring')
-  })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+  }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.videoInfo,
     custom: 1,
     animate: formAnim,
@@ -71731,13 +71680,13 @@ function GifGenerationSystem(props) {
       height: "".concat(state.context.height, "px")
     },
     ref: heightBarRef
-  }, /*#__PURE__*/_react["default"].createElement(_resizeBar["default"], {
+  })), /*#__PURE__*/_react["default"].createElement("div", {
+    className: css.workspace
+  }, /*#__PURE__*/_react["default"].createElement(_resizeWrapper["default"], {
     orientation: "vertical",
     value: state.context.height,
     onChange: handleHeightControlBarChange,
     disabled: !state.matches('configuring')
-  }))), /*#__PURE__*/_react["default"].createElement("div", {
-    className: css.workspace
   }, /*#__PURE__*/_react["default"].createElement(_systemWorkspace["default"], {
     videoElement: props.currentVideo,
     width: state.context.width,
@@ -71749,7 +71698,7 @@ function GifGenerationSystem(props) {
         generatingGif: 'succeeded'
       }
     })
-  })), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+  }))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.qualityAndFrameRate,
     custom: 3,
     animate: formAnim,
@@ -71939,7 +71888,7 @@ GifGenerationSystem.propTypes = {
 var _default = GifGenerationSystem;
 exports["default"] = _default;
 
-},{"../state-machines/gif-generation-system":267,"./aesthetic-lines.jsx":226,"./button.jsx":228,"./control-bar.jsx":230,"./gif-generation-system.module.css":235,"./incrementable-input.jsx":239,"./internal-state-input.jsx":241,"./resize-bar.jsx":243,"./system-comms.jsx":245,"./system-elements.jsx":247,"./system-frame-rate.jsx":249,"./system-frames.jsx":251,"./system-input.jsx":253,"./system-message.jsx":255,"./system-video-info.jsx":257,"./system-workspace.jsx":259,"@xstate/react":3,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.date.now.js":142,"core-js/modules/es.date.to-string.js":143,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.parse-float.js":155,"core-js/modules/es.parse-int.js":156,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.url.js":169,"framer-motion":172,"lodash":176,"prop-types":184,"react":194}],235:[function(require,module,exports){
+},{"../state-machines/gif-generation-system":267,"./aesthetic-lines.jsx":226,"./button.jsx":228,"./control-bar.jsx":230,"./gif-generation-system.module.css":235,"./incrementable-input.jsx":239,"./internal-state-input.jsx":241,"./resize-wrapper.jsx":243,"./system-comms.jsx":245,"./system-elements.jsx":247,"./system-frame-rate.jsx":249,"./system-frames.jsx":251,"./system-input.jsx":253,"./system-message.jsx":255,"./system-video-info.jsx":257,"./system-workspace.jsx":259,"@xstate/react":3,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.date.now.js":142,"core-js/modules/es.date.to-string.js":143,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.parse-float.js":155,"core-js/modules/es.parse-int.js":156,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"core-js/modules/web.url.js":169,"framer-motion":172,"lodash":176,"prop-types":184,"react":194}],235:[function(require,module,exports){
 module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","qualityNumberInput":"_src_components_gif_generation_system_module__qualityNumberInput","qualityRangeInput":"_src_components_gif_generation_system_module__qualityRangeInput","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","end":"_src_components_gif_generation_system_module__end","startInput":"_src_components_gif_generation_system_module__startInput","endInput":"_src_components_gif_generation_system_module__endInput","frames":"_src_components_gif_generation_system_module__frames","frameRate":"_src_components_gif_generation_system_module__frameRate","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
 },{}],236:[function(require,module,exports){
 module.exports = {}
@@ -72640,9 +72589,9 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _react2 = require("@xstate/react");
 
-var css = _interopRequireWildcard(require("./resize-bar.module.css"));
+var css = _interopRequireWildcard(require("./resize-wrapper.module.css"));
 
-var _createResizeBarMachine = _interopRequireDefault(require("../state-machines/create-resize-bar-machine"));
+var _createResizeWrapperMachine = _interopRequireDefault(require("../state-machines/create-resize-wrapper-machine"));
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -72664,14 +72613,12 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-function getPosition(x, y, orientation) {
-  return orientation === 'horizontal' ? x : y;
+function getPosition(x, y, handle) {
+  return handle === 'left' || handle === 'right' ? x : y;
 }
 
-function ResizeBar(props) {
-  var _cx;
-
-  var resizeBarMachine = (0, _createResizeBarMachine["default"])({
+function ResizeWrapper(props) {
+  var resizeBarMachine = (0, _createResizeWrapperMachine["default"])({
     id: 'width',
     initialSize: props.value,
     minimumSize: props.minimum
@@ -72689,8 +72636,10 @@ function ResizeBar(props) {
       isActive = _useState2[0],
       setIsActive = _useState2[1];
 
+  var handle;
+
   var handleMouseMove = _lodash["default"].throttle(function (event) {
-    var position = getPosition(event.clientX, event.clientY, props.orientation);
+    var position = getPosition(event.clientX, event.clientY, handle);
     send('SLIDE', {
       position: position,
       precise: event.shiftKey
@@ -72698,7 +72647,7 @@ function ResizeBar(props) {
   }, 1000 / 120);
 
   function handleMouseUp(event) {
-    var position = getPosition(event.clientX, event.clientY, props.orientation);
+    var position = getPosition(event.clientX, event.clientY, handle);
     setIsActive(false);
     send('END', {
       position: position,
@@ -72709,12 +72658,13 @@ function ResizeBar(props) {
   }
 
   function handleMouseDown(event) {
-    var position = getPosition(event.clientX, event.clientY, props.orientation);
+    handle = event.target.dataset.handle;
+    var position = getPosition(event.clientX, event.clientY, handle);
     setIsActive(true);
     send('START', {
       initialSize: props.value,
       position: position,
-      handle: event.target.dataset.handle,
+      handle: handle,
       precise: event.shiftKey
     });
     window.addEventListener('mouseup', handleMouseUp);
@@ -72741,42 +72691,47 @@ function ResizeBar(props) {
     }
   }, [props.disabled]);
   return /*#__PURE__*/_react["default"].createElement("div", {
-    className: (0, _classnames["default"])(css.resizeBar, (_cx = {}, _defineProperty(_cx, css.resizeBarVertical, props.orientation === 'vertical'), _defineProperty(_cx, css.resizeBarIsActive, isActive), _cx)),
+    className: (0, _classnames["default"])(css.resizeWrapper, _defineProperty({}, css.resizeWrapperIsActive, isActive)),
     ref: controlBarRef
-  }, /*#__PURE__*/_react["default"].createElement("div", {
-    className: css.total
-  }), /*#__PURE__*/_react["default"].createElement("button", {
-    className: css.start,
+  }, props.children, /*#__PURE__*/_react["default"].createElement("button", {
+    className: css.top,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "start"
-  }), /*#__PURE__*/_react["default"].createElement("span", {
-    className: css.range
+    "data-handle": "top"
   }), /*#__PURE__*/_react["default"].createElement("button", {
-    className: css.end,
+    className: css.right,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "end"
+    "data-handle": "right"
+  }), /*#__PURE__*/_react["default"].createElement("button", {
+    className: css.bottom,
+    type: "button",
+    onMouseDown: handleMouseDown,
+    "data-handle": "bottom"
+  }), /*#__PURE__*/_react["default"].createElement("button", {
+    className: css.left,
+    type: "button",
+    onMouseDown: handleMouseDown,
+    "data-handle": "left"
   }));
 }
 
-ResizeBar.propTypes = {
+ResizeWrapper.propTypes = {
+  children: _propTypes["default"].node.isRequired,
   value: _propTypes["default"].number.isRequired,
   minimum: _propTypes["default"].number,
   onChange: _propTypes["default"].func.isRequired,
-  disabled: _propTypes["default"].bool,
-  orientation: _propTypes["default"].oneOf(['horizontal', 'vertical'])
+  disabled: _propTypes["default"].bool
 };
-ResizeBar.defaultProps = {
+ResizeWrapper.defaultProps = {
   disabled: false,
-  minimum: 10,
-  orientation: 'horizontal'
+  minimum: 75
 };
-var _default = ResizeBar;
+var _default = ResizeWrapper;
 exports["default"] = _default;
 
-},{"../state-machines/create-resize-bar-machine":266,"./resize-bar.module.css":244,"@xstate/react":3,"classnames":13,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"lodash":176,"prop-types":184,"react":194}],244:[function(require,module,exports){
-module.exports = {"resizeBar":"_src_components_resize_bar_module__resizeBar","resizeBarIsActive":"_src_components_resize_bar_module__resizeBarIsActive","total":"_src_components_resize_bar_module__total","start":"_src_components_resize_bar_module__start","end":"_src_components_resize_bar_module__end","range":"_src_components_resize_bar_module__range","resizeBarVertical":"_src_components_resize_bar_module__resizeBarVertical"}
+},{"../state-machines/create-resize-wrapper-machine":266,"./resize-wrapper.module.css":244,"@xstate/react":3,"classnames":13,"core-js/modules/es.array.from.js":134,"core-js/modules/es.array.is-array.js":136,"core-js/modules/es.array.iterator.js":137,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.function.name.js":145,"core-js/modules/es.object.define-property.js":149,"core-js/modules/es.object.get-own-property-descriptor.js":150,"core-js/modules/es.object.to-string.js":154,"core-js/modules/es.string.iterator.js":160,"core-js/modules/es.symbol.description.js":161,"core-js/modules/es.symbol.iterator.js":162,"core-js/modules/es.symbol.js":163,"core-js/modules/es.weak-map.js":164,"core-js/modules/web.dom-collections.iterator.js":166,"lodash":176,"prop-types":184,"react":194}],244:[function(require,module,exports){
+module.exports = {"resizeWrapper":"_src_components_resize_wrapper_module__resizeWrapper","resizeWrapperIsActive":"_src_components_resize_wrapper_module__resizeWrapperIsActive","top":"_src_components_resize_wrapper_module__top","right":"_src_components_resize_wrapper_module__right","bottom":"_src_components_resize_wrapper_module__bottom","left":"_src_components_resize_wrapper_module__left"}
 },{}],245:[function(require,module,exports){
 "use strict";
 
@@ -73778,15 +73733,11 @@ function SystemWorkspace(props) {
     className: css.canvas,
     ref: canvasRef,
     style: {
-      willChange: 'width, height'
-    },
-    initial: {
+      willChange: 'width, height',
       width: width,
       height: height
     },
     animate: {
-      width: width,
-      height: height,
       opacity: isSeeking && !isGenerating ? 0.5 : 1
     },
     transition: {
@@ -74416,11 +74367,11 @@ var _xstate = require("xstate");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function createResizeBarMachine(_ref) {
+function createResizeWrapperMachine(_ref) {
   var id = _ref.id,
       initialSize = _ref.initialSize,
       minimumSize = _ref.minimumSize;
-  var resizeBarMachine = (0, _xstate.Machine)({
+  var resizeWrapperMachine = (0, _xstate.Machine)({
     id: "resize-bar__".concat(id),
     initial: 'idle',
     context: {
@@ -74492,7 +74443,7 @@ function createResizeBarMachine(_ref) {
       updateScale: (0, _xstate.assign)(function (context, event) {
         var delta = (event.position - context.initialPosition) * 2;
         var deltaRatio = delta / context.initialSize;
-        var scale = context.activeHandle === 'start' ? context.initialScale - deltaRatio : context.initialScale + deltaRatio;
+        var scale = context.activeHandle === 'left' || context.activeHandle === 'top' ? context.initialScale - deltaRatio : context.initialScale + deltaRatio;
         var minimumScale = minimumSize / context.initialSize;
         scale = _lodash["default"].clamp(scale, minimumScale, Infinity);
 
@@ -74517,10 +74468,10 @@ function createResizeBarMachine(_ref) {
       })
     }
   });
-  return resizeBarMachine;
+  return resizeWrapperMachine;
 }
 
-var _default = createResizeBarMachine;
+var _default = createResizeWrapperMachine;
 exports["default"] = _default;
 
 },{"core-js/modules/es.object.define-property.js":149,"lodash":176,"xstate":214}],267:[function(require,module,exports){

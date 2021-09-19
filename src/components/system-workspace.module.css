@@ -7,8 +7,6 @@
   align-items: stretch;
 	perspective: 500px;
 
-  background: var(--color-shade);
-
 	&:before {
 		top: 6px;
 		left: 8px;
@@ -30,7 +28,6 @@
 
 .result,
 .canvas {
-	border-radius: 3px;
 }
 
 .result {

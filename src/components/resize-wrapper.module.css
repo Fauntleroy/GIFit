@@ -1,0 +1,71 @@
+.resizeWrapper {
+  display: inline-block;
+  position: relative;
+  user-select: none;
+  color: var(--color-primary-system);
+  transition: color 500ms;
+
+  &:hover,
+  &:focus-within {
+    color: var(--color-highlight);
+  }
+
+  &IsActive,
+  &IsActive:hover,
+  &IsActive:focus-within {
+    color: var(--color-active);
+    transition: color 0ms;
+  }
+}
+
+.top, .right, .bottom, .left {
+  position: absolute;
+  padding: 0;
+  background: var(--color-primary-system);
+
+  &:hover {
+    background: var(--color-active);
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+  }
+}
+
+.top, .bottom {
+  height: 1px;
+  width: 100%;
+  cursor: ns-resize !important;
+}
+
+.right, .left {
+  width: 1px;
+  height: 100%;
+  cursor: ew-resize !important;
+}
+
+.top {
+  top: -1px;
+  left: 0;
+}
+
+.right {
+  top: 0;
+  right: -1px;
+}
+
+.bottom {
+  bottom: -1px;
+  left: 0;
+}
+
+.left {
+  top: 0;
+  left: -1px;
+}

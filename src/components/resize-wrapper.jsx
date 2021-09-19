@@ -4,15 +4,15 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useMachine } from '@xstate/react';
 
-import * as css from './resize-bar.module.css';
-import createResizeBarMachine from '../state-machines/create-resize-bar-machine';
+import * as css from './resize-wrapper.module.css';
+import createResizeWrapperMachine from '../state-machines/create-resize-wrapper-machine';
 
-function getPosition (x, y, orientation) {
-  return (orientation === 'horizontal') ? x : y;
+function getPosition (x, y, handle) {
+  return (handle === 'left' || handle === 'right') ? x : y;
 }
 
-function ResizeBar (props) {
-  const resizeBarMachine = createResizeBarMachine({
+function ResizeWrapper (props) {
+  const resizeBarMachine = createResizeWrapperMachine({
     id: 'width',
     initialSize: props.value,
     minimumSize: props.minimum
@@ -20,9 +20,10 @@ function ResizeBar (props) {
   const [state, send] = useMachine(resizeBarMachine);
   const controlBarRef = useRef(null);
   const [isActive, setIsActive] = useState(false);
+  let handle;
 
   const handleMouseMove = _.throttle(function (event) {
-    const position = getPosition(event.clientX, event.clientY, props.orientation);
+    const position = getPosition(event.clientX, event.clientY, handle);
     send('SLIDE', {
       position,
       precise: event.shiftKey
@@ -30,7 +31,7 @@ function ResizeBar (props) {
   }, 1000 / 120);
 
   function handleMouseUp (event) {
-    const position = getPosition(event.clientX, event.clientY, props.orientation);
+    const position = getPosition(event.clientX, event.clientY, handle);
     setIsActive(false);
     send('END', {
       position,
@@ -42,12 +43,13 @@ function ResizeBar (props) {
   }
 
   function handleMouseDown (event) {
-    const position = getPosition(event.clientX, event.clientY, props.orientation);
+    handle = event.target.dataset.handle;
+    const position = getPosition(event.clientX, event.clientY, handle);
     setIsActive(true);
     send('START', {
       initialSize: props.value,
       position,
-      handle: event.target.dataset.handle,
+      handle,
       precise: event.shiftKey
     });
 
@@ -79,39 +81,46 @@ function ResizeBar (props) {
 
   return (
     <div
-      className={cx(css.resizeBar, {
-        [css.resizeBarVertical]: props.orientation === 'vertical',
-        [css.resizeBarIsActive]: isActive
+      className={cx(css.resizeWrapper, {
+        [css.resizeWrapperIsActive]: isActive
       })}
       ref={controlBarRef}>
-      <div className={css.total} />
+      {props.children}
       <button
-        className={css.start}
+        className={css.top}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="start" />
-      <span className={css.range} />
+        data-handle="top" />
       <button
-        className={css.end}
+        className={css.right}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="end" />
+        data-handle="right" />
+      <button
+        className={css.bottom}
+        type="button"
+        onMouseDown={handleMouseDown}
+        data-handle="bottom" />
+      <button
+        className={css.left}
+        type="button"
+        onMouseDown={handleMouseDown}
+        data-handle="left" />
     </div>
   );
 }
 
-ResizeBar.propTypes = {
+ResizeWrapper.propTypes = {
+  children: PropTypes.node.isRequired,
   value: PropTypes.number.isRequired,
   minimum: PropTypes.number,
   onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  orientation: PropTypes.oneOf(['horizontal', 'vertical'])
+  disabled: PropTypes.bool
 };
 
-ResizeBar.defaultProps = {
+ResizeWrapper.defaultProps = {
   disabled: false,
-  minimum: 10,
-  orientation: 'horizontal'
+  minimum: 75
 };
 
-export default ResizeBar;
+export default ResizeWrapper;

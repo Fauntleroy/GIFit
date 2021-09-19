@@ -126,9 +126,8 @@ function SystemWorkspace (props) {
           <motion.canvas
             className={css.canvas}
             ref={canvasRef}
-            style={{ willChange: 'width, height' }}
-            initial={{ width: width, height: height }}
-            animate={{ width: width, height: height, opacity: isSeeking && !isGenerating ? 0.5 : 1 }}
+            style={{ willChange: 'width, height', width, height }}
+            animate={{ opacity: isSeeking && !isGenerating ? 0.5 : 1 }}
             transition={{ type: 'spring', bounce: 0, delay: 0.75, opacity: { delay: 0.5 }}}
             height={height}
             width={width} />}

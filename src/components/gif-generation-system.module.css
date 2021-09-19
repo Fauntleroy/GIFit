@@ -78,6 +78,10 @@
 	width: 100%;
 	height: 100%;
 	grid-area: workspace;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--color-shade);
 }
 
 .qualityAndFrameRate {

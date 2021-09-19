@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { Machine, assign } from 'xstate';
 
-function createResizeBarMachine ({ id, initialSize, minimumSize }) {
-  const resizeBarMachine = Machine({
+function createResizeWrapperMachine ({ id, initialSize, minimumSize }) {
+  const resizeWrapperMachine = Machine({
     id: `resize-bar__${id}`,
     initial: 'idle',
     context: {
@@ -74,7 +74,7 @@ function createResizeBarMachine ({ id, initialSize, minimumSize }) {
       updateScale: assign((context, event) => {
         const delta = (event.position - context.initialPosition) * 2;
         const deltaRatio = delta / context.initialSize;
-        let scale = (context.activeHandle === 'start')
+        let scale = (context.activeHandle === 'left' || context.activeHandle === 'top')
           ? context.initialScale - deltaRatio
           : context.initialScale + deltaRatio;
         const minimumScale = minimumSize / context.initialSize;
@@ -105,7 +105,7 @@ function createResizeBarMachine ({ id, initialSize, minimumSize }) {
     }
   });
 
-  return resizeBarMachine;
+  return resizeWrapperMachine;
 }
 
-export default createResizeBarMachine;
+export default createResizeWrapperMachine;

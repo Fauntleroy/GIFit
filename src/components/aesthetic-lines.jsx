@@ -20,36 +20,31 @@ function AestheticLines (props) {
   }
 
   useFrameRate(60);
-  const rangeElement = timeBarRef.current.querySelector('.range');
-  const widthElement = widthRef.current;
-  const widthBarElement = widthBarRef.current;
+  const rangeEl = timeBarRef.current.querySelector('.range');
+  const widthEl = widthRef.current;
+  const widthBarEl = widthBarRef.current;
 
   return (
     <svg
       className={css.aestheticLines}>
       <circle
-        cx={widthElement.offsetLeft}
-        cy={widthElement.offsetTop + LABEL_Y_OFFSET}
+        cx={widthEl.offsetLeft}
+        cy={widthEl.offsetTop + LABEL_Y_OFFSET}
         r="1.5"
         fill="none"
         stroke="var(--color-subsystem)"
         strokeWidth="1" />
-      <PathLine
-        points={[
-          { x: widthElement.offsetLeft,
-            y: widthElement.offsetTop + LABEL_Y_OFFSET },
-          { x: widthElement.offsetLeft,
-            y: widthBarElement.offsetTop - 15 },
-          { x: widthBarElement.offsetLeft + (widthBarElement.offsetWidth / 2),
-            y: widthBarElement.offsetTop - 15 },
-          { x: widthBarElement.offsetLeft + (widthBarElement.offsetWidth / 2),
-            y: widthBarElement.offsetTop + widthBarElement.offsetHeight }
-        ]}
+      <path
+        d={`
+          M${widthEl.offsetLeft} ${widthEl.offsetTop + LABEL_Y_OFFSET}
+          C${widthEl.offsetLeft},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
+          ${widthEl.offsetLeft},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
+          ${widthBarEl.offsetLeft + (widthBarEl.offsetWidth / 2)},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
+        `}
         stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
-        fill="none"
-        r={5} />
+        fill="none" />
 
       <circle
         cx={heightRef.current.offsetLeft}
@@ -58,20 +53,17 @@ function AestheticLines (props) {
         fill="none"
         stroke="var(--color-subsystem)"
         strokeWidth="1" />
-      <PathLine
-        points={[
-          { x: heightRef.current.offsetLeft,
-            y: heightRef.current.offsetTop + LABEL_Y_OFFSET },
-          { x: heightRef.current.offsetLeft,
-            y: heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2) },
-          { x: heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth,
-            y: heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2) }
-        ]}
+      <path
+        d={`
+          M${heightRef.current.offsetLeft} ${heightRef.current.offsetTop + LABEL_Y_OFFSET}
+          C${heightRef.current.offsetLeft},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
+          ${heightRef.current.offsetLeft},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
+          ${heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
+        `}
         stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
-        fill="none"
-        r={5} />
+        fill="none" />
 
       <circle
         cx={startRef.current.offsetLeft}
@@ -80,22 +72,17 @@ function AestheticLines (props) {
         fill="none"
         stroke="var(--color-subsystem)"
         strokeWidth="1" />
-      <PathLine
-        points={[
-          { x: startRef.current.offsetLeft,
-            y: startRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
-          { x: startRef.current.offsetLeft,
-            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17 },
-          { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-            y: startRef.current.offsetTop + LABEL_Y_OFFSET - 17 },
-          { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft,
-            y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
-        ]}
+      <path
+        d={`
+          M${startRef.current.offsetLeft} ${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          C${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight}
+        `}
         stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
-        fill="none"
-        r={5} />
+        fill="none" />
 
       <circle
         cx={endRef.current.offsetLeft}
@@ -104,22 +91,17 @@ function AestheticLines (props) {
         fill="none"
         stroke="var(--color-subsystem)"
         strokeWidth="1" />
-      <PathLine
-        points={[
-          { x: endRef.current.offsetLeft,
-            y: endRef.current.offsetTop + LABEL_Y_OFFSET + 3 },
-          { x: endRef.current.offsetLeft,
-            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21 },
-          { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-            y: endRef.current.offsetTop + LABEL_Y_OFFSET - 21 },
-          { x: timeBarRef.current.offsetLeft + rangeElement.offsetLeft + rangeElement.offsetWidth,
-            y: timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight }
-        ]}
+      <path
+        d={`
+          M${endRef.current.offsetLeft} ${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          C${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
+          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight}
+        `}
         stroke="var(--color-subsystem)"
         strokeDasharray="1,2"
         strokeWidth="1"
-        fill="none"
-        r={5} />
+        fill="none" />
     </svg>
   );
 }
