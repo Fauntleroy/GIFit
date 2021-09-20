@@ -426,11 +426,11 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   align-items: stretch;
 
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--ggs-font-size-small);
   text-transform: uppercase;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
@@ -1186,7 +1186,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 ._src_components_resize_wrapper_module__top, ._src_components_resize_wrapper_module__right, ._src_components_resize_wrapper_module__bottom, ._src_components_resize_wrapper_module__left {
   position: absolute;
   padding: 0;
-  background: var(--color-primary-system);
+  background: transparent;
 }
 
 ._src_components_resize_wrapper_module__top:hover, ._src_components_resize_wrapper_module__right:hover, ._src_components_resize_wrapper_module__bottom:hover, ._src_components_resize_wrapper_module__left:hover {

@@ -5,11 +5,11 @@
   align-items: stretch;
 
   cursor: pointer;
-  font-size: 11px;
+  font-size: var(--ggs-font-size-small);
   text-transform: uppercase;
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   text-decoration: none;
   white-space: nowrap;
   overflow: hidden;

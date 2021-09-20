@@ -21,7 +21,7 @@
 .top, .right, .bottom, .left {
   position: absolute;
   padding: 0;
-  background: var(--color-primary-system);
+  background: transparent;
 
   &:hover {
     background: var(--color-active);
