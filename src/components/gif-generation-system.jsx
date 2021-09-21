@@ -78,6 +78,8 @@ function GifGenerationSystem (props) {
   const formRef = useRef(null);
   const saveRef = useRef(null);
   const workspaceRef = useRef(null);
+  const qualityRef = useRef(null);
+  const frameRateRef = useRef(null);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
   const frameTime = _.round(1 / state.context.fps, 2);
 
@@ -301,32 +303,36 @@ function GifGenerationSystem (props) {
           custom={3}
           animate={formAnim}
           variants={animVariants}>
-          <SystemInput
-            name="Quality"
-            addendum={<input
-              className={css.qualityRangeInput}
-              type="range"
-              min="1" max="10" step="1"
-              onChange={handleQualityInputChange}
-              value={state.context.quality} />}>
-            <input
-              className={css.qualityNumberInput}
-              type="number"
-              value={state.context.quality}
-              min="1" max="10" step="1"
-              style={{ flexShrink: '0' }}
-              onChange={handleQualityInputChange}
-              disabled={!state.matches('configuring')} />
-          </SystemInput>
-          <SystemInput
-            name="Frame Rate"
-            addendum="fps">
-            <InternalStateInput
-              type="number"
-              value={state.context.fps}
-              onChange={handleFrameRateInputChange}
-              disabled={!state.matches('configuring')} />
-          </SystemInput>
+          <div ref={qualityRef}>
+            <SystemInput
+              name="Quality"
+              addendum={<input
+                className={css.qualityRangeInput}
+                type="range"
+                min="1" max="10" step="1"
+                onChange={handleQualityInputChange}
+                value={state.context.quality} />}>
+              <input
+                className={css.qualityNumberInput}
+                type="number"
+                value={state.context.quality}
+                min="1" max="10" step="1"
+                style={{ flexShrink: '0' }}
+                onChange={handleQualityInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
+          </div>
+          <div ref={frameRateRef}>
+            <SystemInput
+              name="Frame Rate"
+              addendum="fps">
+              <InternalStateInput
+                type="number"
+                value={state.context.fps}
+                onChange={handleFrameRateInputChange}
+                disabled={!state.matches('configuring')} />
+            </SystemInput>
+          </div>
           <div className={css.frameRate}>
             <SystemFrameRate fps={state.context.fps} />
           </div>
@@ -450,7 +456,9 @@ function GifGenerationSystem (props) {
           startRef={startRef}
           endRef={endRef}
           timeBarRef={timeBarRef}
-          workspaceRef={workspaceRef} />
+          workspaceRef={workspaceRef}
+          qualityRef={qualityRef}
+          frameRateRef={frameRateRef} />
       </motion.div>
     </motion.div>
   );

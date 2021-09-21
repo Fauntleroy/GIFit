@@ -70638,12 +70638,12 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-var NORMAL_OFFSET = 30;
-
 function AestheticLines(props) {
   var workspaceRef = props.workspaceRef,
       widthRef = props.widthRef,
       heightRef = props.heightRef,
+      qualityRef = props.qualityRef,
+      frameRateRef = props.frameRateRef,
       startRef = props.startRef,
       endRef = props.endRef,
       timeBarRef = props.timeBarRef;
@@ -70660,6 +70660,8 @@ function AestheticLines(props) {
   var endEl = endRef.current;
   var timeBarEl = timeBarRef.current;
   var workspaceEl = workspaceRef.current;
+  var qualityEl = qualityRef.current;
+  var frameRateEl = frameRateRef.current;
   return /*#__PURE__*/_react["default"].createElement("svg", {
     className: css.aestheticLines
   }, /*#__PURE__*/_react["default"].createElement(_aestheticLine["default"], {
@@ -70678,6 +70680,18 @@ function AestheticLines(props) {
     start: [endEl.offsetLeft + endEl.offsetWidth / 2, endEl.offsetTop + endEl.offsetHeight / 2],
     end: [timeBarEl.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, timeBarEl.offsetTop + timeBarEl.offsetHeight],
     normals: [0, 180]
+  }), /*#__PURE__*/_react["default"].createElement(_aestheticLine["default"], {
+    start: [endEl.offsetLeft + endEl.offsetWidth / 2, endEl.offsetTop + endEl.offsetHeight / 2],
+    end: [timeBarEl.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, timeBarEl.offsetTop + timeBarEl.offsetHeight],
+    normals: [0, 180]
+  }), /*#__PURE__*/_react["default"].createElement(_aestheticLine["default"], {
+    start: [qualityEl.offsetLeft + qualityEl.offsetWidth / 2, qualityEl.offsetTop + qualityEl.offsetHeight / 2],
+    end: [workspaceEl.offsetLeft + workspaceEl.offsetWidth, workspaceEl.offsetTop + workspaceEl.offsetHeight / 3],
+    normals: [270, 90]
+  }), /*#__PURE__*/_react["default"].createElement(_aestheticLine["default"], {
+    start: [frameRateEl.offsetLeft + frameRateEl.offsetWidth / 2, frameRateEl.offsetTop + frameRateEl.offsetHeight / 2],
+    end: [workspaceEl.offsetLeft + workspaceEl.offsetWidth, workspaceEl.offsetTop + workspaceEl.offsetHeight / 3 * 2],
+    normals: [270, 90]
   }));
 }
 
@@ -70687,7 +70701,9 @@ AestheticLines.propTypes = {
   heightRef: _propTypes["default"].object.isRequired,
   startRef: _propTypes["default"].object.isRequired,
   endRef: _propTypes["default"].object.isRequired,
-  timeBarRef: _propTypes["default"].object.isRequired
+  timeBarRef: _propTypes["default"].object.isRequired,
+  qualityRef: _propTypes["default"].object.isRequired,
+  frameRateRef: _propTypes["default"].object.isRequired
 };
 var _default = AestheticLines;
 exports["default"] = _default;
@@ -71323,6 +71339,8 @@ function GifGenerationSystem(props) {
   var formRef = (0, _react.useRef)(null);
   var saveRef = (0, _react.useRef)(null);
   var workspaceRef = (0, _react.useRef)(null);
+  var qualityRef = (0, _react.useRef)(null);
+  var frameRateRef = (0, _react.useRef)(null);
   var formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
 
   var frameTime = _lodash["default"].round(1 / state.context.fps, 2);
@@ -71614,6 +71632,8 @@ function GifGenerationSystem(props) {
     custom: 3,
     animate: formAnim,
     variants: animVariants
+  }, /*#__PURE__*/_react["default"].createElement("div", {
+    ref: qualityRef
   }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
     name: "Quality",
     addendum: /*#__PURE__*/_react["default"].createElement("input", {
@@ -71637,7 +71657,9 @@ function GifGenerationSystem(props) {
     },
     onChange: handleQualityInputChange,
     disabled: !state.matches('configuring')
-  })), /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
+  }))), /*#__PURE__*/_react["default"].createElement("div", {
+    ref: frameRateRef
+  }, /*#__PURE__*/_react["default"].createElement(_systemInput["default"], {
     name: "Frame Rate",
     addendum: "fps"
   }, /*#__PURE__*/_react["default"].createElement(_internalStateInput["default"], {
@@ -71645,7 +71667,7 @@ function GifGenerationSystem(props) {
     value: state.context.fps,
     onChange: handleFrameRateInputChange,
     disabled: !state.matches('configuring')
-  })), /*#__PURE__*/_react["default"].createElement("div", {
+  }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: css.frameRate
   }, /*#__PURE__*/_react["default"].createElement(_systemFrameRate["default"], {
     fps: state.context.fps
@@ -71789,7 +71811,9 @@ function GifGenerationSystem(props) {
     startRef: startRef,
     endRef: endRef,
     timeBarRef: timeBarRef,
-    workspaceRef: workspaceRef
+    workspaceRef: workspaceRef,
+    qualityRef: qualityRef,
+    frameRateRef: frameRateRef
   })));
 }
 

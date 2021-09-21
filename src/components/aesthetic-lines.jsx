@@ -6,13 +6,11 @@ import AestheticLine from './aesthetic-line.jsx';
 import * as css from './aesthetic-lines.module.css';
 import useFrameRate from '$hooks/use-frame-rate';
 
-const NORMAL_OFFSET = 30;
-
 function AestheticLines (props) {
   const {
     workspaceRef,
-    widthRef,
-    heightRef,
+    widthRef, heightRef,
+    qualityRef, frameRateRef,
     startRef, endRef, timeBarRef
   } = props;
 
@@ -28,6 +26,8 @@ function AestheticLines (props) {
   const endEl = endRef.current;
   const timeBarEl = timeBarRef.current;
   const workspaceEl = workspaceRef.current;
+  const qualityEl = qualityRef.current;
+  const frameRateEl = frameRateRef.current;
 
   return (
     <svg
@@ -48,6 +48,18 @@ function AestheticLines (props) {
         start={[endEl.offsetLeft + (endEl.offsetWidth / 2), endEl.offsetTop + (endEl.offsetHeight / 2)]}
         end={[timeBarEl.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, timeBarEl.offsetTop + timeBarEl.offsetHeight]}
         normals={[0, 180]} />
+      <AestheticLine
+        start={[endEl.offsetLeft + (endEl.offsetWidth / 2), endEl.offsetTop + (endEl.offsetHeight / 2)]}
+        end={[timeBarEl.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, timeBarEl.offsetTop + timeBarEl.offsetHeight]}
+        normals={[0, 180]} />
+      <AestheticLine
+        start={[qualityEl.offsetLeft + (qualityEl.offsetWidth / 2), qualityEl.offsetTop + (qualityEl.offsetHeight / 2)]}
+        end={[workspaceEl.offsetLeft + workspaceEl.offsetWidth, workspaceEl.offsetTop + ((workspaceEl.offsetHeight / 3))]}
+        normals={[270, 90]} />
+      <AestheticLine
+        start={[frameRateEl.offsetLeft + (frameRateEl.offsetWidth / 2), frameRateEl.offsetTop + (frameRateEl.offsetHeight / 2)]}
+        end={[workspaceEl.offsetLeft + workspaceEl.offsetWidth, workspaceEl.offsetTop + ((workspaceEl.offsetHeight / 3) * 2)]}
+        normals={[270, 90]} />
     </svg>
   );
 }
@@ -58,7 +70,9 @@ AestheticLines.propTypes = {
   heightRef: PropTypes.object.isRequired,
   startRef: PropTypes.object.isRequired,
   endRef: PropTypes.object.isRequired,
-  timeBarRef: PropTypes.object.isRequired
+  timeBarRef: PropTypes.object.isRequired,
+  qualityRef: PropTypes.object.isRequired,
+  frameRateRef: PropTypes.object.isRequired
 };
 
 export default AestheticLines;
