@@ -75,7 +75,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 0 0 0 -10px;
+  margin: 0 -12px;
 }
 
 .addendum {
@@ -83,8 +83,9 @@
   z-index: 2;
   font-family: var(--ggs-font-numeric);
   font-size: 12px;
-  font-weight: bold;
+  font-style: italic;
   text-transform: none;
   letter-spacing: normal;
-  color: currentColor;
+  color: var(--color-subsystem);
+  margin-right: 12px;
 }

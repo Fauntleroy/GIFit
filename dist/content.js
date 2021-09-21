@@ -73510,7 +73510,7 @@ function SystemWorkspace(props) {
     animate: {
       translateZ: isComplete ? '35px' : '0px',
       filter: isComplete ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)' : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
-      boxShadow: isComplete ? "0px 10px 100px rgba(".concat(vibrantColor.red, ", ").concat(vibrantColor.green, ", ").concat(vibrantColor.blue, ", 0.25)") : '0px 0px 0px rgba(0, 0, 0, 0)'
+      boxShadow: isComplete ? "0px 10px 65px rgba(".concat(vibrantColor.red, ", ").concat(vibrantColor.green, ", ").concat(vibrantColor.blue, ", 0.25)") : '0px 0px 0px rgba(0, 0, 0, 0)'
     },
     transition: {
       type: 'spring',

@@ -21,6 +21,11 @@
 
   &:hover {
     background: transparent;
+    box-shadow: none !important;
+  }
+
+  &:focus {
+    animation: none !important;
   }
 }
 

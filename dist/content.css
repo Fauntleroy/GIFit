@@ -728,6 +728,11 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 
 ._src_components_incrementable_input_module__decrementor:hover, ._src_components_incrementable_input_module__incrementor:hover {
     background: transparent;
+    box-shadow: none !important;
+  }
+
+._src_components_incrementable_input_module__decrementor:focus, ._src_components_incrementable_input_module__incrementor:focus {
+    animation: none !important;
   }
 
 ._src_components_incrementable_input_module__decrementor {
@@ -900,7 +905,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 0 0 0 -10px;
+  margin: 0 -12px;
 }
 
 ._src_components_system_input_module__addendum {
@@ -908,10 +913,11 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   z-index: 2;
   font-family: var(--ggs-font-numeric);
   font-size: 12px;
-  font-weight: bold;
+  font-style: italic;
   text-transform: none;
   letter-spacing: normal;
-  color: currentColor;
+  color: var(--color-subsystem);
+  margin-right: 12px;
 }._src_components_system_frame_rate_module__frameRate {
   display: flex;
   justify-content: space-around;
