@@ -13,7 +13,7 @@ import CriticalErrorSystem from '$components/critical-error-system.jsx';
 import Times from '$icons/times.svg';
 
 import * as css from './gifit-app.module.css';
-import * as fontCss from './gifit-app-fonts.module.css';
+import './gifit-app-fonts.module.css';
 
 function GifitApp (props) {
   const [state, send] = useMachine(gifitAppMachine);

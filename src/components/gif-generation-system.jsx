@@ -19,7 +19,6 @@ import SystemElements from '$components/system-elements.jsx';
 import SystemInput from '$components/system-input.jsx';
 import SystemFrames from '$components/system-frames.jsx';
 import SystemFrameRate from '$components/system-frame-rate.jsx';
-import SystemVideoInfo from '$components/system-video-info.jsx';
 import SystemWorkspace from '$components/system-workspace.jsx';
 import SystemMessage from '$components/system-message.jsx';
 
@@ -303,7 +302,13 @@ function GifGenerationSystem (props) {
           animate={formAnim}
           variants={animVariants}>
           <SystemInput
-            name="Quality">
+            name="Quality"
+            addendum={<input
+              className={css.qualityRangeInput}
+              type="range"
+              min="1" max="10" step="1"
+              onChange={handleQualityInputChange}
+              value={state.context.quality} />}>
             <input
               className={css.qualityNumberInput}
               type="number"
@@ -313,12 +318,6 @@ function GifGenerationSystem (props) {
               onChange={handleQualityInputChange}
               disabled={!state.matches('configuring')} />
           </SystemInput>
-          <input
-              className={css.qualityRangeInput}
-              type="range"
-              min="1" max="10" step="1"
-              onChange={handleQualityInputChange}
-              value={state.context.quality} />
           <SystemInput
             name="Frame Rate"
             addendum="fps">

@@ -1,5 +1,5 @@
 .label {
-	padding: 0;
+	padding: 0.25em;
 	opacity: var(--system-interface-opacity);
 	color: var(--color-system);
 	line-height: 1.25;

@@ -167,7 +167,7 @@
 		vertical-align: middle;
 		background: transparent;
     user-select: none;
-    cursor: default;
+    cursor: ew-resize;
     color: var(--color-primary-system);
     transition: color 500ms;
 
@@ -186,9 +186,9 @@
       -webkit-appearance: none;
 			position: relative;
 			z-index: 2;
-			height: 20px;
-			width: 6px;
-			border-radius: 3px;
+			height: 15px;
+			width: 4px;
+			border-radius: 2px;
 			background: currentColor;
 			border: none;
       user-select: none;
@@ -198,9 +198,9 @@
 			-webkit-appearance: none;
 			position: relative;
 			z-index: 2;
-			height: 20px;
-			width: 6px;
-			border-radius: 3px;
+			height: 15px;
+			width: 4px;
+			border-radius: 2px;
 			background: currentColor;
 			border: none;
       user-select: none;
@@ -247,7 +247,7 @@
   right: 30px;
 }._src_components_gif_generation_system_module__ggs {
 	position: relative;
-	padding: 20px;
+	padding: 20px 25px;
 	border-radius: 4px;
 	
 	backdrop-filter: blur(4px) contrast(1.05);
@@ -256,8 +256,8 @@
 
 ._src_components_gif_generation_system_module__form {
 	display: grid;
-	grid-gap: 20px;
-	grid-template-columns: 125px minmax(150px, 1fr) 125px;
+	grid-gap: 20px 25px;
+	grid-template-columns: 100px minmax(150px, 1fr) 100px;
 	grid-template-rows: 25px minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
 		"comms comms comms"
@@ -336,12 +336,13 @@
 }
 
 input[type="number"]._src_components_gif_generation_system_module__qualityNumberInput {
-	width: 55px;
+	width: 40px;
+	padding-right: 5px !important;
 }
 
 ._src_components_gif_generation_system_module__qualityRangeInput {
 	width: 100%;
-	margin-left: 10px;
+	margin-left: 0;
 }
 
 ._src_components_gif_generation_system_module__startAndEnd {
@@ -773,7 +774,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   height: 100%;
   pointer-events: none;
 }._src_components_system_elements_module__label {
-	padding: 0;
+	padding: 0.25em;
 	opacity: var(--system-interface-opacity);
 	color: var(--color-system);
 	line-height: 1.25;
@@ -902,7 +903,6 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   text-transform: none;
   letter-spacing: normal;
   color: currentColor;
-  margin-top: 0.4em;
 }._src_components_system_frames_module__frames {
 	padding: 10px;
 	display: flex;

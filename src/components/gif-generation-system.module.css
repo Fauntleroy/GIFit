@@ -1,6 +1,6 @@
 .ggs {
 	position: relative;
-	padding: 20px;
+	padding: 20px 25px;
 	border-radius: 4px;
 	
 	backdrop-filter: blur(4px) contrast(1.05);
@@ -9,8 +9,8 @@
 
 .form {
 	display: grid;
-	grid-gap: 20px;
-	grid-template-columns: 125px minmax(150px, 1fr) 125px;
+	grid-gap: 20px 25px;
+	grid-template-columns: 100px minmax(150px, 1fr) 100px;
 	grid-template-rows: 25px minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
 		"comms comms comms"
@@ -89,12 +89,13 @@
 }
 
 input[type="number"].qualityNumberInput {
-	width: 55px;
+	width: 40px;
+	padding-right: 5px !important;
 }
 
 .qualityRangeInput {
 	width: 100%;
-	margin-left: 10px;
+	margin-left: 0;
 }
 
 .startAndEnd {

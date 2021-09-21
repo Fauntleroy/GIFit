@@ -126,7 +126,7 @@
 		vertical-align: middle;
 		background: transparent;
     user-select: none;
-    cursor: default;
+    cursor: ew-resize;
     color: var(--color-primary-system);
     transition: color 500ms;
 
@@ -144,9 +144,9 @@
       -webkit-appearance: none;
 			position: relative;
 			z-index: 2;
-			height: 20px;
-			width: 6px;
-			border-radius: 3px;
+			height: 15px;
+			width: 4px;
+			border-radius: 2px;
 			background: currentColor;
 			border: none;
       user-select: none;
@@ -156,9 +156,9 @@
 			-webkit-appearance: none;
 			position: relative;
 			z-index: 2;
-			height: 20px;
-			width: 6px;
-			border-radius: 3px;
+			height: 15px;
+			width: 4px;
+			border-radius: 2px;
 			background: currentColor;
 			border: none;
       user-select: none;
