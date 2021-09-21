@@ -72936,8 +72936,6 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
-var _framerMotion = require("framer-motion");
-
 var _useFrameRate3 = _interopRequireDefault(require("../hooks/use-frame-rate"));
 
 var css = _interopRequireWildcard(require("./system-frame-rate.module.css"));
@@ -72960,31 +72958,6 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-var frameVariants = {
-  active: function active() {
-    return {
-      opacity: 1,
-      transition: {
-        type: 'spring',
-        tension: 1000,
-        damping: 0,
-        mass: 0.5
-      }
-    };
-  },
-  inactive: function inactive() {
-    return {
-      opacity: 0.075,
-      transition: {
-        type: 'spring',
-        tension: 750,
-        damping: 25,
-        mass: 2
-      }
-    };
-  }
-};
-
 function SystemFrameRate(props) {
   var fps = props.fps;
 
@@ -72998,11 +72971,11 @@ function SystemFrameRate(props) {
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: css.frameRate
   }, _lodash["default"].times(fps, function (iteration) {
-    return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
+    return /*#__PURE__*/_react["default"].createElement("span", {
       className: css.frame,
-      variants: frameVariants,
-      initial: "inactive",
-      animate: iteration === activeFrame ? 'active' : 'inactive',
+      style: {
+        opacity: iteration === activeFrame ? 1 : 0
+      },
       key: iteration
     });
   }));
@@ -73014,7 +72987,7 @@ SystemFrameRate.propTypes = {
 var _default = SystemFrameRate;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":256,"./system-frame-rate.module.css":246,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"framer-motion":168,"lodash":172,"prop-types":180,"react":190}],246:[function(require,module,exports){
+},{"../hooks/use-frame-rate":256,"./system-frame-rate.module.css":246,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":172,"prop-types":180,"react":190}],246:[function(require,module,exports){
 module.exports = {"frameRate":"_src_components_system_frame_rate_module__frameRate","frame":"_src_components_system_frame_rate_module__frame"}
 },{}],247:[function(require,module,exports){
 "use strict";
@@ -73780,6 +73753,10 @@ function useFrameRate(config) {
   }
 
   (0, _react.useEffect)(function () {
+    if (!_lodash["default"].isNumber(fps)) {
+      return;
+    }
+
     fpsRef.current = fps;
     rafId = window.requestAnimationFrame(rafLoopFn);
     return function () {

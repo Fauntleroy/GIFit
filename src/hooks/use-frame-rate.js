@@ -28,6 +28,10 @@ function useFrameRate (config) {
   }
 
   useEffect(() => {
+    if (!_.isNumber(fps)) {
+      return;
+    }
+
     fpsRef.current = fps;
     rafId = window.requestAnimationFrame(rafLoopFn);
 
