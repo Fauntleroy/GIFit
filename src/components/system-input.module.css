@@ -15,6 +15,7 @@
   transition: color 500ms, background 250ms;
   padding: 8px 12px 2px 12px;
   border-radius: 3px;
+  backdrop-filter: blur(1px);
 
   input[type="text"],
 	input[type="number"] {

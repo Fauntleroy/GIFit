@@ -3,8 +3,8 @@
 	padding: 20px 25px;
 	border-radius: 4px;
 	
-	backdrop-filter: blur(4px) contrast(1.05);
-	background-color: hsla(234.5, 30.5%, 20%, 0.8);
+	backdrop-filter: contrast(1.05) saturate(1.5) blur(5px);
+	background-color: hsla(234.5, 30.5%, 20%, 0.75);
 }
 
 .main {

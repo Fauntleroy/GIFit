@@ -1,6 +1,6 @@
 :root {
 	--hsl-aluminum-blue: 225, 100%, 80%;
-	--color-shade: hsla(0, 0%, 0%, 0.35);
+	--color-shade: hsla(0, 0%, 0%, 0.5);
   --color-active: hsla(160, 100%, 62.7%, 1);
 	--color-nightshade: hsla(240, 21.6%, 5%, 0.9);
   --color-nighttime: hsla(235, 25.6%, 10%, 1);
@@ -374,8 +374,8 @@
 	padding: 20px 25px;
 	border-radius: 4px;
 	
-	backdrop-filter: blur(4px) contrast(1.05);
-	background-color: hsla(234.5, 30.5%, 20%, 0.8);
+	backdrop-filter: contrast(1.05) saturate(1.5) blur(5px);
+	background-color: hsla(234.5, 30.5%, 20%, 0.75);
 }
 
 ._src_components_gif_generation_system_module__main {
@@ -836,6 +836,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   transition: color 500ms, background 250ms;
   padding: 8px 12px 2px 12px;
   border-radius: 3px;
+  backdrop-filter: blur(1px);
 }
 
 ._src_components_system_input_module__systemInput input[type="text"],
