@@ -72,14 +72,13 @@ function GifGenerationSystem (props) {
   const [state, send] = useMachine(gifGenerationSystemMachine);
 
   const widthRef = useRef(null);
-  const widthBarRef = useRef(null);
   const heightRef = useRef(null);
-  const heightBarRef = useRef(null);
   const timeBarRef = useRef(null);
   const startRef = useRef(null);
   const endRef = useRef(null);
   const formRef = useRef(null);
   const saveRef = useRef(null);
+  const workspaceRef = useRef(null);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
   const frameTime = _.round(1 / state.context.fps, 2);
 
@@ -235,9 +234,9 @@ function GifGenerationSystem (props) {
   return (
     <motion.div
       className={css.ggs}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ type: 'spring', delay: 0.25, stiffness: 400, damping: 50, mass: 10 }}>
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', delay: 0.25, stiffness: 100, damping: 10, mass: 0.25 }}>
 
       <SystemElements state={state} />
 
@@ -252,23 +251,6 @@ function GifGenerationSystem (props) {
         <div className={css.comms}>
           <SystemComms ggsState={state} />
         </div>
-
-        <motion.div
-          className={css.widthBar}
-          style={{ width: `${state.context.width}px` }}
-          custom={0}
-          animate={formAnim}
-          variants={animVariants}
-          ref={widthBarRef}>
-        </motion.div>
-
-        <motion.div
-          className={css.videoInfo}
-          custom={1}
-          animate={formAnim}
-          variants={animVariants}>
-          <SystemVideoInfo video={props.currentVideo} gifUrl={gifUrl} />
-        </motion.div>
 
         <motion.div
           className={css.dimensions}
@@ -297,14 +279,9 @@ function GifGenerationSystem (props) {
                 disabled={!state.matches('configuring')} />
             </SystemInput>
           </div>
-          <div
-            className={css.heightBar}
-            style={{ height: `${state.context.height}px` }}
-            ref={heightBarRef}>
-          </div>
         </motion.div>
         
-        <div className={css.workspace}>
+        <div className={css.workspace} ref={workspaceRef}>
           <ResizeWrapper
             orientation="vertical"
             value={state.context.height}
@@ -461,22 +438,21 @@ function GifGenerationSystem (props) {
             </AnimatePresence>
           </motion.div>
         </motion.footer>
-
-        <motion.div
-          className={css.lines}
-          custom={7}
-          animate={formAnim}
-          variants={animVariants}>
-          <AestheticLines
-            widthRef={widthRef}
-            widthBarRef={widthBarRef}
-            heightRef={heightRef}
-            heightBarRef={heightBarRef}
-            startRef={startRef}
-            endRef={endRef}
-            timeBarRef={timeBarRef} />
-        </motion.div>
       </motion.form>
+
+      <motion.div
+        className={css.lines}
+        custom={7}
+        animate={formAnim}
+        variants={animVariants}>
+        <AestheticLines
+          widthRef={widthRef}
+          heightRef={heightRef}
+          startRef={startRef}
+          endRef={endRef}
+          timeBarRef={timeBarRef}
+          workspaceRef={workspaceRef} />
+      </motion.div>
     </motion.div>
   );
 }

@@ -3,18 +3,17 @@
 	padding: 20px;
 	border-radius: 4px;
 	
-	backdrop-filter: blur(4px) contrast(1.025);
-	background-color: hsla(234.5, 35.5%, 15%, 0.75);
+	backdrop-filter: blur(4px) contrast(1.05);
+	background-color: hsla(234.5, 30.5%, 20%, 0.8);
 }
 
 .form {
 	display: grid;
 	grid-gap: 20px;
-	grid-template-columns: 150px minmax(150px, 1fr) 150px;
-	grid-template-rows: 25px minmax(min-content, max-content) minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-columns: 125px minmax(150px, 1fr) 125px;
+	grid-template-rows: 25px minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
 		"comms comms comms"
-		". width-bar video-info"
 		"dimensions workspace quality-and-frame-rate"
 		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
@@ -51,13 +50,9 @@
 .dimensions {
 	grid-area: dimensions;
 	align-self: stretch;
-	justify-self: end;
-	grid-column-gap: 10px;
-	display: grid;
-	align-items: center;
-	grid-template-rows: 1fr 1fr;
-	grid-template-columns: 1fr 12px;
-	grid-template-areas: "width height-bar" "height height-bar";
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
 }
 
 .width {
@@ -118,11 +113,7 @@ input[type="number"].qualityNumberInput {
 .timeBar {
 	grid-area: time-bar;
 	flex-basis: 100%;
-}
-
-.start,
-.end {
-	padding-top: 5px;
+	margin-bottom: 15px;
 }
 
 .start {

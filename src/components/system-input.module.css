@@ -9,7 +9,7 @@
 
 .systemInput {
 	display: block;
-	margin: 10px;
+  margin: 0;
 	color: var(--color-primary-system);
   background: var(--color-shade);
   transition: color 500ms, background 250ms;
@@ -20,7 +20,6 @@
 	input[type="number"] {
 		position: relative;
 		display: inline-block;
-		width: 4em;
 		min-width: 15px;
 		padding: 5px 12px;
 		color: currentColor;

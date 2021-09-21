@@ -49,9 +49,9 @@ function GifitApp (props) {
       <>
         <motion.div
           className={css.backdrop}
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transform: 'scale(0.925)' }}
+          exit={{ opacity: 1 }}
           transition={{ type: 'spring', damping: 45, stiffness: 500 }}
           key="gifit-backdrop" />
         <motion.div

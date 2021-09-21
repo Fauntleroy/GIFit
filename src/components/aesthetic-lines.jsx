@@ -1,17 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import AestheticLine from './aesthetic-line.jsx';
+
 import * as css from './aesthetic-lines.module.css';
 import useFrameRate from '$hooks/use-frame-rate';
 
-import PathLine from '$components/pathline.jsx';
-
-const LABEL_Y_OFFSET = 24;
+const NORMAL_OFFSET = 30;
 
 function AestheticLines (props) {
   const {
-    widthRef, widthBarRef,
-    heightRef, heightBarRef,
+    workspaceRef,
+    widthRef,
+    heightRef,
     startRef, endRef, timeBarRef
   } = props;
 
@@ -22,95 +23,39 @@ function AestheticLines (props) {
   useFrameRate(60);
   const rangeEl = timeBarRef.current.querySelector('.range');
   const widthEl = widthRef.current;
-  const widthBarEl = widthBarRef.current;
+  const heightEl = heightRef.current;
+  const startEl = startRef.current;
+  const endEl = endRef.current;
+  const timeBarEl = timeBarRef.current;
+  const workspaceEl = workspaceRef.current;
 
   return (
     <svg
       className={css.aestheticLines}>
-      <circle
-        cx={widthEl.offsetLeft}
-        cy={widthEl.offsetTop + LABEL_Y_OFFSET}
-        r="1.5"
-        fill="none"
-        stroke="var(--color-subsystem)"
-        strokeWidth="1" />
-      <path
-        d={`
-          M${widthEl.offsetLeft} ${widthEl.offsetTop + LABEL_Y_OFFSET}
-          C${widthEl.offsetLeft},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
-          ${widthEl.offsetLeft},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
-          ${widthBarEl.offsetLeft + (widthBarEl.offsetWidth / 2)},${widthBarEl.offsetTop + widthBarEl.offsetHeight}
-        `}
-        stroke="var(--color-subsystem)"
-        strokeDasharray="1,2"
-        strokeWidth="1"
-        fill="none" />
-
-      <circle
-        cx={heightRef.current.offsetLeft}
-        cy={heightRef.current.offsetTop + LABEL_Y_OFFSET}
-        r="1.5"
-        fill="none"
-        stroke="var(--color-subsystem)"
-        strokeWidth="1" />
-      <path
-        d={`
-          M${heightRef.current.offsetLeft} ${heightRef.current.offsetTop + LABEL_Y_OFFSET}
-          C${heightRef.current.offsetLeft},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
-          ${heightRef.current.offsetLeft},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
-          ${heightBarRef.current.offsetLeft + heightBarRef.current.offsetWidth},${heightBarRef.current.offsetTop + (heightBarRef.current.offsetHeight / 2)}
-        `}
-        stroke="var(--color-subsystem)"
-        strokeDasharray="1,2"
-        strokeWidth="1"
-        fill="none" />
-
-      <circle
-        cx={startRef.current.offsetLeft}
-        cy={startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-        r="1.5"
-        fill="none"
-        stroke="var(--color-subsystem)"
-        strokeWidth="1" />
-      <path
-        d={`
-          M${startRef.current.offsetLeft} ${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          C${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${startRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft},${timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight}
-        `}
-        stroke="var(--color-subsystem)"
-        strokeDasharray="1,2"
-        strokeWidth="1"
-        fill="none" />
-
-      <circle
-        cx={endRef.current.offsetLeft}
-        cy={endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-        r="1.5"
-        fill="none"
-        stroke="var(--color-subsystem)"
-        strokeWidth="1" />
-      <path
-        d={`
-          M${endRef.current.offsetLeft} ${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          C${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${endRef.current.offsetTop + LABEL_Y_OFFSET + 3}
-          ${timeBarRef.current.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth},${timeBarRef.current.offsetTop + timeBarRef.current.offsetHeight}
-        `}
-        stroke="var(--color-subsystem)"
-        strokeDasharray="1,2"
-        strokeWidth="1"
-        fill="none" />
+      <AestheticLine
+        start={[widthEl.offsetLeft + (widthEl.offsetWidth / 2), widthEl.offsetTop + (widthEl.offsetHeight / 2)]}
+        end={[workspaceEl.offsetLeft + (workspaceEl.offsetWidth / 2), workspaceEl.offsetTop]}
+        normals={[0, 0]} />
+      <AestheticLine
+        start={[heightEl.offsetLeft + (heightEl.offsetWidth / 2), heightEl.offsetTop + (heightEl.offsetHeight / 2)]}
+        end={[workspaceEl.offsetLeft, workspaceEl.offsetTop + (workspaceEl.offsetHeight / 2)]}
+        normals={[0, 270]} />
+      <AestheticLine
+        start={[startEl.offsetLeft + (startEl.offsetWidth / 2), startEl.offsetTop + (startEl.offsetHeight / 2)]}
+        end={[timeBarEl.offsetLeft + rangeEl.offsetLeft, timeBarEl.offsetTop + timeBarEl.offsetHeight]}
+        normals={[0, 180]} />
+      <AestheticLine
+        start={[endEl.offsetLeft + (endEl.offsetWidth / 2), endEl.offsetTop + (endEl.offsetHeight / 2)]}
+        end={[timeBarEl.offsetLeft + rangeEl.offsetLeft + rangeEl.offsetWidth, timeBarEl.offsetTop + timeBarEl.offsetHeight]}
+        normals={[0, 180]} />
     </svg>
   );
 }
 
 AestheticLines.propTypes = {
   widthRef: PropTypes.object.isRequired,
-  widthBarRef: PropTypes.object.isRequired,
+  workspaceRef: PropTypes.object.isRequired,
   heightRef: PropTypes.object.isRequired,
-  heightBarRef: PropTypes.object.isRequired,
   startRef: PropTypes.object.isRequired,
   endRef: PropTypes.object.isRequired,
   timeBarRef: PropTypes.object.isRequired
