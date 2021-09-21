@@ -82,7 +82,8 @@ function ControlBar (props) {
   return (
     <div
       className={cx(css.controlBar, {
-        [css.controlBarIsActive]: isActive
+        [css.isActive]: isActive,
+        [css.isDisabled]: props.disabled
       })}
       onMouseDown={handleMouseDown}
       ref={controlBarRef}>

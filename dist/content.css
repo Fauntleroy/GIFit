@@ -547,15 +547,9 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
   transition: color 500ms;
 }
 
-  ._src_components_resize_wrapper_module__resizeWrapper:hover,
-  ._src_components_resize_wrapper_module__resizeWrapper:focus-within {
-    color: var(--color-highlight);
-  }
-
   ._src_components_resize_wrapper_module__resizeWrapperIsActive,
   ._src_components_resize_wrapper_module__resizeWrapperIsActive:hover,
   ._src_components_resize_wrapper_module__resizeWrapperIsActive:focus-within {
-    color: var(--color-active);
     transition: color 0ms;
   }
 
@@ -567,6 +561,11 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 
 ._src_components_resize_wrapper_module__top:hover, ._src_components_resize_wrapper_module__right:hover, ._src_components_resize_wrapper_module__bottom:hover, ._src_components_resize_wrapper_module__left:hover {
     background: var(--color-active);
+  }
+
+._src_components_resize_wrapper_module__top:disabled, ._src_components_resize_wrapper_module__right:disabled, ._src_components_resize_wrapper_module__bottom:disabled, ._src_components_resize_wrapper_module__left:disabled {
+    background: none;
+    pointer-events: none;
   }
 
 ._src_components_resize_wrapper_module__top:before, ._src_components_resize_wrapper_module__right:before, ._src_components_resize_wrapper_module__bottom:before, ._src_components_resize_wrapper_module__left:before {
@@ -624,11 +623,15 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
     color: var(--color-highlight);
   }
 
-  ._src_components_control_bar_module__controlBarIsActive,
-  ._src_components_control_bar_module__controlBarIsActive:hover,
-  ._src_components_control_bar_module__controlBarIsActive:focus-within {
+  ._src_components_control_bar_module__controlBar._src_components_control_bar_module__isActive,
+  ._src_components_control_bar_module__controlBar._src_components_control_bar_module__isActive:hover,
+  ._src_components_control_bar_module__controlBar._src_components_control_bar_module__isActive:focus-within {
     color: var(--color-active);
     transition: color 0ms;
+  }
+
+  ._src_components_control_bar_module__controlBar._src_components_control_bar_module__isDisabled {
+    pointer-events: none;
   }
 
   ._src_components_control_bar_module__controlBar:before {

@@ -12,11 +12,15 @@
     color: var(--color-highlight);
   }
 
-  &IsActive,
-  &IsActive:hover,
-  &IsActive:focus-within {
+  &.isActive,
+  &.isActive:hover,
+  &.isActive:focus-within {
     color: var(--color-active);
     transition: color 0ms;
+  }
+
+  &.isDisabled {
+    pointer-events: none;
   }
 
   &:before {

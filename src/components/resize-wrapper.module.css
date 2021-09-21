@@ -5,15 +5,9 @@
   color: var(--color-primary-system);
   transition: color 500ms;
 
-  &:hover,
-  &:focus-within {
-    color: var(--color-highlight);
-  }
-
   &IsActive,
   &IsActive:hover,
   &IsActive:focus-within {
-    color: var(--color-active);
     transition: color 0ms;
   }
 }
@@ -25,6 +19,11 @@
 
   &:hover {
     background: var(--color-active);
+  }
+
+  &:disabled {
+    background: none;
+    pointer-events: none;
   }
 
   &:before {

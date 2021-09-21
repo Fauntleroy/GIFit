@@ -90,22 +90,26 @@ function ResizeWrapper (props) {
         className={css.top}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="top" />
+        data-handle="top"
+        disabled={props.disabled} />
       <button
         className={css.right}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="right" />
+        data-handle="right"
+        disabled={props.disabled} />
       <button
         className={css.bottom}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="bottom" />
+        data-handle="bottom"
+        disabled={props.disabled} />
       <button
         className={css.left}
         type="button"
         onMouseDown={handleMouseDown}
-        data-handle="left" />
+        data-handle="left"
+        disabled={props.disabled} />
     </div>
   );
 }

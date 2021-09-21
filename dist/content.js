@@ -70876,6 +70876,8 @@ function getPosition(controlBarElement, event) {
 }
 
 function ControlBar(props) {
+  var _cx;
+
   var controlBarMachine = (0, _createControlBarMachine["default"])({
     id: 'width',
     start: props.startValue,
@@ -70955,7 +70957,7 @@ function ControlBar(props) {
     }
   }, [props.disabled]);
   return /*#__PURE__*/_react["default"].createElement("div", {
-    className: (0, _classnames["default"])(css.controlBar, _defineProperty({}, css.controlBarIsActive, isActive)),
+    className: (0, _classnames["default"])(css.controlBar, (_cx = {}, _defineProperty(_cx, css.isActive, isActive), _defineProperty(_cx, css.isDisabled, props.disabled), _cx)),
     onMouseDown: handleMouseDown,
     ref: controlBarRef
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -70996,7 +70998,7 @@ var _default = ControlBar;
 exports["default"] = _default;
 
 },{"../state-machines/create-control-bar-machine":259,"./control-bar.module.css":228,"@xstate/react":3,"classnames":13,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":172,"prop-types":180,"react":190}],228:[function(require,module,exports){
-module.exports = {"controlBar":"_src_components_control_bar_module__controlBar","controlBarIsActive":"_src_components_control_bar_module__controlBarIsActive","total":"_src_components_control_bar_module__total","start":"_src_components_control_bar_module__start","end":"_src_components_control_bar_module__end","range":"_src_components_control_bar_module__range"}
+module.exports = {"controlBar":"_src_components_control_bar_module__controlBar","isActive":"_src_components_control_bar_module__isActive","isDisabled":"_src_components_control_bar_module__isDisabled","total":"_src_components_control_bar_module__total","start":"_src_components_control_bar_module__start","end":"_src_components_control_bar_module__end","range":"_src_components_control_bar_module__range"}
 },{}],229:[function(require,module,exports){
 "use strict";
 
@@ -72533,22 +72535,26 @@ function ResizeWrapper(props) {
     className: css.top,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "top"
+    "data-handle": "top",
+    disabled: props.disabled
   }), /*#__PURE__*/_react["default"].createElement("button", {
     className: css.right,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "right"
+    "data-handle": "right",
+    disabled: props.disabled
   }), /*#__PURE__*/_react["default"].createElement("button", {
     className: css.bottom,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "bottom"
+    "data-handle": "bottom",
+    disabled: props.disabled
   }), /*#__PURE__*/_react["default"].createElement("button", {
     className: css.left,
     type: "button",
     onMouseDown: handleMouseDown,
-    "data-handle": "left"
+    "data-handle": "left",
+    disabled: props.disabled
   }));
 }
 
