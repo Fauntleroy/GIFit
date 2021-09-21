@@ -310,9 +310,8 @@
   grid-gap: 15px;
   border-radius: 4px;
 
-  backdrop-filter: blur(4px) contrast(1.025);
-	background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
-	background-color: hsla(234.5, 35.5%, 10%, 0.45);
+  backdrop-filter: contrast(1.05) saturate(1.5) blur(5px);
+	background-color: hsla(234.5, 30.5%, 20%, 0.75);
 }
 
 ._src_components_critical_error_system_module__label {
