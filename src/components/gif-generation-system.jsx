@@ -241,224 +241,225 @@ function GifGenerationSystem (props) {
 
       <SystemElements state={state} />
 
-      <motion.form
-        className={css.form}
+      <motion.div
+        className={css.main}
         initial="hidden"
         animate="shown"
-        variants={formAnimVariants}
-        onSubmit={handleFormSubmit}
-        ref={formRef}>
-
-        <div className={css.comms}>
-          <SystemComms ggsState={state} />
-        </div>
-
+        variants={formAnimVariants}>
         <motion.div
-          className={css.dimensions}
-          custom={2}
-          animate={formAnim}
-          variants={animVariants}>
-          <div className={css.width} ref={widthRef}>
-            <SystemInput
-              name="Width"
-              addendum="px">
-              <InternalStateInput
-                type="number"
-                value={state.context.width}
-                onChange={handleWidthInputChange}
-                disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </div>
-          <div className={css.height} ref={heightRef}>
-            <SystemInput
-              name="Height"
-              addendum="px">
-              <InternalStateInput
-                type="number"
-                value={state.context.height}
-                onChange={handleHeightInputChange}
-                disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </div>
-        </motion.div>
-        
-        <div className={css.workspace} ref={workspaceRef}>
-          <ResizeWrapper
-            orientation="vertical"
-            value={state.context.height}
-            onChange={handleHeightControlBarChange}
-            disabled={!state.matches('configuring')}>
-            <SystemWorkspace
-              videoElement={props.currentVideo}
-              width={state.context.width}
-              height={state.context.height}
-              gifUrl={gifUrl}
-              isGenerating={state.matches('generating')}
-              isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
-          </ResizeWrapper>
-        </div>
-
-        <motion.div
-          className={css.qualityAndFrameRate}
-          custom={3}
-          animate={formAnim}
-          variants={animVariants}>
-          <div ref={qualityRef}>
-            <SystemInput
-              name="Quality"
-              addendum={<input
-                className={css.qualityRangeInput}
-                type="range"
-                min="1" max="10" step="1"
-                onChange={handleQualityInputChange}
-                value={state.context.quality} />}>
-              <input
-                className={css.qualityNumberInput}
-                type="number"
-                value={state.context.quality}
-                min="1" max="10" step="1"
-                style={{ flexShrink: '0' }}
-                onChange={handleQualityInputChange}
-                disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </div>
-          <div ref={frameRateRef}>
-            <SystemInput
-              name="Frame Rate"
-              addendum="fps">
-              <InternalStateInput
-                type="number"
-                value={state.context.fps}
-                onChange={handleFrameRateInputChange}
-                disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </div>
-          <div className={css.frameRate}>
-            <SystemFrameRate fps={state.context.fps} />
-          </div>
+          animate={{
+            opacity: !state.matches('configuring') ? 0 : 1
+          }}
+          transition={{ delay: 0.5 }}>
+          <AestheticLines
+            widthRef={widthRef}
+            heightRef={heightRef}
+            startRef={startRef}
+            endRef={endRef}
+            timeBarRef={timeBarRef}
+            workspaceRef={workspaceRef}
+            qualityRef={qualityRef}
+            frameRateRef={frameRateRef} />
         </motion.div>
 
-        <div className={css.startAndEnd}>
-          <motion.div
-            className={css.timeBar}
-            custom={4}
-            animate={formAnim}
-            variants={animVariants}
-            ref={timeBarRef}>
-            <ControlBar
-              startValue={state.context.start / props.currentVideo.duration}
-              endValue={state.context.end / props.currentVideo.duration}
-              minimumDistance={frameTime / props.currentVideo.duration}
-              onChange={handleStartEndControlBarChange}
-              disabled={!state.matches('configuring')} />
-          </motion.div>
+        <form
+          className={css.form}
+          onSubmit={handleFormSubmit}
+          ref={formRef}>
+
+          <div className={css.comms}>
+            <SystemComms ggsState={state} />
+          </div>
 
           <motion.div
-            className={css.start}
-            custom={5}
+            className={css.dimensions}
+            custom={2}
             animate={formAnim}
-            variants={animVariants}
-            ref={startRef}>
-            <SystemInput
-              className={css.startInput}
-              name="start">
-              <IncrementableInput
-                value={state.context.start}
-                increment={frameTime}
-                min={0}
-                max={props.currentVideo.duration - frameTime}
-                width="200px"
-                onChange={handleStartInputChange}
-                disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </motion.div>
-
-          <motion.div
-            className={css.frames}
-            variants={animVariants}
-            animate={state.matches({ generating: { generatingGif: 'succeeded' }}) ? 'hidden' : 'shown'}>
-            <SystemFrames state={state} />
+            variants={animVariants}>
+            <div className={css.width} ref={widthRef}>
+              <SystemInput
+                name="Width"
+                addendum="px">
+                <InternalStateInput
+                  type="number"
+                  value={state.context.width}
+                  onChange={handleWidthInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+            </div>
+            <div className={css.height} ref={heightRef}>
+              <SystemInput
+                name="Height"
+                addendum="px">
+                <InternalStateInput
+                  type="number"
+                  value={state.context.height}
+                  onChange={handleHeightInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+            </div>
           </motion.div>
           
+          <div className={css.workspace} ref={workspaceRef}>
+            <ResizeWrapper
+              orientation="vertical"
+              value={state.context.height}
+              onChange={handleHeightControlBarChange}
+              disabled={!state.matches('configuring')}>
+              <SystemWorkspace
+                videoElement={props.currentVideo}
+                width={state.context.width}
+                height={state.context.height}
+                gifUrl={gifUrl}
+                isGenerating={state.matches('generating')}
+                isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
+            </ResizeWrapper>
+          </div>
+
           <motion.div
-            className={css.end}
-            custom={6}
+            className={css.qualityAndFrameRate}
+            custom={3}
             animate={formAnim}
-            variants={animVariants}
-            ref={endRef}>
-            <SystemInput
-              className={css.endInput}
-              name="end">
-              <IncrementableInput
-                value={state.context.end}
-                increment={frameTime}
-                min={0 + frameTime}
-                max={props.currentVideo.duration}
-                width="200px"
-                onChange={handleEndInputChange}
+            variants={animVariants}>
+            <div ref={qualityRef}>
+              <SystemInput
+                name="Quality"
+                addendum={<input
+                  className={css.qualityRangeInput}
+                  type="range"
+                  min="1" max="10" step="1"
+                  onChange={handleQualityInputChange}
+                  value={state.context.quality} />}>
+                <input
+                  className={css.qualityNumberInput}
+                  type="number"
+                  value={state.context.quality}
+                  min="1" max="10" step="1"
+                  style={{ flexShrink: '0' }}
+                  onChange={handleQualityInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+            </div>
+            <div ref={frameRateRef}>
+              <SystemInput
+                name="Frame Rate"
+                addendum="fps">
+                <InternalStateInput
+                  type="number"
+                  value={state.context.fps}
+                  onChange={handleFrameRateInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+              <SystemFrameRate fps={state.context.fps} />
+            </div>
+          </motion.div>
+
+          <div className={css.startAndEnd}>
+            <motion.div
+              className={css.timeBar}
+              custom={4}
+              animate={formAnim}
+              variants={animVariants}
+              ref={timeBarRef}>
+              <ControlBar
+                startValue={state.context.start / props.currentVideo.duration}
+                endValue={state.context.end / props.currentVideo.duration}
+                minimumDistance={frameTime / props.currentVideo.duration}
+                onChange={handleStartEndControlBarChange}
                 disabled={!state.matches('configuring')} />
-            </SystemInput>
-          </motion.div>
-        </div>
+            </motion.div>
 
-        <motion.footer className={css.footer}>
-          <motion.div
-            className={css.actions}
-            animate={{ y: isComplete ? '-125%' : '0%' }}
-            transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, delay: 0.35 }}>
-            <AnimatePresence>
-              <motion.span
-                className={css.action}
-                key="primary-action"
-                initial={{ width: '0px' }}
-                animate={{ width: 'auto' }}
-                exit={{ width: '0px' }}>
-                <Button
-                  type="submit"
-                  icon={submitButtonContents[1]}
-                  style={{ width: '200px' }}>
-                  {submitButtonContents[0]}
-                </Button>
-              </motion.span>
-              {/* I don't want to animate the margin, but framer isn't measuring right. TODO update when framer does */}
-              {isComplete && <motion.a
-                className={css.action}
-                href={gifUrl}
-                download={`gifit_${Date.now()}.gif`}
-                tabIndex="-1"
-                key="save-action"
-                initial={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
-                animate={{ width: 'auto', scaleY: 1, opacity: 1, margin: '0px 5px' }}
-                exit={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
-                transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, mass: 0.25 }}>
-                <Button
-                  type="button"
-                  icon={<ArrowDown />}
-                  style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
-                  disabled={!isComplete}
-                  ref={saveRef}>
-                  Save GIF
-                </Button>
-              </motion.a>}
-            </AnimatePresence>
-          </motion.div>
-        </motion.footer>
-      </motion.form>
+            <motion.div
+              className={css.start}
+              custom={5}
+              animate={formAnim}
+              variants={animVariants}
+              ref={startRef}>
+              <SystemInput
+                className={css.startInput}
+                name="start">
+                <IncrementableInput
+                  value={state.context.start}
+                  increment={frameTime}
+                  min={0}
+                  max={props.currentVideo.duration - frameTime}
+                  width="200px"
+                  onChange={handleStartInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+            </motion.div>
 
-      <motion.div
-        className={css.lines}
-        custom={7}
-        animate={formAnim}
-        variants={animVariants}>
-        <AestheticLines
-          widthRef={widthRef}
-          heightRef={heightRef}
-          startRef={startRef}
-          endRef={endRef}
-          timeBarRef={timeBarRef}
-          workspaceRef={workspaceRef}
-          qualityRef={qualityRef}
-          frameRateRef={frameRateRef} />
+            <motion.div
+              className={css.frames}
+              variants={animVariants}
+              animate={state.matches({ generating: { generatingGif: 'succeeded' }}) ? 'hidden' : 'shown'}>
+              <SystemFrames state={state} />
+            </motion.div>
+            
+            <motion.div
+              className={css.end}
+              custom={6}
+              animate={formAnim}
+              variants={animVariants}
+              ref={endRef}>
+              <SystemInput
+                className={css.endInput}
+                name="end">
+                <IncrementableInput
+                  value={state.context.end}
+                  increment={frameTime}
+                  min={0 + frameTime}
+                  max={props.currentVideo.duration}
+                  width="200px"
+                  onChange={handleEndInputChange}
+                  disabled={!state.matches('configuring')} />
+              </SystemInput>
+            </motion.div>
+          </div>
+
+          <motion.footer className={css.footer}>
+            <motion.div
+              className={css.actions}
+              animate={{ y: isComplete ? '-125%' : '0%' }}
+              transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, delay: 0.35 }}>
+              <AnimatePresence>
+                <motion.span
+                  className={css.action}
+                  key="primary-action"
+                  initial={{ width: '0px' }}
+                  animate={{ width: 'auto' }}
+                  exit={{ width: '0px' }}>
+                  <Button
+                    type="submit"
+                    icon={submitButtonContents[1]}
+                    style={{ width: '200px' }}>
+                    {submitButtonContents[0]}
+                  </Button>
+                </motion.span>
+                {/* I don't want to animate the margin, but framer isn't measuring right. TODO update when framer does */}
+                {isComplete && <motion.a
+                  className={css.action}
+                  href={gifUrl}
+                  download={`gifit_${Date.now()}.gif`}
+                  tabIndex="-1"
+                  key="save-action"
+                  initial={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
+                  animate={{ width: 'auto', scaleY: 1, opacity: 1, margin: '0px 5px' }}
+                  exit={{ width: '0px', scaleY: 0, opacity: 0, margin: '0px 0px' }}
+                  transition={{ type: 'spring', mass: 0.5, stiffness: 500, damping: 50, mass: 0.25 }}>
+                  <Button
+                    type="button"
+                    icon={<ArrowDown />}
+                    style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}
+                    disabled={!isComplete}
+                    ref={saveRef}>
+                    Save GIF
+                  </Button>
+                </motion.a>}
+              </AnimatePresence>
+            </motion.div>
+          </motion.footer>
+        </form>
       </motion.div>
     </motion.div>
   );

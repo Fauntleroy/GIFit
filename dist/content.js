@@ -71570,11 +71570,29 @@ function GifGenerationSystem(props) {
     }
   }, /*#__PURE__*/_react["default"].createElement(_systemElements["default"], {
     state: state
-  }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.form, {
-    className: css.form,
+  }), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    className: css.main,
     initial: "hidden",
     animate: "shown",
-    variants: formAnimVariants,
+    variants: formAnimVariants
+  }, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
+    animate: {
+      opacity: !state.matches('configuring') ? 0 : 1
+    },
+    transition: {
+      delay: 0.5
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_aestheticLines["default"], {
+    widthRef: widthRef,
+    heightRef: heightRef,
+    startRef: startRef,
+    endRef: endRef,
+    timeBarRef: timeBarRef,
+    workspaceRef: workspaceRef,
+    qualityRef: qualityRef,
+    frameRateRef: frameRateRef
+  })), /*#__PURE__*/_react["default"].createElement("form", {
+    className: css.form,
     onSubmit: handleFormSubmit,
     ref: formRef
   }, /*#__PURE__*/_react["default"].createElement("div", {
@@ -71667,9 +71685,7 @@ function GifGenerationSystem(props) {
     value: state.context.fps,
     onChange: handleFrameRateInputChange,
     disabled: !state.matches('configuring')
-  }))), /*#__PURE__*/_react["default"].createElement("div", {
-    className: css.frameRate
-  }, /*#__PURE__*/_react["default"].createElement(_systemFrameRate["default"], {
+  })), /*#__PURE__*/_react["default"].createElement(_systemFrameRate["default"], {
     fps: state.context.fps
   }))), /*#__PURE__*/_react["default"].createElement("div", {
     className: css.startAndEnd
@@ -71800,21 +71816,7 @@ function GifGenerationSystem(props) {
     },
     disabled: !isComplete,
     ref: saveRef
-  }, "Save GIF")))))), /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
-    className: css.lines,
-    custom: 7,
-    animate: formAnim,
-    variants: animVariants
-  }, /*#__PURE__*/_react["default"].createElement(_aestheticLines["default"], {
-    widthRef: widthRef,
-    heightRef: heightRef,
-    startRef: startRef,
-    endRef: endRef,
-    timeBarRef: timeBarRef,
-    workspaceRef: workspaceRef,
-    qualityRef: qualityRef,
-    frameRateRef: frameRateRef
-  })));
+  }, "Save GIF"))))))));
 }
 
 GifGenerationSystem.propTypes = {
@@ -71824,7 +71826,7 @@ var _default = GifGenerationSystem;
 exports["default"] = _default;
 
 },{"../state-machines/gif-generation-system":261,"./aesthetic-lines.jsx":223,"./button.jsx":225,"./control-bar.jsx":227,"./gif-generation-system.module.css":232,"./incrementable-input.jsx":236,"./internal-state-input.jsx":238,"./resize-wrapper.jsx":239,"./system-comms.jsx":241,"./system-elements.jsx":243,"./system-frame-rate.jsx":245,"./system-frames.jsx":247,"./system-input.jsx":249,"./system-message.jsx":251,"./system-workspace.jsx":253,"@xstate/react":3,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.date.now.js":138,"core-js/modules/es.date.to-string.js":139,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.parse-float.js":151,"core-js/modules/es.parse-int.js":152,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"core-js/modules/web.url.js":165,"framer-motion":168,"lodash":172,"prop-types":180,"react":190}],232:[function(require,module,exports){
-module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","qualityNumberInput":"_src_components_gif_generation_system_module__qualityNumberInput","qualityRangeInput":"_src_components_gif_generation_system_module__qualityRangeInput","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","startInput":"_src_components_gif_generation_system_module__startInput","end":"_src_components_gif_generation_system_module__end","endInput":"_src_components_gif_generation_system_module__endInput","frames":"_src_components_gif_generation_system_module__frames","frameRate":"_src_components_gif_generation_system_module__frameRate","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
+module.exports = {"ggs":"_src_components_gif_generation_system_module__ggs","main":"_src_components_gif_generation_system_module__main","form":"_src_components_gif_generation_system_module__form","head":"_src_components_gif_generation_system_module__head","comms":"_src_components_gif_generation_system_module__comms","widthBar":"_src_components_gif_generation_system_module__widthBar","videoInfo":"_src_components_gif_generation_system_module__videoInfo","dimensions":"_src_components_gif_generation_system_module__dimensions","width":"_src_components_gif_generation_system_module__width","height":"_src_components_gif_generation_system_module__height","heightBar":"_src_components_gif_generation_system_module__heightBar","workspace":"_src_components_gif_generation_system_module__workspace","qualityAndFrameRate":"_src_components_gif_generation_system_module__qualityAndFrameRate","qualityNumberInput":"_src_components_gif_generation_system_module__qualityNumberInput","qualityRangeInput":"_src_components_gif_generation_system_module__qualityRangeInput","startAndEnd":"_src_components_gif_generation_system_module__startAndEnd","timeBar":"_src_components_gif_generation_system_module__timeBar","start":"_src_components_gif_generation_system_module__start","startInput":"_src_components_gif_generation_system_module__startInput","end":"_src_components_gif_generation_system_module__end","endInput":"_src_components_gif_generation_system_module__endInput","frames":"_src_components_gif_generation_system_module__frames","frameRate":"_src_components_gif_generation_system_module__frameRate","lines":"_src_components_gif_generation_system_module__lines","footer":"_src_components_gif_generation_system_module__footer","actions":"_src_components_gif_generation_system_module__actions","action":"_src_components_gif_generation_system_module__action"}
 },{}],233:[function(require,module,exports){
 module.exports = {}
 },{}],234:[function(require,module,exports){
@@ -72928,6 +72930,8 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _framerMotion = require("framer-motion");
+
 var _useFrameRate3 = _interopRequireDefault(require("../hooks/use-frame-rate"));
 
 var css = _interopRequireWildcard(require("./system-frame-rate.module.css"));
@@ -72950,6 +72954,31 @@ function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+var frameVariants = {
+  active: function active() {
+    return {
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        tension: 1000,
+        damping: 0,
+        mass: 0.5
+      }
+    };
+  },
+  inactive: function inactive() {
+    return {
+      opacity: 0.075,
+      transition: {
+        type: 'spring',
+        tension: 750,
+        damping: 25,
+        mass: 2
+      }
+    };
+  }
+};
+
 function SystemFrameRate(props) {
   var fps = props.fps;
 
@@ -72963,11 +72992,11 @@ function SystemFrameRate(props) {
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: css.frameRate
   }, _lodash["default"].times(fps, function (iteration) {
-    return /*#__PURE__*/_react["default"].createElement("span", {
+    return /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.span, {
       className: css.frame,
-      style: {
-        transform: "translateY(".concat(iteration === activeFrame ? '-5px' : '0px', ")")
-      },
+      variants: frameVariants,
+      initial: "inactive",
+      animate: iteration === activeFrame ? 'active' : 'inactive',
       key: iteration
     });
   }));
@@ -72979,7 +73008,7 @@ SystemFrameRate.propTypes = {
 var _default = SystemFrameRate;
 exports["default"] = _default;
 
-},{"../hooks/use-frame-rate":256,"./system-frame-rate.module.css":246,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"lodash":172,"prop-types":180,"react":190}],246:[function(require,module,exports){
+},{"../hooks/use-frame-rate":256,"./system-frame-rate.module.css":246,"core-js/modules/es.array.from.js":133,"core-js/modules/es.array.is-array.js":135,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.array.slice.js":137,"core-js/modules/es.function.name.js":141,"core-js/modules/es.object.define-property.js":145,"core-js/modules/es.object.get-own-property-descriptor.js":146,"core-js/modules/es.object.to-string.js":150,"core-js/modules/es.string.iterator.js":156,"core-js/modules/es.symbol.description.js":157,"core-js/modules/es.symbol.iterator.js":158,"core-js/modules/es.symbol.js":159,"core-js/modules/es.weak-map.js":160,"core-js/modules/web.dom-collections.iterator.js":162,"framer-motion":168,"lodash":172,"prop-types":180,"react":190}],246:[function(require,module,exports){
 module.exports = {"frameRate":"_src_components_system_frame_rate_module__frameRate","frame":"_src_components_system_frame_rate_module__frame"}
 },{}],247:[function(require,module,exports){
 "use strict";

@@ -7,17 +7,23 @@
 	background-color: hsla(234.5, 30.5%, 20%, 0.8);
 }
 
+.main {
+	position: relative;
+}
+
 .form {
 	display: grid;
 	grid-gap: 20px 25px;
 	grid-template-columns: 100px minmax(150px, 1fr) 100px;
-	grid-template-rows: 25px minmax(100px, 1fr) minmax(min-content, max-content) 35px;
+	grid-template-rows: 20px minmax(100px, 1fr) minmax(min-content, max-content) 35px;
 	grid-template-areas:
 		"comms comms comms"
 		"dimensions workspace quality-and-frame-rate"
 		"start-and-end start-and-end start-and-end"
 		"footer footer footer";
 	margin: -10px 0;
+	position: relative;
+	z-index: 5;
 }
 
 .head {
