@@ -718,6 +718,7 @@ input[type="number"]._src_components_gif_generation_system_module__qualityNumber
 ._src_components_incrementable_input_module__decrementor,
 ._src_components_incrementable_input_module__incrementor {
   display: flex;
+  align-items: center;
   position: absolute;
   height: 100%;
   padding: 7px 7px;

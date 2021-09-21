@@ -12,6 +12,7 @@
 .decrementor,
 .incrementor {
   display: flex;
+  align-items: center;
   position: absolute;
   height: 100%;
   padding: 7px 7px;
