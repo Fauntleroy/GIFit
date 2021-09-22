@@ -33,14 +33,14 @@ const formAnimVariants = {
     opacity: 1,
     scale: 1,
     transition: {
-      type: 'spring', damping: 45, delay: 1.25, stiffness: 500
+      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
     }
   },
   hidden: {
     opacity: 0,
     scale: 0.95,
     transition: {
-      type: 'spring', damping: 45, delay: 1.25, stiffness: 500
+      type: 'spring', damping: 45, delay: 1.15, stiffness: 500
     }
   }
 }
@@ -194,14 +194,7 @@ function GifGenerationSystem (props) {
     }
   }
 
-  const handleWidthControlBarChange = function ({ scale, size }) {
-    const newWidth = size;
-    const newHeight = size / state.context.videoAspectRatio;
-    send('INPUT', { key: 'width', value: newWidth });
-    send('INPUT', { key: 'height', value: newHeight });
-  }
-
-  const handleHeightControlBarChange = function ({ scale, size }) {
+  const handleResizeWrapperChange = function ({ scale, size }) {
     const newWidth = size * state.context.videoAspectRatio;
     const newHeight = size;
     send('INPUT', { key: 'width', value: newWidth });
@@ -251,7 +244,7 @@ function GifGenerationSystem (props) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', delay: 0.25, stiffness: 100, damping: 10, mass: 0.25 }}
       style={_.isObject(vibrantColor) ? {
-        boxShadow: `rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.075) 0 -40px 100px inset`
+        boxShadow: `rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.1) 0 -40px 100px inset`
       } : null}>
 
       <SystemElements state={state} />
@@ -319,7 +312,7 @@ function GifGenerationSystem (props) {
             <ResizeWrapper
               orientation="vertical"
               value={state.context.height}
-              onChange={handleHeightControlBarChange}
+              onChange={handleResizeWrapperChange}
               disabled={!state.matches('configuring')}>
               <SystemWorkspace
                 videoElement={props.currentVideo}

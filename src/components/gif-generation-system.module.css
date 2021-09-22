@@ -5,7 +5,8 @@
 	
 	backdrop-filter: contrast(1.05) saturate(1.5) blur(5px);
 	background-color: hsla(240, 22.5%, 24%, 0.8);
-	transition: box-shadow 1250ms;
+	transition: box-shadow 1250ms, border-color 1250ms;
+	border: transparent 1px solid;
 }
 
 .main {

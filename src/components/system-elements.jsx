@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 
+import SystemSphere from './system-sphere.jsx';
+
 import * as css from './system-elements.module.css';
 
 const DELAY = 0.75;
@@ -14,9 +16,9 @@ function SystemElements (props) {
   const currentColor = isGenerating && !isComplete
     ? ACTIVE_COLOR : undefined;
   const currentHorizontal = isGenerating && !isComplete
-    ? '25px' : '-20px';
+    ? '25px' : '15px';
   const currentVertical = isGenerating && !isComplete
-    ? '25px' : '-20px';
+    ? '25px' : '15px';
 
   return (
     <>
@@ -44,7 +46,9 @@ function SystemElements (props) {
         animate={{
           left: currentHorizontal, top: currentVertical, color: currentColor
         }}
-        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
+        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }}>
+        <SystemSphere size={7} />
+      </motion.span>
       <motion.span className={css.corner}
         style={{ rotateZ: '45deg' }}
         initial={{
@@ -53,7 +57,9 @@ function SystemElements (props) {
         animate={{
           right: currentHorizontal, top: currentVertical, color: currentColor
         }}
-        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
+        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }}>
+        <SystemSphere size={7} />
+      </motion.span>
       <motion.span className={css.corner}
         style={{ rotateZ: '-45deg' }}
         initial={{
@@ -62,7 +68,9 @@ function SystemElements (props) {
         animate={{
           right: currentHorizontal, bottom: currentVertical, color: currentColor
         }}
-        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
+        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }}>
+        <SystemSphere size={7} />
+      </motion.span>
       <motion.span className={css.corner}
         style={{ rotateZ: '45deg' }}
         initial={{
@@ -71,7 +79,9 @@ function SystemElements (props) {
         animate={{
           left: currentHorizontal, bottom: currentVertical, color: currentColor
         }}
-        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }} />
+        transition={{ type: 'spring', damping: 45, delay: DELAY, stiffness: 500 }}>
+        <SystemSphere size={7} />
+      </motion.span>
     </>
   );
 }
