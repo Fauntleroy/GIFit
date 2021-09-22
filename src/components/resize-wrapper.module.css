@@ -16,6 +16,11 @@
   position: absolute;
   padding: 0;
   background: transparent;
+  transition: background 250ms, outline 250ms;
+
+  &:focus {
+    background: var(--color-primary-system);
+  }
 
   &:hover {
     background: var(--color-active);
@@ -38,13 +43,13 @@
 }
 
 .top, .bottom {
-  height: 1px;
+  height: 3px;
   width: 100%;
   cursor: ns-resize !important;
 }
 
 .right, .left {
-  width: 1px;
+  width: 3px;
   height: 100%;
   cursor: ew-resize !important;
 }

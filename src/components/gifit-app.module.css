@@ -2,7 +2,7 @@
 	--hsl-aluminum-blue: 240, 100%, 80%;
 	--color-shade: hsla(0, 0%, 0%, 0.4);
   --color-active: hsla(160, 100%, 62.7%, 1);
-	--color-nightshade: hsla(240, 20.5%, 15%, 0.9);
+	--color-nightshade: hsla(240, 22.5%, 10%, 0.92);
   --color-nighttime: hsla(235, 25.6%, 10%, 1);
 	--color-intensity-red: hsl(350, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
@@ -33,7 +33,6 @@
   justify-content: center;
 
   background-color: var(--color-nightshade);
-  background-image: linear-gradient(-10deg, rgba(0,0,0,0.5), transparent);
 }
 
 .app {
