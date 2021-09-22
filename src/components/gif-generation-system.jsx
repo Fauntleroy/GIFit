@@ -84,6 +84,7 @@ function GifGenerationSystem (props) {
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
   const frameTime = _.round(1 / state.context.fps, 2);
   const [vibrantColor, setVibrantColor] = useState(null);
+  const [formAnimationIsComplete, setFormAnimationIsComplete] = useState(false);
 
   useEffect(() => {
     if (widthRef.current) {
@@ -101,6 +102,7 @@ function GifGenerationSystem (props) {
     if (
       props.currentVideo
       && (state.matches('configuring') || state.matches('generating'))
+      && formAnimationIsComplete
     ) {
       props.currentVideo.currentTime = state.context.start;
     }
@@ -111,6 +113,7 @@ function GifGenerationSystem (props) {
     if (
       props.currentVideo
       && (state.matches('configuring') || state.matches('generating'))
+      && formAnimationIsComplete
     ) {
       props.currentVideo.currentTime = state.context.end;
     }
@@ -184,14 +187,6 @@ function GifGenerationSystem (props) {
   function handleStartEndControlBarChange ({ start, end, changed }) {
     send('INPUT', { key: 'start', value: start * props.currentVideo.duration });
     send('INPUT', { key: 'end', value: end * props.currentVideo.duration });
-
-    const newTime = (changed === 'start')
-      ? start * props.currentVideo.duration
-      : end * props.currentVideo.duration;
-
-    if (_.isNumber(newTime) && !_.isNaN(newTime)) {
-      props.currentVideo.currentTime = newTime;
-    }
   }
 
   const handleResizeWrapperChange = function ({ scale, size }) {
@@ -218,6 +213,10 @@ function GifGenerationSystem (props) {
       // Cancel
       send('ABORT');
     }
+  }
+
+  function handleFormAnimationComplete () {
+    setFormAnimationIsComplete(true);
   }
 
   if (state.matches('initializing')) {
@@ -253,7 +252,8 @@ function GifGenerationSystem (props) {
         className={css.main}
         initial="hidden"
         animate="shown"
-        variants={formAnimVariants}>
+        variants={formAnimVariants}
+        onAnimationComplete={handleFormAnimationComplete}>
         <motion.div
           animate={{
             opacity: !state.matches('configuring') ? 0 : 1

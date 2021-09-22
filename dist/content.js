@@ -71384,6 +71384,11 @@ function GifGenerationSystem(props) {
       vibrantColor = _useState2[0],
       setVibrantColor = _useState2[1];
 
+  var _useState3 = (0, _react.useState)(false),
+      _useState4 = _slicedToArray(_useState3, 2),
+      formAnimationIsComplete = _useState4[0],
+      setFormAnimationIsComplete = _useState4[1];
+
   (0, _react.useEffect)(function () {
     if (widthRef.current) {
       widthRef.current.querySelector('input').focus();
@@ -71397,13 +71402,13 @@ function GifGenerationSystem(props) {
   // scrub the video to the start timecode when it changes
 
   (0, _react.useEffect)(function () {
-    if (props.currentVideo && (state.matches('configuring') || state.matches('generating'))) {
+    if (props.currentVideo && (state.matches('configuring') || state.matches('generating')) && formAnimationIsComplete) {
       props.currentVideo.currentTime = state.context.start;
     }
   }, [state.context.start]); // scrub the video to the end timecode when it changes
 
   (0, _react.useEffect)(function () {
-    if (props.currentVideo && (state.matches('configuring') || state.matches('generating'))) {
+    if (props.currentVideo && (state.matches('configuring') || state.matches('generating')) && formAnimationIsComplete) {
       props.currentVideo.currentTime = state.context.end;
     }
   }, [state.context.end]);
@@ -71529,11 +71534,6 @@ function GifGenerationSystem(props) {
       key: 'end',
       value: end * props.currentVideo.duration
     });
-    var newTime = changed === 'start' ? start * props.currentVideo.duration : end * props.currentVideo.duration;
-
-    if (_lodash["default"].isNumber(newTime) && !_lodash["default"].isNaN(newTime)) {
-      props.currentVideo.currentTime = newTime;
-    }
   }
 
   var handleResizeWrapperChange = function handleResizeWrapperChange(_ref3) {
@@ -71572,6 +71572,10 @@ function GifGenerationSystem(props) {
       // Cancel
       send('ABORT');
     }
+  }
+
+  function handleFormAnimationComplete() {
+    setFormAnimationIsComplete(true);
   }
 
   if (state.matches('initializing')) {
@@ -71630,7 +71634,8 @@ function GifGenerationSystem(props) {
     className: css.main,
     initial: "hidden",
     animate: "shown",
-    variants: formAnimVariants
+    variants: formAnimVariants,
+    onAnimationComplete: handleFormAnimationComplete
   }, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     animate: {
       opacity: !state.matches('configuring') ? 0 : 1
@@ -72008,13 +72013,13 @@ function GifitApp(props) {
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, !state.matches('closed') && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
     className: css.backdrop,
     initial: {
-      opacity: 1
+      opacity: 0
     },
     animate: {
       opacity: 1
     },
     exit: {
-      opacity: 1
+      opacity: 0
     },
     transition: {
       type: 'spring',
@@ -73410,7 +73415,7 @@ var _default = SystemSphere;
 exports["default"] = _default;
 
 },{"./system-sphere.module.css":255,"core-js/modules/es.array.iterator.js":136,"core-js/modules/es.object.define-property.js":146,"core-js/modules/es.object.get-own-property-descriptor.js":147,"core-js/modules/es.object.to-string.js":151,"core-js/modules/es.string.iterator.js":157,"core-js/modules/es.symbol.description.js":158,"core-js/modules/es.symbol.iterator.js":159,"core-js/modules/es.symbol.js":160,"core-js/modules/es.weak-map.js":161,"core-js/modules/web.dom-collections.iterator.js":163,"prop-types":181,"react":191}],255:[function(require,module,exports){
-module.exports = {"container":"_src_components_system_sphere_module__container","sphere":"_src_components_system_sphere_module__sphere","ring":"_src_components_system_sphere_module__ring","animateSphere":"_src_components_system_sphere_module__animateSphere"}
+module.exports = {"container":"_src_components_system_sphere_module__container","sphere":"_src_components_system_sphere_module__sphere","ring":"_src_components_system_sphere_module__ring"}
 },{}],256:[function(require,module,exports){
 "use strict";
 
