@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMachine } from '@xstate/react';
@@ -7,6 +7,7 @@ import { useMachine } from '@xstate/react';
 import * as css from './gif-generation-system.module.css';
 
 import gifGenerationSystemMachine from '../state-machines/gif-generation-system';
+import getVibrantColors from '../utils/get-vibrant-colors';
 
 import Button from '$components/button.jsx';
 import ControlBar from '$components/control-bar.jsx';
@@ -82,6 +83,7 @@ function GifGenerationSystem (props) {
   const frameRateRef = useRef(null);
   const formAnim = !state.matches('configuring') ? 'hidden' : 'shown';
   const frameTime = _.round(1 / state.context.fps, 2);
+  const [vibrantColor, setVibrantColor] = useState(null);
 
   useEffect(() => {
     if (widthRef.current) {
@@ -127,6 +129,16 @@ function GifGenerationSystem (props) {
       if (props.currentVideo) props.currentVideo.removeEventListener('play', handlePlay);
     }
   }, [props.currentVideo]);
+
+  const updateVibrantColor = useCallback(_.debounce(async (videoEl) => {
+    const vibrantColors = await getVibrantColors(videoEl);
+
+    setVibrantColor(vibrantColors[0]);
+  }, 2500), []);
+
+  useEffect(() => {
+    updateVibrantColor(props.currentVideo);
+  }, [props.currentVideo, state.context.start, state.context.end, state.context.gifData]);
 
   useEffect(() => {
     if (saveRef.current) {
@@ -237,7 +249,10 @@ function GifGenerationSystem (props) {
       className={css.ggs}
       initial={{ scale: 0.85, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', delay: 0.25, stiffness: 100, damping: 10, mass: 0.25 }}>
+      transition={{ type: 'spring', delay: 0.25, stiffness: 100, damping: 10, mass: 0.25 }}
+      style={_.isObject(vibrantColor) ? {
+        boxShadow: `rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.075) 0 -40px 100px inset`
+      } : null}>
 
       <SystemElements state={state} />
 
@@ -312,7 +327,8 @@ function GifGenerationSystem (props) {
                 height={state.context.height}
                 gifUrl={gifUrl}
                 isGenerating={state.matches('generating')}
-                isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})} />
+                isComplete={state.matches({ generating: { generatingGif: 'succeeded' }})}
+                vibrantColor={vibrantColor} />
             </ResizeWrapper>
           </div>
 

@@ -1,13 +1,13 @@
 :root {
-	--hsl-aluminum-blue: 225, 100%, 80%;
-	--color-shade: hsla(0, 0%, 0%, 0.5);
+	--hsl-aluminum-blue: 240, 100%, 80%;
+	--color-shade: hsla(0, 0%, 0%, 0.4);
   --color-active: hsla(160, 100%, 62.7%, 1);
-	--color-nightshade: hsla(240, 21.6%, 5%, 0.9);
+	--color-nightshade: hsla(240, 20.5%, 15%, 0.9);
   --color-nighttime: hsla(235, 25.6%, 10%, 1);
 	--color-intensity-red: hsl(350, 100%, 60%);
 	--color-system: hsla(var(--hsl-aluminum-blue), 0.75);
-  --color-primary-system: hsla(225, 89%, 95%, 1);
-	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.3);
+  --color-primary-system: hsla(240, 89%, 95%, 1);
+	--color-subsystem: hsla(var(--hsl-aluminum-blue), 0.4);
 	--color-highlight: hsla(160, 100%, 82.5%, 1);
   --color-error: hsl(20deg, 100%, 55%);
 

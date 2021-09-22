@@ -22,10 +22,10 @@ function AestheticLine (props) {
       <circle
         cx={start[0]}
         cy={start[1]}
-        r="2.5"
+        r="3"
         fill="none"
-        stroke="var(--color-nightshade)"
-        strokeWidth="2" />
+        stroke="var(--color-subsystem)"
+        strokeWidth="0.5" />
       <path
         d={`
           M${start[0]} ${start[1]}
@@ -40,10 +40,10 @@ function AestheticLine (props) {
       <circle
         cx={end[0]}
         cy={end[1]}
-        r="2.5"
+        r="3"
         fill="none"
-        stroke="var(--color-nightshade)"
-        strokeWidth="2" />
+        stroke="var(--color-subsystem)"
+        strokeWidth="0.5" />
     </>
   );
 }

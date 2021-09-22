@@ -17,8 +17,6 @@
   transform: translate(-50%, -150%);
 
 	padding: 4px 20px;
-	border: currentColor 1px solid;
-	border-radius: 3px;
 	color: var(--color-system);
 	line-height: 1.25;
   white-space: nowrap;

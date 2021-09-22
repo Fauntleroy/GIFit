@@ -1,27 +1,18 @@
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import extractColors from 'extract-colors';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
 import * as css from './system-workspace.module.css';
 
-function sortColorsByBrightness (colors) {
-  return _.sortBy(colors, (color) => {
-    const { red, green, blue } = color;
-    return -1 * (red + green + blue);
-  });
-}
-
 function SystemWorkspace (props) {
-  const { videoElement, width, height, isGenerating, isComplete } = props;
+  const { videoElement, width, height, isGenerating, isComplete, vibrantColor } = props;
 
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
   const dimensionsRef = useRef([0, 0]);
   const [isSeeking, setIsSeeking] = useState(false);
-  const [vibrantColor, setVibrantColor] = useState({ red: 0, green: 0, blue: 0 });
 
   // draw the video to the preview canvas
   function drawFrame () {
@@ -77,15 +68,6 @@ function SystemWorkspace (props) {
     };
   }, [videoElement]);
 
-  useEffect(async function () {
-    if (imageRef.current) {
-      const colors = await extractColors(imageRef.current, { saturationImportance: 0.5 });
-      const colorsByBrightness = sortColorsByBrightness(colors);
-      const newVibrantColor = colorsByBrightness[0];
-      setVibrantColor(newVibrantColor);
-    }
-  }, [props.gifUrl]);
-
   return (
     <motion.div
       className={css.workspace}
@@ -106,10 +88,10 @@ function SystemWorkspace (props) {
         animate={{
           translateZ: isComplete ? '35px' : '0px',
           filter: isComplete
-            ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.65) 0px 15px 25px)'
+            ? 'drop-shadow(hsla(180, 50%, 3.9%, 0.5) 0px 35px 20px)'
             : 'drop-shadow(hsla(180, 50%, 3.9%, 0) 0px 0px 0px)',
-          boxShadow: isComplete
-            ? `0px 10px 65px rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.25)`
+          boxShadow: isComplete && vibrantColor
+            ? `0px 15px 75px rgba(${vibrantColor.red}, ${vibrantColor.green}, ${vibrantColor.blue}, 0.15)`
             : '0px 0px 0px rgba(0, 0, 0, 0)'
         }}
         transition={{
@@ -148,7 +130,8 @@ SystemWorkspace.defaultProps = {
   gifUrl: null,
   videoElement: null,
   isComplete: false,
-  isGenerating: false
+  isGenerating: false,
+  vibrantColor: null
 };
 
 SystemWorkspace.propTypes = {
@@ -163,7 +146,12 @@ SystemWorkspace.propTypes = {
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
   isComplete: PropTypes.bool.isRequired,
-  isGenerating: PropTypes.bool.isRequired
+  isGenerating: PropTypes.bool.isRequired,
+  vibrantColor: PropTypes.shape({
+    red: PropTypes.number.isRequired,
+    green: PropTypes.number.isRequired,
+    blue: PropTypes.number.isRequired
+  })
 };
 
 export default SystemWorkspace;
