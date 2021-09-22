@@ -72000,14 +72000,10 @@ function GifitApp(props) {
   (0, _react.useEffect)(function () {
     videoRef.current = state.context.currentVideo;
   }, [state.context.currentVideo]);
-  (0, _react.useEffect)(function () {
-    return function () {
-      videoRef.current.currentTime = contextRef.current.originalTime || 0;
-    };
-  }, []);
 
   function handleCloseClick() {
     props.onClose();
+    videoRef.current.currentTime = contextRef.current.originalTime || 0;
   }
 
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, !state.matches('closed') && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {

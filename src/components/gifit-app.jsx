@@ -33,14 +33,9 @@ function GifitApp (props) {
     videoRef.current = state.context.currentVideo;
   }, [state.context.currentVideo]);
 
-  useEffect(() => {
-    return () => {
-      videoRef.current.currentTime = contextRef.current.originalTime || 0;
-    };
-  }, []);
-
   function handleCloseClick () {
     props.onClose();
+    videoRef.current.currentTime = contextRef.current.originalTime || 0;
   }
 
   return (
