@@ -43,7 +43,8 @@ const gifitAppMachine = new Machine({
   context: {
     message: null,
     criticalError: null,
-    currentVideo: null
+    currentVideo: null,
+    originalTime: 0
   },
   states: {
     closed: {
@@ -76,8 +77,11 @@ const gifitAppMachine = new Machine({
 }, {
   actions: {
     assignCurrentVideo: assign((context, event) => {
+      const video = event.data;
+
       return {
-        currentVideo: event.data
+        currentVideo: video,
+        originalTime: video.currentTime
       };
     }),
     assignCriticalError: assign((context, event) => {

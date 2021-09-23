@@ -17,7 +17,6 @@ import './gifit-app-fonts.module.css';
 
 function GifitApp (props) {
   const [state, send] = useMachine(gifitAppMachine);
-  const contextRef = useRef(state.context);
   const videoRef = useRef(state.context.currentVideo);
   const previousActive = usePrevious(props.active);
 
@@ -35,7 +34,8 @@ function GifitApp (props) {
 
   function handleCloseClick () {
     props.onClose();
-    videoRef.current.currentTime = contextRef.current.originalTime || 0;
+
+    videoRef.current.currentTime = state.context.originalTime;
   }
 
   return (

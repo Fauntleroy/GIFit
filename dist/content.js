@@ -71987,7 +71987,6 @@ function GifitApp(props) {
       state = _useMachine2[0],
       send = _useMachine2[1];
 
-  var contextRef = (0, _react.useRef)(state.context);
   var videoRef = (0, _react.useRef)(state.context.currentVideo);
   var previousActive = (0, _usePrevious["default"])(props.active);
   (0, _react.useEffect)(function () {
@@ -72003,7 +72002,7 @@ function GifitApp(props) {
 
   function handleCloseClick() {
     props.onClose();
-    videoRef.current.currentTime = contextRef.current.originalTime || 0;
+    videoRef.current.currentTime = state.context.originalTime;
   }
 
   return /*#__PURE__*/_react["default"].createElement(_framerMotion.AnimatePresence, null, !state.matches('closed') && /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement(_framerMotion.motion.div, {
@@ -74768,7 +74767,8 @@ var gifitAppMachine = new _xstate.Machine({
   context: {
     message: null,
     criticalError: null,
-    currentVideo: null
+    currentVideo: null,
+    originalTime: 0
   },
   states: {
     closed: {
@@ -74801,8 +74801,10 @@ var gifitAppMachine = new _xstate.Machine({
 }, {
   actions: {
     assignCurrentVideo: (0, _xstate.assign)(function (context, event) {
+      var video = event.data;
       return {
-        currentVideo: event.data
+        currentVideo: video,
+        originalTime: video.currentTime
       };
     }),
     assignCriticalError: (0, _xstate.assign)(function (context, event) {
