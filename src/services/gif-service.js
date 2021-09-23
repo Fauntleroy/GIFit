@@ -29,9 +29,12 @@ class GifService extends EventEmitter {
     this.aborted = false;
     this.framesComplete = 0;
 
-    const canvasElement = this.canvasElement = document.createElement('canvas');
-    canvasElement.style.imageRendering = 'crisp-edges';
-    this.context = this.canvasElement.getContext('2d');
+    this.canvasEl = document.createElement('canvas');
+    this.context = this.canvasEl.getContext('2d');
+    this.context.mozImageSmoothingEnabled = false;
+    this.context.webkitImageSmoothingEnabled = false;
+    this.context.msImageSmoothingEnabled = false;
+    this.context.imageSmoothingEnabled = false;
   }
 
   createGif (config, videoElement) {
@@ -41,11 +44,11 @@ class GifService extends EventEmitter {
     // Process config data
     const quality = (31 - (config.quality * 3));
 
-    // Prepare canvas
-    this.canvasElement.setAttribute('width', config.width);
-    this.canvasElement.setAttribute('height', config.height);
-    this.canvasElement.style.width = `${config.width}px`;
-    this.canvasElement.style.height = `${config.height}px`;
+    // Prepare canvas (based on image size)
+    this.canvasEl.setAttribute('width', config.width);
+    this.canvasEl.setAttribute('height', config.height);
+    this.canvasEl.style.width = `${config.width}px`;
+    this.canvasEl.style.height = `${config.height}px`;
 
     // Pause video to prevent crazy audio artifacts
     if (!videoElement.paused) {
@@ -101,7 +104,7 @@ class GifService extends EventEmitter {
       0, 0, videoElement.videoWidth, videoElement.videoHeight,
       0, 0, config.width, config.height
     );
-    this.gif.addFrame(this.canvasElement, {
+    this.gif.addFrame(this.canvasEl, {
       delay: frameInterval,
       dispose: 1,
       copy: true

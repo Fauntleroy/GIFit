@@ -73975,9 +73975,12 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
     _this.gif = null;
     _this.aborted = false;
     _this.framesComplete = 0;
-    var canvasElement = _this.canvasElement = document.createElement('canvas');
-    canvasElement.style.imageRendering = 'crisp-edges';
-    _this.context = _this.canvasElement.getContext('2d');
+    _this.canvasEl = document.createElement('canvas');
+    _this.context = _this.canvasEl.getContext('2d');
+    _this.context.mozImageSmoothingEnabled = false;
+    _this.context.webkitImageSmoothingEnabled = false;
+    _this.context.msImageSmoothingEnabled = false;
+    _this.context.imageSmoothingEnabled = false;
     return _this;
   }
 
@@ -73989,12 +73992,12 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
       // Clear abort token
       this.aborted = false; // Process config data
 
-      var quality = 31 - config.quality * 3; // Prepare canvas
+      var quality = 31 - config.quality * 3; // Prepare canvas (based on image size)
 
-      this.canvasElement.setAttribute('width', config.width);
-      this.canvasElement.setAttribute('height', config.height);
-      this.canvasElement.style.width = "".concat(config.width, "px");
-      this.canvasElement.style.height = "".concat(config.height, "px"); // Pause video to prevent crazy audio artifacts
+      this.canvasEl.setAttribute('width', config.width);
+      this.canvasEl.setAttribute('height', config.height);
+      this.canvasEl.style.width = "".concat(config.width, "px");
+      this.canvasEl.style.height = "".concat(config.height, "px"); // Pause video to prevent crazy audio artifacts
 
       if (!videoElement.paused) {
         videoElement.pause();
@@ -74046,7 +74049,7 @@ var GifService = /*#__PURE__*/function (_EventEmitter) {
       var trueGifDuration = gifDuration - gifDuration % frameInterval; // Draw current frame on canvas, then transfer that to gif.js
 
       this.context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight, 0, 0, config.width, config.height);
-      this.gif.addFrame(this.canvasElement, {
+      this.gif.addFrame(this.canvasEl, {
         delay: frameInterval,
         dispose: 1,
         copy: true
