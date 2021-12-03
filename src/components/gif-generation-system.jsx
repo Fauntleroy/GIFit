@@ -189,6 +189,10 @@ function GifGenerationSystem (props) {
     send('INPUT', { key: 'end', value: end * props.currentVideo.duration });
   }
 
+  function handleTimeRangeChange (event) {
+    send('INPUT', { key: 'timerange', value: event.value });
+  }
+
   const handleResizeWrapperChange = function ({ scale, size }) {
     const newWidth = size * state.context.videoAspectRatio;
     const newHeight = size;
@@ -370,6 +374,7 @@ function GifGenerationSystem (props) {
               animate={formAnim}
               variants={animVariants}
               ref={timeBarRef}>
+              <input type="range" onChange={handleTimeRangeChange} min={0} max={props.currentVideo.duration} step={0.01} />
               <ControlBar
                 startValue={state.context.start / props.currentVideo.duration}
                 endValue={state.context.end / props.currentVideo.duration}

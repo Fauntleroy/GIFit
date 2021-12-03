@@ -173,47 +173,50 @@ const gifGenerationSystemMachine = new Machine({
       const { value } = event;
       const frameTime = (1 / context.fps);
 
-      if (event.key === 'width' || event.key === 'height') {
-        return {
-          [event.key]: _.round(event.value)
-        };
-      }
-
-      if (event.key === 'start') {
-        const start =
-          _.round(_.clamp(
-            event.value, 0, context.videoElement.duration - frameTime
-          ), 2);
-        if (start >= (context.end - frameTime)) {
+      switch (event.key) {
+        case 'width':
+        case 'height':
           return {
-            start,
-            end: _.round(start + frameTime, 2)
+            [event.key]: _.round(event.value)
+          };
+
+        case 'start': {
+          const start =
+            _.round(_.clamp(
+              event.value, 0, context.videoElement.duration - frameTime
+            ), 2);
+          if (start >= (context.end - frameTime)) {
+            return {
+              start,
+              end: _.round(start + frameTime, 2)
+            };
+          }
+          return {
+            start
           };
         }
-        return {
-          start
-        };
-      }
 
-      if (event.key === 'end') {
-        const end =
-          _.round(_.clamp(
-            event.value, 0 + frameTime, context.videoElement.duration
-          ), 2);
-        if (end <= (context.start + frameTime)) {
+        case 'end': {
+          const end =
+            _.round(_.clamp(
+              event.value, 0 + frameTime, context.videoElement.duration
+            ), 2);
+          if (end <= (context.start + frameTime)) {
+            return {
+              start: _.round(end - frameTime, 2),
+              end
+            };
+          }
           return {
-            start: _.round(end - frameTime, 2),
             end
           };
         }
-        return {
-          end
-        };
-      }
 
-      return {
-        [event.key]: value
-      };
+        default:
+          return {
+            [event.key]: value
+          };
+      }
     }),
     setGifData: assign((context, event) => {
       return {

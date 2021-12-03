@@ -71536,6 +71536,13 @@ function GifGenerationSystem(props) {
     });
   }
 
+  function handleTimeRangeChange(event) {
+    send('INPUT', {
+      key: 'timerange',
+      value: event.value
+    });
+  }
+
   var handleResizeWrapperChange = function handleResizeWrapperChange(_ref3) {
     var scale = _ref3.scale,
         size = _ref3.size;
@@ -71757,7 +71764,13 @@ function GifGenerationSystem(props) {
     animate: formAnim,
     variants: animVariants,
     ref: timeBarRef
-  }, /*#__PURE__*/_react["default"].createElement(_controlBar["default"], {
+  }, /*#__PURE__*/_react["default"].createElement("input", {
+    type: "range",
+    onChange: handleTimeRangeChange,
+    min: 0,
+    max: props.currentVideo.duration,
+    step: 0.01
+  }), /*#__PURE__*/_react["default"].createElement(_controlBar["default"], {
     startValue: state.context.start / props.currentVideo.duration,
     endValue: state.context.end / props.currentVideo.duration,
     minimumDistance: frameTime / props.currentVideo.duration,
@@ -74523,41 +74536,46 @@ var gifGenerationSystemMachine = new _xstate.Machine({
       var value = event.value;
       var frameTime = 1 / context.fps;
 
-      if (event.key === 'width' || event.key === 'height') {
-        return _defineProperty({}, event.key, _lodash["default"].round(event.value));
+      switch (event.key) {
+        case 'width':
+        case 'height':
+          return _defineProperty({}, event.key, _lodash["default"].round(event.value));
+
+        case 'start':
+          {
+            var start = _lodash["default"].round(_lodash["default"].clamp(event.value, 0, context.videoElement.duration - frameTime), 2);
+
+            if (start >= context.end - frameTime) {
+              return {
+                start: start,
+                end: _lodash["default"].round(start + frameTime, 2)
+              };
+            }
+
+            return {
+              start: start
+            };
+          }
+
+        case 'end':
+          {
+            var end = _lodash["default"].round(_lodash["default"].clamp(event.value, 0 + frameTime, context.videoElement.duration), 2);
+
+            if (end <= context.start + frameTime) {
+              return {
+                start: _lodash["default"].round(end - frameTime, 2),
+                end: end
+              };
+            }
+
+            return {
+              end: end
+            };
+          }
+
+        default:
+          return _defineProperty({}, event.key, value);
       }
-
-      if (event.key === 'start') {
-        var start = _lodash["default"].round(_lodash["default"].clamp(event.value, 0, context.videoElement.duration - frameTime), 2);
-
-        if (start >= context.end - frameTime) {
-          return {
-            start: start,
-            end: _lodash["default"].round(start + frameTime, 2)
-          };
-        }
-
-        return {
-          start: start
-        };
-      }
-
-      if (event.key === 'end') {
-        var end = _lodash["default"].round(_lodash["default"].clamp(event.value, 0 + frameTime, context.videoElement.duration), 2);
-
-        if (end <= context.start + frameTime) {
-          return {
-            start: _lodash["default"].round(end - frameTime, 2),
-            end: end
-          };
-        }
-
-        return {
-          end: end
-        };
-      }
-
-      return _defineProperty({}, event.key, value);
     }),
     setGifData: (0, _xstate.assign)(function (context, event) {
       return {
